@@ -329,11 +329,22 @@ async function run(w, resultPath) {
         "picker loaded",
       );
       await until(() => picker(`!!current?.ready`), "picker connected");
+      const reelProbe = await picker(`(()=>{const original=current,originalRevision=revision,base=original.snapshot,out={};for(const mode of ['individual','group','two_tier']){const snap={...base,phase:'rolling',mode,preview:{group:'测试小组泄漏',student:'测试学生'},result:null};render({...original,revision:revision+1,snapshot:snap});out[mode]=[...document.querySelector('#reel').children].map(x=>x.textContent)}revision=originalRevision;current=original;render(original);return out})()`);
+      assert.ok(reelProbe.individual.every((name) => name === "测试学生"),
+        "individual roulette must never expose group names");
+      assert.ok(reelProbe.group.every((name) => name === "测试小组泄漏"),
+        "group roulette must never expose student names");
+      assert.ok(reelProbe.two_tier.includes("测试小组泄漏") && reelProbe.two_tier.includes("测试学生"));
       assert.deepEqual(
         [w.picker.getBounds().width, w.picker.getBounds().height],
         [72, 72],
       );
       assert.equal(await picker(`document.body.dataset.collapsed`), "true");
+      assert.equal(
+        await picker(`document.querySelectorAll('.titlebar .window-actions button').length`),
+        1,
+        "only collapse remains in the top-right corner",
+      );
       await shot(w.picker, "picker-icon");
       await picker(`godpowerDesktop.windowAction('expand')`);
       await until(
@@ -342,6 +353,18 @@ async function run(w, resultPath) {
       );
       assert.ok(w.picker.getBounds().height >= 520);
       const expanded = w.picker.getBounds();
+      const isFocused = w.picker.isFocused;
+      w.picker.isFocused = () => false;
+      try {
+        w.picker.emit("focus");
+        w.picker.emit("blur");
+        await until(() => w.pickerCollapsed, "collapse when focus leaves picker");
+      } finally {
+        w.picker.isFocused = isFocused;
+      }
+      assert.equal(w.picker.getBounds().width, 72);
+      await picker(`godpowerDesktop.windowAction('expand')`);
+      await until(() => !w.pickerCollapsed, "re-expand after outside click");
       await picker(`godpowerDesktop.windowAction('collapse')`);
       assert.equal(w.picker.getBounds().width, 72);
       const getCursor = screen.getCursorScreenPoint;
@@ -502,6 +525,32 @@ async function run(w, resultPath) {
             await main(`state.groups.find(g=>g.id===${result.groupId}).score`),
             before + 5,
           );
+          await until(() => picker(`current.snapshot.phase==='revealed' && !pending && !current.snapshot.locked`), "score controls ready after IPC score");
+          await picker(`document.querySelector('#slots button').click()`);
+          await until(
+            async () => (await main(`state.groups.find(g=>g.id===${result.groupId}).score`)) === before + 6,
+            "visible quick-score button commits immediately",
+          );
+          await until(() => picker(`!pending`), "quick-score acknowledgement");
+          assert.equal(await picker(`document.querySelector('#slots button').disabled`), false);
+          await picker(`document.getElementById('delta').value='7';document.getElementById('customScore').requestSubmit()`);
+          await until(
+            async () => (await main(`state.groups.find(g=>g.id===${result.groupId}).score`)) === before + 13,
+            "visible custom-score form commits immediately",
+          );
+          await until(() => picker(`!pending`), "custom-score acknowledgement");
+          await until(
+            () => picker(`document.getElementById('target').textContent.endsWith('当前 ${before + 13} 分')`),
+            "floating picker shows the committed live score",
+          );
+          await main(`state.isLocked=true;GodpowerPicker.notify()`);
+          await until(() => picker(`current.snapshot.locked===true`), "locked score state");
+          assert.equal(await picker(`!!document.getElementById('unlockClassroom') && !document.getElementById('unlockClassroom').hidden`), true,
+            "locked score controls explain how to unlock");
+          await picker(`document.getElementById('unlockClassroom').click()`);
+          await until(() => w.detached.entries.has("pwdModal"), "password dialog from score panel");
+          await main(`state.isLocked=false;closePwdModal()`);
+          await until(() => !w.detached.entries.has("pwdModal"), "password dialog closes");
           const stale = await picker(
             `godpowerDesktop.command('score',{resultId:'stale',delta:5})`,
           );

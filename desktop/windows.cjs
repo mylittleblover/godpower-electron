@@ -173,6 +173,26 @@ class Windows {
     });
     this.picker = win;
     this.secure(win, "picker");
+    let blurTimer = null,
+      pickerHadFocus = win.isFocused();
+    win.on("focus", () => {
+      pickerHadFocus = true;
+    });
+    win.on("blur", () => {
+      if (!pickerHadFocus) return;
+      pickerHadFocus = false;
+      clearTimeout(blurTimer);
+      blurTimer = setTimeout(() => {
+        if (
+          this.picker === win &&
+          !win.isDestroyed() &&
+          !this.quitting &&
+          !this.pickerCollapsed &&
+          !win.isFocused()
+        )
+          this.setPickerExpanded(false);
+      }, 90);
+    });
     win.webContents.on("render-process-gone", () => win.destroy());
     win.setAlwaysOnTop(this.preferences.value.alwaysOnTop, "floating");
     win.once("ready-to-show", () => {
@@ -198,6 +218,7 @@ class Windows {
       this.broadcast();
     });
     win.on("closed", () => {
+      clearTimeout(blurTimer);
       clearTimeout(this.boundsTimer);
       clearInterval(this.iconDragTimer);
       this.iconDrag = null;
@@ -502,6 +523,13 @@ class Windows {
       }
       if (action === "showMain") {
         this.showMain();
+        return { ok: true };
+      }
+      if (action === "unlock") {
+        if (!this.main || this.main.isDestroyed())
+          return { ok: false, error: "MAIN_UNAVAILABLE" };
+        this.showMain();
+        this.main.webContents.send("gp:unlock-request");
         return { ok: true };
       }
       if (action === "skip") {

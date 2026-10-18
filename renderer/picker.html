@@ -20,10 +20,7 @@
         <strong>课堂点名</strong><small id="connection">正在连接主课堂…</small>
       </div>
       <div class="window-actions">
-        <button id="showMain" title="显示或恢复主窗口">主窗口</button
-        ><button id="collapse" aria-label="收起为图标">↙</button
-        ><button id="minimize" aria-label="最小化">−</button
-        ><button id="close" aria-label="关闭悬浮窗">×</button>
+        <button id="collapse" aria-label="收起浮窗" title="收起浮窗">↙</button>
       </div>
     </header>
     <main>
@@ -77,6 +74,7 @@
         <div class="section-heading">
           <h2>即时赋分</h2>
           <span id="target">抽中后可用</span>
+          <button id="unlockClassroom" class="text-button" hidden>前往解锁</button>
         </div>
         <div id="slots" class="slots"></div>
         <form id="customScore">
@@ -96,6 +94,7 @@
       <details>
         <summary>悬浮窗与全屏演出</summary>
         <div class="options">
+          <button id="showMain">打开主课堂</button>
           <label>窗口置顶<input id="pin" type="checkbox" /></label
           ><label>跨应用全屏揭晓<input id="effects" type="checkbox" /></label
           ><label>演出显示器<select id="display"></select></label>

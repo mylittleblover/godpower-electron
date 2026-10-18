@@ -98,20 +98,19 @@ function render(state) {
   const machine = $("machine"),
     reel = $("reel"),
     changed = machine.dataset.phase !== s.phase;
+  const reelName = (index) =>
+    s.mode === "individual"
+      ? s.preview.student || "课堂之星"
+      : s.mode === "group"
+        ? s.preview.group || "幸运小组"
+        : (index % 2 ? s.preview.student : s.preview.group) || "课堂之星";
   if (changed && s.phase === "settling") {
     const result = s.result?.name || "揭晓中";
     [...reel.children].forEach((e, i) => {
-      e.textContent =
-        i === 4
-          ? result
-          : (i % 2 ? s.preview.student : s.preview.group) || "课堂之星";
+      e.textContent = i === 4 ? result : reelName(i);
     });
   } else if (s.phase === "rolling") {
-    [...reel.children].forEach(
-      (e, i) =>
-        (e.textContent =
-          (i % 2 ? s.preview.group : s.preview.student) || "课堂之星"),
-    );
+    [...reel.children].forEach((e, i) => (e.textContent = reelName(i)));
   } else if (s.phase === "idle")
     [...reel.children].forEach((e) => (e.textContent = "准备好了吗"));
   if (s.phase === "revealed")
@@ -121,8 +120,12 @@ function render(state) {
     ? `${s.result.groupName}${s.result.number !== null ? " · 学号 " + s.result.number : ""}`
     : "让每一次回答都有闪光时刻";
   $("target").textContent = s.result
-    ? `${s.result.groupName} · 当前 ${s.result.score} 分`
+    ? s.locked
+      ? `${s.result.groupName} · 课堂已锁定`
+      : `${s.result.groupName} · 当前 ${s.result.score} 分`
     : "抽中后可用";
+  $("unlockClassroom").hidden =
+    !(s.locked && s.phase === "revealed" && !!s.result);
   const scoreDisabled = busy || s.phase !== "revealed" || !s.result || s.locked;
   if ($("slots").dataset.values !== JSON.stringify(s.slots)) {
     $("slots").replaceChildren(
@@ -216,8 +219,6 @@ $("customScore").addEventListener("submit", (e) => {
 });
 for (const [id, action] of [
   ["showMain", "showMain"],
-  ["minimize", "minimize"],
-  ["close", "close"],
   ["skip", "skip"],
 ])
   $(id).addEventListener("click", () =>
@@ -242,6 +243,10 @@ api
   .catch((e) => message(e.message));
 
 $("collapse").addEventListener("click", () => api.windowAction("collapse"));
+$("unlockClassroom").addEventListener("click", async () => {
+  const r = await api.windowAction("unlock");
+  if (!r.ok) message("无法打开课堂解锁窗口，请检查主课堂状态。");
+});
 $("pickerIcon").addEventListener("pointerdown", async (e) => {
   if (e.button !== 0) return;
   e.preventDefault();

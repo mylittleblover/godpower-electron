@@ -11,6 +11,7 @@ const base = { role };
 if (role === "main")
   Object.assign(base, {
     onExecute: (fn) => listen("gp:execute", fn),
+    onUnlockRequest: (fn) => listen("gp:unlock-request", fn),
     onShellState: (fn) => listen("gp:shell", fn),
     publish: (snapshot) => ipcRenderer.send("gp:publish", snapshot),
     reply: (value) => ipcRenderer.send("gp:reply", value),

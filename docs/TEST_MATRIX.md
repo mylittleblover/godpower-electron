@@ -13,6 +13,8 @@
 | Electron IPC、重复消息、超时、reload、权限、几何、配置、SHA、Escape | Node 12 项 | PASS | artifacts/electron-020/unit.log |
 | 主窗口、picker、overlay 三模式/动画/结果/赋分/窗口重开/刷新/恢复 | 真实 Electron 12 场景 | PASS | artifacts/electron-020/results.json |
 | start/stop/roll_win 音效单次调度 | 三模式实际主 renderer 调用断言 | PASS | desktop/test-probe.cjs；非真实听感 |
+| 浮窗快捷与自定义赋分、即时分数文本、锁定提示及原口令窗口 | Chromium 实际点按并比对主课堂状态 | PASS | 1920×1080 1x，desktop/test-probe.cjs |
+| 轮盘文案按模式过滤、顶栏单一收起键、失焦自动收起 | BrowserWindow 与真实 picker DOM | PASS | 1920×1080 1x，desktop/test-probe.cjs |
 | 应用 origin/五页/LS/IndexedDB 刷新保留 | test:smoke | PASS | artifacts/electron-020/smoke.log |
 | 初始化失败不能报告空 PASS | 故障注入负向测试 | PASS | regressions/setup-after.json 为预期 FAIL；setup-before.json 为修复前错误 PASS |
 | 演出窗口非抢焦点配置、按钮/IPC 跳过、自动销毁 | Electron 窗口与 DOM 断言 | PASS | results.json、effect-*.png |
