@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>课堂点名</title>
+    <link rel="stylesheet" href="picker.css" />
+  </head>
+  <body>
+    <header class="titlebar">
+      <span class="brand">✦</span>
+      <div>
+        <strong>课堂点名</strong><small id="connection">正在连接主课堂…</small>
+      </div>
+      <div class="window-actions">
+        <button id="showMain" title="显示或恢复主窗口">主窗口</button
+        ><button id="minimize" aria-label="最小化">−</button
+        ><button id="close" aria-label="关闭悬浮窗">×</button>
+      </div>
+    </header>
+    <main>
+      <nav aria-label="抽选模式" class="modes">
+        <button data-mode="individual">全班学生</button
+        ><button data-mode="group">小组抽选</button
+        ><button data-mode="two_tier">先组后人</button>
+      </nav>
+      <section class="machine" id="machine" data-phase="idle">
+        <svg class="machine-top" viewBox="0 0 360 28" aria-hidden="true">
+          <path
+            d="M14 27V16Q14 2 28 2H332Q346 2 346 16V27"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+          />
+          <circle cx="38" cy="15" r="3" />
+          <circle cx="322" cy="15" r="3" />
+        </svg>
+        <div class="machine-window">
+          <div class="reel-strip" id="reel">
+            <div>准备好了吗</div>
+            <div>下一位课堂之星</div>
+            <div>准备好了吗</div>
+            <div>下一位课堂之星</div>
+            <div id="finalName">准备好了吗</div>
+          </div>
+        </div>
+        <button
+          id="lever"
+          class="lever"
+          title="拉动开始或停止抽选"
+          aria-label="开始抽选"
+        >
+          <span></span><i></i>
+        </button>
+        <p id="resultGroup">让每一次回答都有闪光时刻</p>
+        <span id="phase" class="phase">准备就绪</span>
+      </section>
+      <div class="pool-row">
+        <label><input id="antiRepeat" type="checkbox" />防重复</label
+        ><span id="remaining"></span
+        ><button id="resetPool" class="text-button">重置奖池</button
+        ><button id="cancel" class="text-button">取消抽选</button>
+      </div>
+      <section id="preselection" hidden>
+        <h2>限定候选小组 <small>未选表示全部</small></h2>
+        <div id="groupChips" class="chips"></div>
+      </section>
+      <section class="score-panel">
+        <div class="section-heading">
+          <h2>即时赋分</h2>
+          <span id="target">抽中后可用</span>
+        </div>
+        <div id="slots" class="slots"></div>
+        <form id="customScore">
+          <input
+            id="delta"
+            type="number"
+            step="1"
+            placeholder="自定义正分 / 负分"
+            aria-label="自定义积分"
+          /><button type="submit">确认赋分</button>
+        </form>
+      </section>
+      <details>
+        <summary>最近点名记录 <span id="historyCount"></span></summary>
+        <ol id="history"></ol>
+      </details>
+      <details>
+        <summary>悬浮窗与全屏演出</summary>
+        <div class="options">
+          <label>窗口置顶<input id="pin" type="checkbox" /></label
+          ><label>跨应用全屏揭晓<input id="effects" type="checkbox" /></label
+          ><label>演出显示器<select id="display"></select></label>
+          <p>
+            拖动标题栏移动，拖动窗口边缘缩放。设置自动保存。音效、动画风格与六个赋分槽位沿用主课堂设置。
+          </p>
+          <p>按 Escape 或点击下方按钮可跳过正在播放的演出。</p>
+        </div>
+      </details>
+      <p id="message" role="status" aria-live="polite"></p>
+    </main>
+    <footer>
+      <span>同一课堂 · 实时同步</span><button id="skip">跳过演出</button>
+    </footer>
+    <script src="picker.js"></script>
+  </body>
+</html>

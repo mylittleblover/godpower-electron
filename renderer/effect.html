@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>课堂之星 · 全屏揭晓</title>
+    <link rel="stylesheet" href="effect.css" />
+  </head>
+  <body>
+    <main id="stage" aria-live="assertive">
+      <div class="shade"></div>
+      <div class="halo halo-one"></div>
+      <div class="halo halo-two"></div>
+      <div id="particles" class="particles" aria-hidden="true"></div>
+      <section class="reveal">
+        <div class="eyebrow" id="mode">CLASSROOM SPOTLIGHT</div>
+        <div class="rule"></div>
+        <p id="group"></p>
+        <h1 id="name"></h1>
+        <p id="number"></p>
+        <div class="caption">让答案闪耀 · 让思考被看见</div>
+      </section>
+      <button id="skip">跳过演出 · Esc</button>
+    </main>
+    <script src="effect.js"></script>
+  </body>
+</html>

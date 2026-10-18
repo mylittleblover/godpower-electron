@@ -1,7 +1,7 @@
 {
   "name": "godpower-electron",
   "productName": "上帝的力量",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Offline Electron desktop shell for 上帝的力量",
   "author": "mylittleblover",
@@ -10,15 +10,21 @@
   "scripts": {
     "sync:html": "node scripts/sync-html.mjs",
     "start": "electron .",
-    "test": "node --test",
+    "test": "node --test tests/*.test.cjs",
     "test:smoke": "node scripts/smoke.mjs",
-    "build:win": "electron-builder --win nsis portable --x64",
-    "build:win:cross": "electron-builder --win dir zip --x64 --config.win.signAndEditExecutable=false",
-    "build:dir": "electron-builder --dir"
+    "build:win": "electron-builder --win nsis portable --x64 --publish never",
+    "build:win:cross": "electron-builder --win dir zip --x64 --config.win.signAndEditExecutable=false --publish never",
+    "build:dir": "electron-builder --dir --publish never",
+    "verify:bundle": "node scripts/verify-bundle.mjs",
+    "prebuild:win": "npm run verify:bundle",
+    "prebuild:win:cross": "npm run verify:bundle",
+    "test:desktop": "node scripts/desktop-test.mjs",
+    "test:windows": "node scripts/windows-smoke.mjs"
   },
   "devDependencies": {
     "electron": "44.9.0",
-    "electron-builder": "26.8.1"
+    "electron-builder": "26.8.1",
+    "playwright": "1.56.1"
   },
   "build": {
     "appId": "com.mylittleblover.godpower",
@@ -29,16 +35,26 @@
     },
     "files": [
       "main.cjs",
+      "desktop/**",
+      "!desktop/test-probe.cjs",
+      "!desktop/smoke-probe.cjs",
+      "preload/**",
+      "renderer/**",
       "resources/index.html",
       "resources/BUILD_INFO.json",
       "package.json"
     ],
     "asar": true,
     "compression": "normal",
-    "electronLanguages": ["en-US", "zh-CN"],
+    "electronLanguages": [
+      "en-US",
+      "zh-CN"
+    ],
     "win": {
       "icon": "build/icon.ico",
-      "target": ["nsis"]
+      "target": [
+        "nsis"
+      ]
     },
     "nsis": {
       "installerIcon": "build/icon.ico",
@@ -52,5 +68,9 @@
     "portable": {
       "artifactName": "${productName}-${version}-portable.${ext}"
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mylittleblover/godpower-electron.git"
   }
 }

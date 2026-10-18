@@ -1,0 +1,59 @@
+import { createRequire } from "node:module";
+import { readFile, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import assert from "node:assert/strict";
+import path from "node:path";
+const require = createRequire(import.meta.url),
+  asar = require("@electron/asar");
+const archive = path.resolve("release/win-unpacked/resources/app.asar");
+const html = asar.extractFile(archive, "resources/index.html");
+const info = JSON.parse(
+  asar.extractFile(archive, "resources/BUILD_INFO.json").toString(),
+);
+const local = JSON.parse(await readFile("resources/BUILD_INFO.json", "utf8"));
+assert.deepEqual(info, local);
+assert.equal(createHash("sha256").update(html).digest("hex"), info.htmlSha256);
+assert.equal(
+  JSON.parse(asar.extractFile(archive, "package.json")).version,
+  "0.2.0",
+);
+for (const file of [
+  "main.cjs",
+  "preload/desktop.cjs",
+  "desktop/escape-lease.cjs",
+  "renderer/picker.html",
+  "renderer/picker.js",
+  "renderer/effect.html",
+  "renderer/effect.css",
+])
+  assert.ok(asar.extractFile(archive, file).length > 0, file);
+const names = asar.listPackage(archive);
+assert.ok(
+  !names.some(
+    (f) => f.endsWith("test-probe.cjs") || f.endsWith("smoke-probe.cjs"),
+  ),
+);
+const zipName = "上帝的力量-0.2.0-win.zip",
+  zip = await readFile(path.join("release", zipName));
+const result = {
+  status: "PASS",
+  version: "0.2.0",
+  source: info,
+  zip: {
+    name: zipName,
+    bytes: zip.length,
+    sha256: createHash("sha256").update(zip).digest("hex"),
+  },
+  bundledFiles: names,
+};
+await writeFile(
+  "artifacts/electron-020/release-integrity.json",
+  JSON.stringify(result, null, 2) + "\n",
+);
+console.log(
+  JSON.stringify(
+    { status: result.status, zip: result.zip, sourceCommit: info.sourceCommit },
+    null,
+    2,
+  ),
+);

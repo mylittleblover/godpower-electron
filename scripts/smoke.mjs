@@ -7,7 +7,9 @@ import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
 const electron = require("electron");
-const tempDir = await mkdtemp(path.join(os.tmpdir(), "godpower-electron-smoke-"));
+const tempDir = await mkdtemp(
+  path.join(os.tmpdir(), "godpower-electron-smoke-"),
+);
 const resultPath = path.join(tempDir, "result.json");
 const args = [
   ".",
@@ -17,7 +19,11 @@ const args = [
   "--disable-gpu",
   "--disable-dev-shm-usage",
 ];
-if (process.platform === "linux" && !process.env.DISPLAY && !process.env.WAYLAND_DISPLAY) {
+if (
+  process.platform === "linux" &&
+  !process.env.DISPLAY &&
+  !process.env.WAYLAND_DISPLAY
+) {
   args.push("--headless=new", "--ozone-platform=headless");
 }
 
@@ -37,7 +43,11 @@ try {
   });
   const outcome = await Promise.race([exit, timeoutPromise]);
   clearTimeout(timeout);
-  assert.equal(outcome.code, 0, `Electron exited unexpectedly: ${JSON.stringify(outcome)}`);
+  assert.equal(
+    outcome.code,
+    0,
+    `Electron exited unexpectedly: ${JSON.stringify(outcome)}`,
+  );
   const result = JSON.parse(await readFile(resultPath, "utf8"));
   console.log(JSON.stringify(result, null, 2));
   assert.equal(result.status, "PASS");
