@@ -19,7 +19,8 @@
     "prebuild:win": "npm run verify:bundle",
     "prebuild:win:cross": "npm run verify:bundle",
     "test:desktop": "node scripts/desktop-test.mjs",
-    "test:windows": "node scripts/windows-smoke.mjs"
+    "test:windows": "node scripts/windows-smoke.mjs",
+    "prepare:drive": "node scripts/prepare-drive-release.mjs"
   },
   "devDependencies": {
     "electron": "44.9.0",
