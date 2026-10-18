@@ -1,0 +1,76 @@
+{
+  "status": "FAIL",
+  "results": [
+    {
+      "name": "1920×1080 1x, 14 group fit and unchanged main layout",
+      "status": "PASS",
+      "detail": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "name": "secure preload and isolated origin in independent picker",
+      "status": "PASS",
+      "detail": {
+        "node": "undefined",
+        "process": "undefined",
+        "role": "picker",
+        "mainAPI": "undefined",
+        "storage": null
+      }
+    },
+    {
+      "name": "individual authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1792326261197-1",
+        "groupId": 10,
+        "historyEntries": 1,
+        "scoreDelta": 5
+      }
+    },
+    {
+      "name": "group authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1792326267279-2",
+        "groupId": 10,
+        "historyEntries": 1,
+        "scoreDelta": 5
+      }
+    },
+    {
+      "name": "two_tier authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1792326271612-3",
+        "groupId": 8,
+        "historyEntries": 1,
+        "scoreDelta": 5
+      }
+    },
+    {
+      "name": "close/reopen while spinning keeps one engine and retained window bounds",
+      "status": "FAIL",
+      "error": "Error: Timeout: reopened\n    at until (/workspace/godpower-electron-020/desktop/test-probe.cjs:4:140)\n    at async /workspace/godpower-electron-020/desktop/test-probe.cjs:65:4\n    at async test (/workspace/godpower-electron-020/desktop/test-probe.cjs:10:48)\n    at async Object.run (/workspace/godpower-electron-020/desktop/test-probe.cjs:61:3)\n    at async /workspace/godpower-electron-020/main.cjs:26:10"
+    }
+  ],
+  "errors": [],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}

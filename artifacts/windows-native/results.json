@@ -1,0 +1,4 @@
+{
+  "status": "NOT TESTED",
+  "reason": "Requires a real Windows host and GODPOWER_WINDOWS_EXE pointing to the unpacked application executable."
+}

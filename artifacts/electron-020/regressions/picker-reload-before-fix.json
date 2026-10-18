@@ -1,0 +1,89 @@
+{
+  "status": "FAIL",
+  "results": [
+    {
+      "name": "1920×1080 1x, 14 group fit and unchanged main layout",
+      "status": "PASS",
+      "detail": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "name": "secure preload and isolated origin in independent picker",
+      "status": "PASS",
+      "detail": {
+        "node": "undefined",
+        "process": "undefined",
+        "role": "picker",
+        "mainAPI": "undefined",
+        "storage": null
+      }
+    },
+    {
+      "name": "individual authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1792326557770-1",
+        "groupId": 14,
+        "historyEntries": 1,
+        "scoreDelta": 5
+      }
+    },
+    {
+      "name": "group authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1792326565076-2",
+        "groupId": 5,
+        "historyEntries": 1,
+        "scoreDelta": 5
+      }
+    },
+    {
+      "name": "two_tier authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1792326570373-3",
+        "groupId": 3,
+        "historyEntries": 1,
+        "scoreDelta": 5
+      }
+    },
+    {
+      "name": "close/reopen while spinning keeps one engine and retained window bounds",
+      "status": "PASS",
+      "detail": {
+        "bounds": {
+          "x": 100,
+          "y": 80,
+          "width": 480,
+          "height": 760
+        },
+        "alwaysOnTop": false
+      }
+    },
+    {
+      "name": "picker reload accepts fresh commands without sequence conflicts",
+      "status": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: {\"ok\":false,\"error\":\"STALE_REQUEST\"}\n\nfalse !== true\n\n    at /workspace/godpower-electron-020/desktop/test-probe.cjs:236:14\n    at async test (/workspace/godpower-electron-020/desktop/test-probe.cjs:47:22)\n    at async Object.run (/workspace/godpower-electron-020/desktop/test-probe.cjs:229:5)\n    at async /workspace/godpower-electron-020/main.cjs:80:13"
+    }
+  ],
+  "errors": [],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}

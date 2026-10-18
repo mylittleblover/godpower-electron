@@ -27,6 +27,14 @@ for (const file of [
   "renderer/effect.css",
 ])
   assert.ok(asar.extractFile(archive, file).length > 0, file);
+for (const directory of ['desktop','preload','renderer']) {
+  for (const file of await (await import('node:fs/promises')).readdir(directory)) {
+    if (file.endsWith('-probe.cjs')) continue;
+    const relative=directory+'/'+file;
+    assert.ok(asar.extractFile(archive,relative).equals(await readFile(relative)), 'Archive must match final source: '+relative);
+  }
+}
+assert.ok(asar.extractFile(archive,'main.cjs').equals(await readFile('main.cjs')));
 const names = asar.listPackage(archive);
 assert.ok(
   !names.some(
