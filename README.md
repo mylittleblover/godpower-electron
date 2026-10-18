@@ -1,4 +1,4 @@
-# 上帝的力量 Electron 0.2.0
+# 上帝的力量 Electron 3.0.0
 
 离线课堂竞技程序。一个主窗口保留全部比赛、道具、历史和存档；独立点名悬浮窗和透明全屏揭晓窗共用主窗口的抽选结果。
 
@@ -48,7 +48,7 @@ GODPOWER_HTML_SOURCE=/absolute/checkout/dist/godpower.html npm run sync:html
 
 resources/BUILD_INFO.json 记录源码仓库、提交 SHA、HTML SHA-256 和字节数。启动和 Windows 打包前都会核验。不得直接编辑 resources/index.html。无需网络、CDN 或开发服务器，HTML 仓库继续发布独立单文件。
 
-详见 [架构](docs/ARCHITECTURE.md)、[验收矩阵](docs/TEST_MATRIX.md)、[验收报告](docs/reports/ACCEPTANCE_0.2.0.md)、[维护列表](docs/MAINTENANCE_BACKLOG.md)。
+详见 [架构](docs/ARCHITECTURE.md)、[验收矩阵](docs/TEST_MATRIX.md)、[3.0.0 版本说明](docs/reports/ACCEPTANCE_3.0.0.md)、[0.2.0 历史验收报告](docs/reports/ACCEPTANCE_0.2.0.md)、[维护列表](docs/MAINTENANCE_BACKLOG.md)。
 
 ### 悬浮图标与后台运行
 

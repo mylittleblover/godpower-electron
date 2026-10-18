@@ -15,7 +15,7 @@ assert.deepEqual(info, local);
 assert.equal(createHash("sha256").update(html).digest("hex"), info.htmlSha256);
 assert.equal(
   JSON.parse(asar.extractFile(archive, "package.json")).version,
-  "0.2.0",
+  "3.0.0",
 );
 for (const file of [
   "main.cjs",
@@ -44,11 +44,11 @@ assert.ok(
     (f) => f.endsWith("test-probe.cjs") || f.endsWith("smoke-probe.cjs"),
   ),
 );
-const zipName = "上帝的力量-0.2.0-win.zip",
+const zipName = "上帝的力量-3.0.0-win.zip",
   zip = await readFile(path.join("release", zipName));
 const result = {
   status: "PASS",
-  version: "0.2.0",
+  version: "3.0.0",
   source: info,
   zip: {
     name: zipName,
