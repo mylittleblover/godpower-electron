@@ -41,9 +41,15 @@ class WindowState {
       effectsEnabled: true,
       displayId: null,
       pickerBounds: null,
+      iconPosition: null,
     };
     try {
       const v = JSON.parse(fs.readFileSync(file, "utf8"));
+      if (
+        v.iconPosition &&
+        ["x", "y"].every((k) => Number.isFinite(v.iconPosition[k]))
+      )
+        this.value.iconPosition = v.iconPosition;
       if (typeof v.alwaysOnTop === "boolean")
         this.value.alwaysOnTop = v.alwaysOnTop;
       if (typeof v.effectsEnabled === "boolean")
@@ -75,4 +81,33 @@ class WindowState {
     return true;
   }
 }
-module.exports = { visibleBounds, WindowState };
+function iconBounds(saved, displays) {
+  const point =
+    saved && Number.isFinite(saved.x) && Number.isFinite(saved.y)
+      ? saved
+      : null;
+  const a = (
+    displays.find(
+      (d) =>
+        point &&
+        point.x >= d.workArea.x &&
+        point.x < d.workArea.x + d.workArea.width &&
+        point.y >= d.workArea.y &&
+        point.y < d.workArea.y + d.workArea.height,
+    ) || displays[0]
+  ).workArea;
+  return {
+    x: Math.round(
+      Math.max(
+        a.x,
+        Math.min(a.x + a.width - 72, point?.x ?? a.x + a.width - 96),
+      ),
+    ),
+    y: Math.round(
+      Math.max(a.y, Math.min(a.y + a.height - 72, point?.y ?? a.y + 80)),
+    ),
+    width: 72,
+    height: 72,
+  };
+}
+module.exports = { visibleBounds, iconBounds, WindowState };

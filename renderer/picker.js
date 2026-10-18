@@ -42,6 +42,7 @@ async function run(action, payload = {}) {
 }
 function render(state) {
   if (!state || state.revision < revision) return;
+  document.body.dataset.collapsed = String(state.shell.collapsed);
   current = state;
   revision = state.revision;
   const s = state.snapshot,
@@ -239,3 +240,23 @@ api
   .getState()
   .then(render)
   .catch((e) => message(e.message));
+
+$("collapse").addEventListener("click", () => api.windowAction("collapse"));
+$("pickerIcon").addEventListener("pointerdown", async (e) => {
+  if (e.button !== 0) return;
+  e.preventDefault();
+  e.currentTarget.setPointerCapture(e.pointerId);
+  await api.windowAction("dragStart");
+});
+$("pickerIcon").addEventListener("pointerup", () =>
+  api.windowAction("dragEnd"),
+);
+$("pickerIcon").addEventListener("pointercancel", () =>
+  api.windowAction("dragCancel"),
+);
+$("pickerIcon").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    api.windowAction("expand");
+  }
+});

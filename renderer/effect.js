@@ -26,10 +26,13 @@ api.onReveal((payload) => {
   document.getElementById("number").textContent =
     r.number !== null
       ? "学号 " + r.number
-      : r.mode === "group"
-        ? "第 " + r.groupNo + " 小组"
-        : "本次课堂之星";
+      : r.mode === "score"
+        ? "实际积分调整"
+        : r.mode === "group"
+          ? "第 " + r.groupNo + " 小组"
+          : "本次课堂之星";
   document.getElementById("mode").textContent = {
+    score: "CLASSROOM SCORE · 积分展示",
     individual: "CLASSROOM SPOTLIGHT · 全班学生",
     group: "LUCKY TEAM · 小组揭晓",
     two_tier: "TEAM & STUDENT · 双层揭晓",

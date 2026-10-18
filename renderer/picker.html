@@ -6,7 +6,14 @@
     <title>课堂点名</title>
     <link rel="stylesheet" href="picker.css" />
   </head>
-  <body>
+  <body data-collapsed="true">
+    <button
+      id="pickerIcon"
+      aria-label="展开点名悬浮窗"
+      title="点击展开 · 拖动移动"
+    >
+      ✦<span>点名</span>
+    </button>
     <header class="titlebar">
       <span class="brand">✦</span>
       <div>
@@ -14,6 +21,7 @@
       </div>
       <div class="window-actions">
         <button id="showMain" title="显示或恢复主窗口">主窗口</button
+        ><button id="collapse" aria-label="收起为图标">↙</button
         ><button id="minimize" aria-label="最小化">−</button
         ><button id="close" aria-label="关闭悬浮窗">×</button>
       </div>

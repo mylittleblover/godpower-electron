@@ -1,5 +1,13 @@
 "use strict";
-const { app, Menu, protocol, session, globalShortcut } = require("electron");
+const {
+  app,
+  Menu,
+  protocol,
+  session,
+  globalShortcut,
+  Tray,
+  nativeImage,
+} = require("electron");
 const { Windows } = require("./desktop/windows.cjs");
 const { verifyHtml, installProtocol } = require("./desktop/protocol.cjs");
 protocol.registerSchemesAsPrivileged([
@@ -13,7 +21,7 @@ protocol.registerSchemesAsPrivileged([
     },
   },
 ]);
-let windows;
+let windows, tray;
 if (!app.requestSingleInstanceLock()) app.quit();
 else {
   app.on("second-instance", () => windows?.showMain());
@@ -66,6 +74,34 @@ else {
         () => windows.openPicker(),
       );
       const main = windows.createMain();
+      // Use the bundled application icon, never a remote resource.
+      const traySupported =
+        process.platform !== "linux" ||
+        !!process.env.DISPLAY ||
+        !!process.env.WAYLAND_DISPLAY;
+      if (traySupported) {
+        const trayImage = nativeImage.createFromPath(
+          require("node:path").join(__dirname, "build/icon.ico"),
+        );
+        tray = new Tray(
+          trayImage.isEmpty()
+            ? nativeImage.createFromDataURL(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+              )
+            : trayImage,
+        );
+        tray.setToolTip("上帝的力量 · 课堂后台运行");
+        tray.setContextMenu(
+          Menu.buildFromTemplate([
+            { label: "显示主窗口", click: () => windows.showMain() },
+            { label: "点名悬浮图标", click: () => windows.openPicker() },
+            { type: "separator" },
+            { label: "彻底退出", click: () => app.quit() },
+          ]),
+        );
+        tray.on("double-click", () => windows.showMain());
+      }
+      app.on("activate", () => windows.showMain());
       if (!app.isPackaged) {
         const smoke = process.argv.find((a) => a.startsWith("--smoke-test="));
         const test = process.argv.find((a) => a.startsWith("--desktop-test="));
@@ -88,6 +124,8 @@ else {
       console.error(error);
       app.exit(1);
     });
-  app.on("window-all-closed", () => app.quit());
+  app.on("window-all-closed", () => {
+    if (windows?.quitting) app.quit();
+  });
   app.on("will-quit", () => globalShortcut.unregisterAll());
 }

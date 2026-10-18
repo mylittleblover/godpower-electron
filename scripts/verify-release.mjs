@@ -1,5 +1,5 @@
 import { createRequire } from "node:module";
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
 import path from "node:path";
@@ -19,6 +19,9 @@ assert.equal(
 );
 for (const file of [
   "main.cjs",
+  "build/icon.ico",
+  "desktop/detached.cjs",
+  "renderer/window.js",
   "preload/desktop.cjs",
   "desktop/escape-lease.cjs",
   "renderer/picker.html",
@@ -54,8 +57,10 @@ const result = {
   },
   bundledFiles: names,
 };
+const output=path.resolve(process.env.RELEASE_ARTIFACTS||"artifacts/electron-020");
+await mkdir(output,{recursive:true});
 await writeFile(
-  "artifacts/electron-020/release-integrity.json",
+  path.join(output,"release-integrity.json"),
   JSON.stringify(result, null, 2) + "\n",
 );
 console.log(

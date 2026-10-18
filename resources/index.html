@@ -2578,9 +2578,9 @@ body.modern-flat-v217 .about-main,
 body.modern-flat-v217 .classroom-body,body.modern-flat-v217 #itemWindowBody{
   min-height:0!important;overflow:auto!important;overscroll-behavior:contain!important;
 }
-body.modern-flat-v217:has(.modal-overlay.active),body.modern-flat-v217:has(.score-modal-backdrop.active),
-body.modern-flat-v217:has(.item-modal-backdrop.active),body.modern-flat-v217:has(.classroom-backdrop.active),
-body.modern-flat-v217:has(.about-backdrop.active),body.modern-flat-v217:has(.member-search-backdrop.active){overflow:hidden!important}
+body.modern-flat-v217:has(.modal-overlay.active:not([data-native-detached])),body.modern-flat-v217:has(.score-modal-backdrop.active:not([data-native-detached])),
+body.modern-flat-v217:has(.item-modal-backdrop.active:not([data-native-detached])),body.modern-flat-v217:has(.classroom-backdrop.active:not([data-native-detached])),
+body.modern-flat-v217:has(.about-backdrop.active:not([data-native-detached])),body.modern-flat-v217:has(.member-search-backdrop.active:not([data-native-detached])){overflow:hidden!important}
 
 /* 卡片、面板和弹窗 */
 body.modern-flat-v217 .chart-container,body.modern-flat-v217 .dashboard-summary-container,
@@ -9157,6 +9157,9 @@ function readableTextOnColor(hex){
 }
 
 const FX_SOUND_SLOTS = [
+  {id:'fullscreen_pick',name:'全屏点名揭晓',category:'全屏演出',desc:'全屏揭晓时播放；支持多段候选随机播放'},
+  {id:'fullscreen_score_add',name:'全屏加分展示',category:'全屏演出',desc:'绿色全屏加分展示音效'},
+  {id:'fullscreen_score_sub',name:'全屏扣分展示',category:'全屏演出',desc:'红色全屏扣分展示音效'},
   ...ActionSounds.slots,
   { id: 'score_add', name: '基础加分 (+1 / +2)', desc: '复古方波金币音' },
   { id: 'score_sub', name: '基础扣分 (-1 / -2)', desc: '低沉方波震动音' },
@@ -9328,6 +9331,7 @@ let db = null;
 let customFxBuffers = {};
 let customFxVariants = Object.create(null);
 let currentUploadingAppend = false;
+let currentUploadingGeneration = 0;
 let activeSetBuffers = {};
 let currentUploadingSlot = null;
 let activeEditingGroupId = null;
@@ -10193,7 +10197,7 @@ async function playSound(slotId) {
       }else source.connect(getFxOutputV2176());
       source.start(0);
     } else {
-      playChiptuneSynth(slotId==='roll_loop'?'roll_tick':slotId);
+      playChiptuneSynth(({fullscreen_pick:'roll_win',fullscreen_score_add:'score_add',fullscreen_score_sub:'score_sub'})[slotId] || (slotId==='roll_loop'?'roll_tick':slotId));
     }
   } catch (_) {}
 }
@@ -11667,7 +11671,8 @@ function renderControls() {
 
 
 
-function openPickerModal() {
+function openPickerModal({internal=false}={}) {
+  if(!internal && window.godpowerDesktop?.role==='main') {window.godpowerDesktop.openPicker();return;}
   if(document.getElementById('pickerModal').classList.contains('active') && !document.getElementById('pickerModal').dataset.uiClosing)return;
   if(typeof DesktopUI!=='undefined')DesktopUI.cancelPickerPreparation();
   showClassroomWindow(document.getElementById('pickerModal'));
@@ -12239,11 +12244,11 @@ async function previewBgmTrack(slotId) {
 }
 
 function triggerUploadAudio(slotId,append=false) {
-  currentUploadingSlot=slotId;currentUploadingAppend=append&&slotId.startsWith('fx_');
+  currentUploadingGeneration++;currentUploadingSlot=slotId;currentUploadingAppend=append&&slotId.startsWith('fx_');
   const input=document.getElementById('soundFileInput');input.multiple=slotId.startsWith('fx_');input.click();
 }
 function handleSoundFileUpload(event) {
-  const files=Array.from(event.target.files||[]),slotId=currentUploadingSlot,append=currentUploadingAppend;
+  const files=Array.from(event.target.files||[]),slotId=currentUploadingSlot,append=currentUploadingAppend,uploadGeneration=currentUploadingGeneration;
   if(!files.length||!slotId)return;
   const fxKey=slotId.startsWith('fx_')?slotId.slice(3):null;
   // First file replaces the primary unless explicitly appending; additional files are candidates.
@@ -12271,7 +12276,7 @@ function handleSoundFileUpload(event) {
       if(saved)showToast(candidate?'候选音效已追加，播放时随机选择':'音频已保存');
       renderBgmSlotList();renderFxSlotList();renderItemFxSoundListV26();resolve(saved);
     };reader.readAsArrayBuffer(file);
-  }))).finally(()=>{event.target.value='';currentUploadingAppend=false;});
+  }))).finally(()=>{if(uploadGeneration===currentUploadingGeneration){event.target.value='';currentUploadingAppend=false;}});
 }
 
 function deleteBgmTrack(slotId) {
@@ -13774,7 +13779,7 @@ function renderPickerInfo(){
     const arr=state.itemGlobal.pickerHistory||[];box.innerHTML=arr.length?arr.slice(-30).reverse().map(x=>`<div class="picker-log">${escapeHtml(x.text)}<br><small>${new Date(x.time).toLocaleTimeString()}</small></div>`).join(''):'暂无抽签记录';
   }
 }
-const _v2OpenPicker=openPickerModal;openPickerModal=function(){ensureV2State();pickerInfoTab='history';_v2OpenPicker();setPickerInfoTab('history');syncPickerScoreTarget()}
+const _v2OpenPicker=openPickerModal;openPickerModal=function(...args){ensureV2State();pickerInfoTab='history';_v2OpenPicker(...args);setPickerInfoTab('history');syncPickerScoreTarget()}
 function syncPickerScoreTarget(){const el=document.getElementById('pickerScoreTarget'),w=slotEngine.chosenResult;if(!el)return;if(!w){el.textContent='抽中学生或小组后，可直接给所属小组赋分。';return}const g=state.picker.mode==='group'?w:w.group;el.innerHTML=`<b>${escapeHtml(g.name)}</b>${state.picker.mode==='group'?'':`<br>${escapeHtml(w.memberName)}`}<br>当前 ${g.score} 分`}
 function pickerTargetGroup(){const w=slotEngine.chosenResult;if(!w)return null;return state.picker.mode==='group'?w:w.group}
 function scorePickerTarget(n){const g=pickerTargetGroup();if(!g){showToast('请先完成一次抽签');return}applyScoreDelta(g.id,n);syncPickerScoreTarget()}
@@ -21465,6 +21470,31 @@ const ClassroomFeedback = (() => {
       (type === "pick" ? !options.pickEffects : !options.scoreEffects)
     )
       return;
+    if (
+      window.godpowerDesktop?.role === "main" &&
+      !window.GodpowerPicker?.isExternalPresentation()
+    )
+      return;
+    const soundSlot =
+      type === "pick"
+        ? "fullscreen_pick"
+        : type === "positive"
+          ? "fullscreen_score_add"
+          : "fullscreen_score_sub";
+    void playSound(soundSlot);
+    if (type !== "pick" && window.godpowerDesktop?.showScore) {
+      cancel();
+      window.godpowerDesktop.showScore({
+        name: title,
+        delta: Number(String(value).replace("−", "-")),
+        effects: {
+          enabled: true,
+          style: options.style,
+          duration: options.duration,
+        },
+      });
+      return;
+    }
     cancel();
     const root = dialog();
     if (!root) return;
@@ -23394,7 +23424,7 @@ const DesktopUI = (() => {
         !item.focus.closest(".view:not(.active)")
       )
         item.focus.focus({ preventScroll: true });
-      cancelAnimations();
+      if (!item?.el?.hasAttribute("data-native-detached")) cancelAnimations();
     }
     function scan() {
       for (const [id, close] of Object.entries(modalClosers)) {
@@ -23406,11 +23436,12 @@ const DesktopUI = (() => {
           forgetModal(id);
         if (!el) continue;
         const visible =
-          el.open ||
-          el.classList.contains("active") ||
-          el.classList.contains("show") ||
-          el.style.display === "flex" ||
-          (id === "programConfirmV28" && el.getClientRects().length > 0);
+          !el.hasAttribute("data-native-detached") &&
+          (el.open ||
+            el.classList.contains("active") ||
+            el.classList.contains("show") ||
+            el.style.display === "flex" ||
+            (id === "programConfirmV28" && el.getClientRects().length > 0));
         if (visible) {
           const surface =
             el.querySelector(".ui-function-surface") || el.firstElementChild;
@@ -23520,7 +23551,7 @@ const DesktopUI = (() => {
       subtree: true,
       childList: true,
       attributes: true,
-      attributeFilter: ["class", "style"],
+      attributeFilter: ["class", "style", "data-native-detached"],
     });
     document.addEventListener(
       "keydown",
@@ -24726,7 +24757,7 @@ window.GodpowerPicker = (() => {
     if (action === 'start') {
       preparing = true; notify('preparing');
       try {
-        if (!document.getElementById('pickerModal').classList.contains('active')) openPickerModal();
+        if (!document.getElementById('pickerModal').classList.contains('active')) openPickerModal({internal:true});
         await DesktopUI.togglePicker();
         return { ok: slotEngine.isSpinning, error: slotEngine.isSpinning ? undefined : 'NOT_STARTED' };
       } finally { preparing = false; if (!slotEngine.isSpinning) notify('idle'); }
@@ -24760,36 +24791,286 @@ window.GodpowerPicker = (() => {
 <script>/* Transport only. Standalone HTML has no desktop bridge and keeps all existing behavior. */
 (() => {
   const desktop = window.godpowerDesktop;
-  if (!desktop || desktop.role !== 'main') return;
+  if (!desktop || desktop.role !== "main") return;
   const completed = new Map();
-  let last = '', timer;
+  let last = "",
+    timer,
+    soundedReveal = null;
   const publish = () => {
-    const snapshot = GodpowerPicker.getSnapshot(), json = JSON.stringify(snapshot);
-    if (json !== last) { last = json; desktop.publish(snapshot); }
+    const snapshot = GodpowerPicker.getSnapshot(),
+      json = JSON.stringify(snapshot);
+    if (
+      snapshot.phase === "revealed" &&
+      snapshot.result?.id !== soundedReveal
+    ) {
+      soundedReveal = snapshot.result?.id;
+      if (snapshot.effects.enabled && GodpowerPicker.isExternalPresentation())
+        void playSound("fullscreen_pick");
+    }
+    if (json !== last) {
+      last = json;
+      desktop.publish(snapshot);
+    }
   };
   desktop.onExecute(async ({ id, action, payload }) => {
     if (!completed.has(id)) {
       // Remote controls use the same configurable sound slots as the classroom buttons.
-      const buttonSound = action === 'score' ? (payload.delta > 0 ? 'positive' : 'negative') :
-        {start:'pick_start',stop:'pick_stop',cancel:'cancel',resetPool:'danger',mode:'settings',antiRepeat:'settings',preselect:'settings'}[action];
-      if (buttonSound) void playSound('ui_button_' + buttonSound);
-      const promise = GodpowerPicker.command(action, payload).catch(error => ({ ok: false, error: error.message }));
+      const buttonSound =
+        action === "score"
+          ? payload.delta > 0
+            ? "positive"
+            : "negative"
+          : {
+              start: "pick_start",
+              stop: "pick_stop",
+              cancel: "cancel",
+              resetPool: "danger",
+              mode: "settings",
+              antiRepeat: "settings",
+              preselect: "settings",
+            }[action];
+      if (buttonSound) void playSound("ui_button_" + buttonSound);
+      const promise = GodpowerPicker.command(action, payload).catch(
+        (error) => ({ ok: false, error: error.message }),
+      );
       completed.set(id, promise);
       if (completed.size > 256) completed.delete(completed.keys().next().value);
     }
     const result = await completed.get(id);
-    publish(); desktop.reply({ id, result });
+    publish();
+    desktop.reply({ id, result });
   });
-  desktop.onShellState(shell => GodpowerPicker.setExternalPresentation(shell.effectsEnabled));
-  window.addEventListener('DOMContentLoaded', () => {
-    const button = document.createElement('button');
-    button.type = 'button'; button.className = 'btn btn-primary'; button.textContent = '独立点名悬浮窗';
-    button.addEventListener('click', () => desktop.openPicker());
-    document.querySelector('#pickerModal .picker-left-v2')?.append(button);
-    GodpowerPicker.subscribe(publish);
-    timer = setInterval(publish, 120); publish(); desktop.ready();
-  }, { once: true });
-  window.addEventListener('beforeunload', () => clearInterval(timer), { once: true });
+  desktop.onShellState((shell) =>
+    GodpowerPicker.setExternalPresentation(shell.effectsEnabled),
+  );
+  window.addEventListener(
+    "DOMContentLoaded",
+    () => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "btn btn-primary";
+      button.textContent = "独立点名悬浮窗";
+      button.addEventListener("click", () => desktop.openPicker());
+      document.querySelector("#pickerModal .picker-left-v2")?.append(button);
+      GodpowerPicker.subscribe(publish);
+      timer = setInterval(publish, 120);
+      publish();
+      desktop.ready();
+    },
+    { once: true },
+  );
+  window.addEventListener("beforeunload", () => clearInterval(timer), {
+    once: true,
+  });
+})();
+</script>
+<script>/* Native window presentation adapter. All state and event handlers stay in the main classroom. */
+(() => {
+  const desktop = window.godpowerDesktop;
+  if (!desktop || desktop.role !== "main" || !desktop.publishDialogs) return;
+  const ids = [
+    "welcomeModal",
+    "scoreModalBackdrop",
+    "pwdModal",
+    "memberSearchBackdrop",
+    "settlementNameModal",
+    "grandModalOverlay",
+    "itemModalBackdrop",
+    "handRaiseBackdrop",
+    "aboutBackdrop",
+    "batchImportModal",
+    "themeDialogV21727",
+    "quickPersonBackdropV218",
+    "programConfirmV28",
+  ];
+  const nodes = new Map(),
+    tokens = new WeakMap(),
+    acks = new Map(),
+    versions = new Map();
+  let nextToken = 0,
+    last = "",
+    timer;
+  function token(el) {
+    if (!tokens.has(el)) {
+      tokens.set(el, ++nextToken);
+      nodes.set(nextToken, el);
+    }
+    return tokens.get(el);
+  }
+  const visible = (el) =>
+    el.open ||
+    el.classList.contains("active") ||
+    el.classList.contains("show") ||
+    el.style.display === "flex" ||
+    (el.id === "programConfirmV28" && el.getClientRects().length > 0);
+  function close(root) {
+    const button = root.querySelector("[data-ui-window-close]");
+    if (button) {
+      button.click();
+      return;
+    }
+    const closers = {
+      welcomeModal: () => closeWelcomeModal(),
+      scoreModalBackdrop: () => closeScoreModal(),
+      pwdModal: () => closePwdModal(),
+      memberSearchBackdrop: () => closeMemberSearchModal(),
+      settlementNameModal: () => closeSettlementNameModal(),
+      grandModalOverlay: () => closeGrandSettlementModal(),
+      itemModalBackdrop: () => closeItemWindow(),
+      handRaiseBackdrop: () => closeHandRaise(),
+      aboutBackdrop: () => closeAbout(),
+      batchImportModal: () => closeBatchImportModal(),
+      themeDialogV21727: () => closeThemeDialogV21727(false),
+      quickPersonBackdropV218: () => closeQuickPersonScoreV218(),
+      programConfirmV28: () => document.getElementById("pcCancelV28")?.click(),
+    };
+    closers[root.id]?.();
+  }
+  function scan() {
+    const css = [...document.querySelectorAll("style:not([data-native-hide])")]
+      .map((el) => el.textContent)
+      .join("\n");
+    const list = [];
+    for (const id of ids) {
+      const root = document.getElementById(id);
+      if (!root) continue;
+      if (!visible(root)) {
+        root.removeAttribute("data-native-detached");
+        continue;
+      }
+      const copy = root.cloneNode(true),
+        original = [root, ...root.querySelectorAll("*")],
+        cloned = [copy, ...copy.querySelectorAll("*")];
+      original.forEach((el, i) => {
+        const target = cloned[i];
+        target.setAttribute("data-remote-token", token(el));
+        target.removeAttribute("data-native-detached");
+        if (el.matches("input,textarea,select")) {
+          if (el.tagName === "TEXTAREA") target.textContent = el.value;
+          else if (el.tagName === "SELECT")
+            [...target.options].forEach((o, j) =>
+              o.toggleAttribute("selected", el.options[j].selected),
+            );
+          else if (el.type === "checkbox" || el.type === "radio")
+            target.toggleAttribute("checked", el.checked);
+          else if (el.type !== "file" && el.type !== "password")
+            target.setAttribute("value", el.value);
+          else {
+            target.removeAttribute("value");
+            if (el.type === "password")
+              target.dataset.passwordFilled = String(!!el.value);
+          }
+        }
+        if (el.tagName === "DETAILS") target.toggleAttribute("open", el.open);
+      });
+      root.setAttribute("data-native-detached", "");
+      const title =
+        root
+          .querySelector('[class*="title"],h1,h2,h3')
+          ?.textContent?.trim()
+          .slice(0, 100) || "课堂工具";
+      const html = copy.outerHTML,
+        previous = versions.get(id);
+      const version =
+        previous && previous.html === html
+          ? previous.version
+          : (previous?.version || 0) + 1;
+      versions.set(id, { html, version });
+      list.push({
+        id,
+        bodyClass: document.body.className,
+        motion: document.body.dataset.motion || "full",
+        title,
+        html,
+        css,
+        version,
+        acks: Object.fromEntries(acks),
+      });
+    }
+    // The picker is already an independent authoritative client; redirect its original entry.
+    const picker = document.getElementById("pickerModal");
+    if (picker)
+      picker.toggleAttribute("data-native-detached", !!visible(picker));
+    const json = JSON.stringify(list);
+    if (json !== last) {
+      last = json;
+      desktop.publishDialogs(list);
+    }
+    for (const [key, node] of nodes)
+      if (!node.isConnected) {
+        nodes.delete(key);
+        acks.delete(key);
+      }
+  }
+  desktop.onDialogEvent((message) => {
+    const root = document.getElementById(message.id);
+    if (!root || !visible(root)) return;
+    if (message.type === "close") {
+      close(root);
+      scan();
+      return;
+    }
+    if (
+      !["input", "change", "files"].includes(message.type) &&
+      message.version !== versions.get(message.id)?.version
+    )
+      return;
+    const el = nodes.get(message.token);
+    if (!el || !root.contains(el) || el.disabled) return;
+    if (message.type === "input" || message.type === "change") {
+      if (
+        !Number.isSafeInteger(message.inputSeq) ||
+        (acks.get(message.token)?.session === message.session &&
+          message.inputSeq <= acks.get(message.token).seq)
+      )
+        return;
+      el.value = message.value;
+      acks.set(message.token, {
+        seq: message.inputSeq,
+        session: message.session,
+      });
+      el.dispatchEvent(new Event(message.type, { bubbles: true }));
+    } else if (message.type === "click")
+      el.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+    else if (message.type === "keydown")
+      el.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: message.key,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    else if (message.type === "submit" && el.tagName === "FORM")
+      el.requestSubmit();
+    else if (message.type === "files" && el.matches("input[type=file]")) {
+      const transfer = new DataTransfer();
+      for (const file of message.files)
+        transfer.items.add(
+          new File([file.bytes], file.name, { type: file.type || "" }),
+        );
+      el.files = transfer.files;
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    scan();
+  });
+  window.addEventListener(
+    "DOMContentLoaded",
+    () => {
+      const style = document.createElement("style");
+      style.dataset.nativeHide = "";
+      style.textContent =
+        "[data-native-detached]{visibility:hidden!important;pointer-events:none!important}";
+      document.head.append(style);
+      timer = setInterval(scan, 120);
+      scan();
+    },
+    { once: true },
+  );
+  window.addEventListener("beforeunload", () => clearInterval(timer), {
+    once: true,
+  });
 })();
 </script>
 </body>

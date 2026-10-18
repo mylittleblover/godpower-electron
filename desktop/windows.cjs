@@ -11,7 +11,11 @@ const { randomUUID } = require("node:crypto");
 const { URLS, authorize, sanitizeSnapshot } = require("./contracts.cjs");
 const { Broker } = require("./broker.cjs");
 const { EscapeLease } = require("./escape-lease.cjs");
-const { WindowState, visibleBounds } = require("./window-state.cjs");
+const {
+  WindowState,
+  visibleBounds,
+  iconBounds,
+} = require("./window-state.cjs");
 class Windows {
   constructor(root) {
     this.root = root;
@@ -31,8 +35,10 @@ class Windows {
       { onChange: () => this.broadcast() },
     );
     this.installIPC();
+    this.detached = new (require("./detached.cjs").DetachedWindows)(this);
     app.on("before-quit", () => {
       this.quitting = true;
+      this.detached.closeAll();
       this.savePicker();
       this.closeEffect();
     });
@@ -44,7 +50,7 @@ class Windows {
       screen.on(name, () => {
         if (this.picker && !this.picker.isDestroyed())
           this.picker.setBounds(
-            visibleBounds(
+            (this.pickerCollapsed ? iconBounds : visibleBounds)(
               this.picker.getBounds(),
               screen.getAllDisplays(),
               null,
@@ -94,15 +100,27 @@ class Windows {
     this.secure(this.main, "main");
     this.main.webContents.on("did-start-loading", () => {
       this.lastReveal = null;
+      this.detached.closeAll();
       this.closeEffect();
       this.broker.reset();
     });
     this.main.webContents.on("render-process-gone", () => {
       this.crashed = true;
+      this.detached.closeAll();
       this.closeEffect();
       this.broker.reset();
     });
-    this.main.once("ready-to-show", () => this.main.show());
+    this.main.once("ready-to-show", () => {
+      this.main.show();
+      this.openPicker();
+    });
+    this.main.on("close", (event) => {
+      if (!this.quitting) {
+        event.preventDefault();
+        this.main.hide();
+        this.openPicker();
+      }
+    });
     this.main.on("closed", () => {
       this.main = null;
       if (!this.quitting) app.quit();
@@ -124,6 +142,7 @@ class Windows {
     this.main.focus();
   }
   openPicker() {
+    if (this.quitting) return;
     if (this.pickerClosing) {
       this.reopenPicker = true;
       return;
@@ -133,19 +152,21 @@ class Windows {
       this.picker.focus();
       return;
     }
-    const bounds = visibleBounds(
-      this.preferences.value.pickerBounds,
+    this.pickerCollapsed = true;
+    const bounds = iconBounds(
+      this.preferences.value.iconPosition,
       screen.getAllDisplays(),
       null,
     );
     const win = new BrowserWindow({
       ...bounds,
-      minWidth: 360,
-      minHeight: 520,
+      minWidth: 72,
+      minHeight: 72,
       frame: false,
-      resizable: true,
+      resizable: false,
+      transparent: true,
       show: false,
-      backgroundColor: "#f3f7f6",
+      backgroundColor: "#00000000",
       alwaysOnTop: this.preferences.value.alwaysOnTop,
       title: "课堂点名 · 上帝的力量",
       webPreferences: this.preferencesFor("picker"),
@@ -178,6 +199,8 @@ class Windows {
     });
     win.on("closed", () => {
       clearTimeout(this.boundsTimer);
+      clearInterval(this.iconDragTimer);
+      this.iconDrag = null;
       this.broker.dropClient(client);
       if (this.picker === win) this.picker = null;
       this.pickerClosing = false;
@@ -195,7 +218,35 @@ class Windows {
   }
   savePicker() {
     if (this.picker && !this.picker.isDestroyed())
-      this.preferences.update({ pickerBounds: this.picker.getBounds() });
+      this.preferences.update(
+        this.pickerCollapsed
+          ? { iconPosition: this.picker.getBounds() }
+          : { pickerBounds: this.picker.getBounds() },
+      );
+  }
+  setPickerExpanded(expanded) {
+    if (!this.picker || this.picker.isDestroyed()) return;
+    this.savePicker();
+    this.pickerCollapsed = !expanded;
+    this.picker.setMinimumSize(expanded ? 360 : 72, expanded ? 520 : 72);
+    this.picker.setResizable(expanded);
+    this.picker.setBounds(
+      expanded
+        ? visibleBounds(
+            this.preferences.value.pickerBounds || {
+              ...this.picker.getBounds(),
+              width: 480,
+              height: 760,
+            },
+            screen.getAllDisplays(),
+            null,
+          )
+        : iconBounds(
+            this.preferences.value.iconPosition,
+            screen.getAllDisplays(),
+          ),
+    );
+    this.broadcast();
   }
   state() {
     const displays = screen.getAllDisplays().map((d) => ({
@@ -213,6 +264,7 @@ class Windows {
       snapshot: this.broker.snapshot,
       shell: {
         ...this.preferences.value,
+        collapsed: !!this.pickerCollapsed,
         displayId: this.targetDisplay().id,
         displays,
         effectActive: !!this.effect,
@@ -236,13 +288,14 @@ class Windows {
     );
   }
   present(snapshot) {
+    if (this.quitting) return;
     if (
       !snapshot.result ||
       snapshot.phase !== "revealed" ||
       snapshot.result.id === this.lastReveal
     )
       return;
-    this.lastReveal = snapshot.result.id;
+    if (snapshot.result.mode !== "score") this.lastReveal = snapshot.result.id;
     if (!this.preferences.value.effectsEnabled || !snapshot.effects.enabled)
       return;
     this.closeEffect();
@@ -315,6 +368,36 @@ class Windows {
     const requireRole = (event, role) => {
       if (!this.authorized(event, role)) throw Error("FORBIDDEN");
     };
+    ipcMain.on("gp:score-effect", (event, value) => {
+      if (
+        !this.authorized(event, "main") ||
+        typeof value?.name !== "string" ||
+        value.name.length > 500 ||
+        !Number.isSafeInteger(value.delta) ||
+        !value.delta
+      )
+        return;
+      const effects = {
+        enabled: true,
+        style: value.effects?.style === "burst" ? "burst" : "aurora",
+        duration: [1200, 1800, 2600, 3600].includes(value.effects?.duration)
+          ? value.effects.duration
+          : 1800,
+      };
+      this.present({
+        phase: "revealed",
+        effects,
+        result: {
+          id: randomUUID(),
+          mode: "score",
+          name: (value.delta > 0 ? "+" : "−") + Math.abs(value.delta),
+          groupName: value.name,
+          number: null,
+          groupNo: 0,
+          color: value.delta > 0 ? "#15916a" : "#da4f51",
+        },
+      });
+    });
     ipcMain.on("gp:ready", (event) => {
       if (!this.authorized(event, "main")) return;
       this.broker.ready = true;
@@ -354,6 +437,61 @@ class Windows {
     ipcMain.handle("gp:window", (event, message) => {
       requireRole(event, "picker");
       const { action, value } = message || {};
+      if (action === "expand" || action === "collapse") {
+        this.setPickerExpanded(action === "expand");
+        return { ok: true };
+      }
+      if (action === "dragStart" && this.pickerCollapsed) {
+        this.iconDrag = {
+          cursor: screen.getCursorScreenPoint(),
+          bounds: this.picker.getBounds(),
+          moved: false,
+        };
+        clearInterval(this.iconDragTimer);
+        this.iconDragTimer = setInterval(() => {
+          if (!this.iconDrag || !this.picker || this.picker.isDestroyed()) {
+            clearInterval(this.iconDragTimer);
+            return;
+          }
+          const p = screen.getCursorScreenPoint(),
+            d = this.iconDrag;
+          const dx = p.x - d.cursor.x,
+            dy = p.y - d.cursor.y;
+          if (Math.hypot(dx, dy) > 4) d.moved = true;
+          if (d.moved)
+            this.picker.setBounds(
+              iconBounds(
+                { x: d.bounds.x + dx, y: d.bounds.y + dy },
+                screen.getAllDisplays(),
+              ),
+            );
+        }, 16);
+        return { ok: true };
+      }
+      if (action === "dragEnd" || action === "dragCancel") {
+        clearInterval(this.iconDragTimer);
+        const drag = this.iconDrag;
+        if (drag) {
+          const cursor = screen.getCursorScreenPoint(),
+            dx = cursor.x - drag.cursor.x,
+            dy = cursor.y - drag.cursor.y;
+          if (Math.hypot(dx, dy) > 4) {
+            drag.moved = true;
+            this.picker.setBounds(
+              iconBounds(
+                { x: drag.bounds.x + dx, y: drag.bounds.y + dy },
+                screen.getAllDisplays(),
+              ),
+            );
+          }
+        }
+        const moved = !!drag?.moved;
+        this.iconDrag = null;
+        this.savePicker();
+        if (action === "dragEnd" && !moved && this.pickerCollapsed)
+          this.setPickerExpanded(true);
+        return { ok: true };
+      }
       if (action === "close") {
         this.picker.close();
         return { ok: true };

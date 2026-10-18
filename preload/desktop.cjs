@@ -15,6 +15,9 @@ if (role === "main")
     publish: (snapshot) => ipcRenderer.send("gp:publish", snapshot),
     reply: (value) => ipcRenderer.send("gp:reply", value),
     ready: () => ipcRenderer.send("gp:ready"),
+    showScore: (value) => ipcRenderer.send("gp:score-effect", value),
+    publishDialogs: (list) => ipcRenderer.send("gp:dialogs", list),
+    onDialogEvent: (fn) => listen("gp:dialog-event", fn),
     openPicker: () => ipcRenderer.invoke("gp:open-picker"),
   });
 if (role === "picker") {
@@ -49,6 +52,13 @@ if (role === "picker") {
       ipcRenderer.invoke("gp:window", { action, value }),
   });
 }
+if (role === "window")
+  Object.assign(base, {
+    onDialogState: (fn) => listen("gp:dialog-state", fn),
+    onDialogLeave: (fn) => listen("gp:dialog-leave", fn),
+    dialogReady: () => ipcRenderer.invoke("gp:dialog-ready"),
+    dialogEvent: (value) => ipcRenderer.invoke("gp:dialog-event", value),
+  });
 if (role === "effect")
   Object.assign(base, {
     onReveal: (fn) => listen("gp:reveal", fn),

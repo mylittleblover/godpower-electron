@@ -422,3 +422,46 @@ body[data-ready="false"] main button:not(#skip) {
 [hidden] {
   display: none !important;
 }
+
+/* A presentation mode, not a second classroom or picker instance. */
+#pickerIcon {
+  display: none;
+}
+body[data-collapsed="true"] {
+  background: transparent;
+  overflow: hidden;
+}
+body[data-collapsed="true"] > :not(#pickerIcon) {
+  display: none;
+}
+body[data-collapsed="true"] #pickerIcon {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 64px;
+  height: 64px;
+  margin: 4px;
+  border: 2px solid #b8e5d7;
+  border-radius: 22px;
+  background: #0f766e;
+  color: white;
+  font-size: 27px;
+  padding: 0;
+  user-select: none;
+  touch-action: none;
+  cursor: grab;
+}
+#pickerIcon span {
+  font-size: 11px;
+  line-height: 16px;
+}
+#pickerIcon:active {
+  cursor: grabbing;
+  transform: none;
+}
+body[data-collapsed="false"] {
+  border-radius: 14px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
