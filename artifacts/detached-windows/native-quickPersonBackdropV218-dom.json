@@ -1,0 +1,21 @@
+{
+  "viewport": [
+    1080,
+    820
+  ],
+  "body": "modern-flat-v217",
+  "root": "<div id=\"quickPersonBackdropV218\" class=\"quick-person-backdrop-v218 active\" style=\"\" data-remote-token=\"208\">\n  <div class=\"quick-person-card-v218 ui-function-s",
+  "children": [
+    {
+      "tag": "DIV",
+      "class": "quick-person-card-v218 ui-function-surface",
+      "x": 50,
+      "y": 20,
+      "width": 980,
+      "height": 780,
+      "display": "grid",
+      "opacity": "1",
+      "visibility": "visible"
+    }
+  ]
+}

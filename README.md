@@ -49,3 +49,9 @@ GODPOWER_HTML_SOURCE=/absolute/checkout/dist/godpower.html npm run sync:html
 resources/BUILD_INFO.json 记录源码仓库、提交 SHA、HTML SHA-256 和字节数。启动和 Windows 打包前都会核验。不得直接编辑 resources/index.html。无需网络、CDN 或开发服务器，HTML 仓库继续发布独立单文件。
 
 详见 [架构](docs/ARCHITECTURE.md)、[验收矩阵](docs/TEST_MATRIX.md)、[验收报告](docs/reports/ACCEPTANCE_0.2.0.md)、[维护列表](docs/MAINTENANCE_BACKLOG.md)。
+
+### 悬浮图标与后台运行
+
+启动后右侧显示可拖动的点名图标。点击展开，面板标题栏的收起按钮回到图标；再次打开会恢复面板尺寸。关闭主窗口只隐藏主课堂，点名继续使用同一份课堂状态。通过系统托盘“显示主窗口”恢复，通过“彻底退出”结束程序。
+
+音效与音乐设置的“全屏演出”包含点名揭晓、加分、扣分三个独立槽位，可追加多个候选音效并随机播放。新的普通功能窗口均为独立 Electron 窗口；浏览器单文件版继续使用原弹窗。

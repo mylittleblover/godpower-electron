@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "baseline": "artifacts/electron-020/battle14-dom.json",
+  "maxGeometryDelta": 0,
+  "groups": 14,
+  "viewport": [
+    1920,
+    1080
+  ]
+}

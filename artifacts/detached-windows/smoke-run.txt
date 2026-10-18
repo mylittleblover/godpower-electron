@@ -1,0 +1,34 @@
+
+> godpower-electron@0.2.0 test:smoke
+> node scripts/smoke.mjs
+
+[100004:1018/132635.528989:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[100004:1018/132635.529026:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[100004:1018/132635.580445:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[100004:1018/132635.580470:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[100004:1018/132635.629684:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[100004:1018/132635.629748:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[100004:1018/132635.636183:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+{
+  "status": "PASS",
+  "firstLoad": {
+    "title": "上帝的力量 V2.19.0",
+    "origin": "classroom://app",
+    "views": [
+      "welcome",
+      "battle",
+      "history",
+      "archives",
+      "settings"
+    ],
+    "hasWelcome": true,
+    "localStorage": "isolated-profile",
+    "indexedDB": true,
+    "errors": []
+  },
+  "secondLoad": {
+    "storage": "isolated-profile",
+    "indexedDB": "isolated-profile",
+    "origin": "classroom://app"
+  }
+}

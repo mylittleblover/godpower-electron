@@ -1,0 +1,45 @@
+{
+  "status": "PASS",
+  "version": "0.2.0",
+  "source": {
+    "sourceRepository": "mylittleblover/godpower-html",
+    "sourceFile": "dist/godpower.html",
+    "sourceCommit": "43ba5ad6ab0a84e14c21c58ee9d924397b24d0fd",
+    "htmlSha256": "9ef1510574976556db846332d3db31bc374c139d05d6e34673448088c521cdff",
+    "htmlBytes": 7795981
+  },
+  "zip": {
+    "name": "上帝的力量-0.2.0-win.zip",
+    "bytes": 147119833,
+    "sha256": "1a015f44f282280a89c5e040d3df4337c4fd4cd11437602e958ada62865e97cd"
+  },
+  "bundledFiles": [
+    "/build",
+    "/build/icon.ico",
+    "/desktop",
+    "/desktop/broker.cjs",
+    "/desktop/contracts.cjs",
+    "/desktop/detached.cjs",
+    "/desktop/escape-lease.cjs",
+    "/desktop/protocol.cjs",
+    "/desktop/window-state.cjs",
+    "/desktop/windows.cjs",
+    "/main.cjs",
+    "/package.json",
+    "/preload",
+    "/preload/desktop.cjs",
+    "/renderer",
+    "/renderer/effect.css",
+    "/renderer/effect.html",
+    "/renderer/effect.js",
+    "/renderer/picker.css",
+    "/renderer/picker.html",
+    "/renderer/picker.js",
+    "/renderer/window.css",
+    "/renderer/window.html",
+    "/renderer/window.js",
+    "/resources",
+    "/resources/BUILD_INFO.json",
+    "/resources/index.html"
+  ]
+}

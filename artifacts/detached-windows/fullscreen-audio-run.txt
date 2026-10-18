@@ -1,0 +1,5 @@
+
+> godpower-html@2.19.0 test:fullscreen-audio
+> node tests/e2e/fullscreen-audio.mjs
+
+PASS: 3 fullscreen sound slots, uploads, random playback, settings and real reload
