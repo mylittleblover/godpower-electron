@@ -1,0 +1,37 @@
+
+> godpower-electron@0.2.0 prebuild:win
+> npm run verify:bundle
+
+
+> godpower-electron@0.2.0 verify:bundle
+> node scripts/verify-bundle.mjs
+
+{
+  "sourceRepository": "mylittleblover/godpower-html",
+  "sourceFile": "dist/godpower.html",
+  "sourceCommit": "2f1251ef9f93cbf1aa69902d74a4a63e0f8cb417",
+  "htmlSha256": "8e2f6d7471e7030d87e8e6045629eba642690cfa43957408c6e1fdd40ebf76d6",
+  "htmlBytes": 7786515
+}
+
+> godpower-electron@0.2.0 build:win
+> electron-builder --win nsis portable --x64 --publish never
+
+  • electron-builder  version=26.8.1 os=6.18.55
+  • loaded configuration  file=package.json ("build" field)
+  • executing @electron/rebuild  electronVersion=44.9.0 arch=x64 buildFromSource=false workspaceRoot=/workspace/godpower-electron-020 projectDir=./ appDir=./
+  • installing native dependencies  arch=x64
+  • completed installing native dependencies
+  • packaging       platform=win32 arch=x64 electron=44.9.0 appOutDir=release/win-unpacked
+  • searching for node modules  pm=npm searchDir=/workspace/godpower-electron-020
+(node:87596) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+  • searching for node modules  pm=traversal searchDir=/workspace/godpower-electron-020
+  • using manual traversal of node_modules to build dependency tree
+  • no node modules returned while searching directories  searchDirectories=[""]
+  • updating asar integrity executable resource  executablePath=release/win-unpacked/上帝的力量.exe
+  ⨯ cannot execute  cause=exit status 1
+                    out=Application could not be started, or no application associated with the specified file.
+ShellExecuteEx failed: 
+                    command=wine /home/agent/.cache/electron-builder/winCodeSign/winCodeSign-2.6.0/rcedit-ia32.exe '/workspace/godpower-electron-020/release/win-unpacked/上帝的力量.exe' --set-version-string FileDescription '上帝的力量' --set-version-string ProductName '上帝的力量' --set-version-string LegalCopyright 'Copyright © 2026 mylittleblover' --set-file-version 0.2.0 --set-product-version 0.2.0.0 --set-version-string InternalName '上帝的力量' --set-version-string OriginalFilename '' --set-version-string CompanyName mylittleblover --set-icon /workspace/godpower-electron-020/build/icon.ico
+                    workingDir=

@@ -1,0 +1,25 @@
+
+> godpower-electron@0.2.0 test
+> node --test tests/*.test.cjs
+
+✔ reject unknown commands, arbitrary IPC, invalid scores and modes (1.637376ms)
+✔ authorize exact webContents, main frame and URL (0.870734ms)
+✔ snapshot rejects malformed payload, oversized arrays and injected result data (0.323457ms)
+✔ concurrent replay dispatches once; changed payload cannot reuse id (0.983438ms)
+✔ reload rejects pending score without replay; stale epochs rejected (0.453274ms)
+Window preferences unavailable: Unexpected token 'b', "broken json" is not valid JSON
+✔ timeout fails once and ignores late acknowledgement (10.671313ms)
+✔ closed secondary window cleanup cancels receipts and cannot replay later (0.34822ms)
+✔ removed displays and oversized saved windows are clamped into visible work area (0.537412ms)
+✔ window preferences survive a new store instance and malformed files fall back safely (1.061161ms)
+✔ bundled HTML verifies SHA-256 and rejects any changed byte (1.630022ms)
+✔ valid snapshots strip private state and preserve display data without HTML interpretation (0.316935ms)
+✔ Escape ownership survives duplicate readiness and is released exactly once (0.371545ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 79.956038

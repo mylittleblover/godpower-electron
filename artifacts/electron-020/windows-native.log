@@ -1,0 +1,5 @@
+
+> godpower-electron@0.2.0 test:windows
+> node scripts/windows-smoke.mjs
+
+NOT TESTED: native Windows executable test requires Windows.
