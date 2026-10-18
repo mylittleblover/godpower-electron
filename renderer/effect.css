@@ -229,3 +229,16 @@ h1 {
     animation-duration: 0.1s;
   }
 }
+
+.theme-marx { color: #fff7df; }
+.theme-marx .shade { background: rgba(54, 10, 12, .92); }
+.theme-marx .eyebrow { color: #e9c875; }
+.theme-marx .rule { background: #d6ad58; }
+.theme-marx .rule::before { content: "★"; display: block; color: #d6ad58; transform: translateY(-12px); font-size: 24px; background: #360a0c; width: 34px; margin: auto; }
+.theme-marx h1 { text-shadow: 0 4px 40px #d6ad584a; }
+.theme-marx #group { color: #ead8b5; }
+.theme-marx #number { color: #f9e5b4; border-color: #d6ad5870; border-radius: 5px; }
+.theme-marx .caption { color: #d9c29b; }
+.theme-marx .halo { border-color: #d6ad584d; }
+.theme-marx .particles i { background: #d6ad58; border-radius: 0; }
+.theme-marx #stage[data-mode="score"] h1 { color: var(--group); text-shadow: 0 4px 40px color-mix(in srgb, var(--group) 30%, transparent); }

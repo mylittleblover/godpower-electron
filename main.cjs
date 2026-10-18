@@ -100,6 +100,12 @@ else {
           ]),
         );
         tray.on("double-click", () => windows.showMain());
+        windows.onThemeChange = (brand) => {
+          const icon = nativeImage.createFromPath(require("node:path").join(__dirname, brand.icon));
+          if (!icon.isEmpty()) tray.setImage(icon);
+          tray.setToolTip(`${brand.title} · 课堂后台运行`);
+        };
+        windows.onThemeChange(require("./desktop/theme.cjs").branding(windows.broker.snapshot?.theme));
       }
       app.on("activate", () => windows.showMain());
       if (!app.isPackaged) {

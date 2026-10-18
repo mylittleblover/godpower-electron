@@ -97,6 +97,7 @@ function sanitizeSnapshot(s) {
   const effects = s.effects || {};
   return {
     protocolVersion: 1,
+    theme: s.theme === "marx" ? "marx" : "classic",
     phase: s.phase,
     mode: s.mode,
     antiRepeat: !!s.antiRepeat,

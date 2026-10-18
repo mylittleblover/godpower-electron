@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>课堂点名</title>
     <link rel="stylesheet" href="picker.css" />
+    <link rel="stylesheet" href="tooltips.css" />
   </head>
   <body data-collapsed="true">
     <button
@@ -12,10 +13,10 @@
       aria-label="展开点名悬浮窗"
       title="点击展开 · 拖动移动"
     >
-      ✦<span>点名</span>
+      <i id="pickerGlyph" aria-hidden="true">✦</i><span>点名</span>
     </button>
     <header class="titlebar">
-      <span class="brand">✦</span>
+      <span class="brand" id="brandGlyph" aria-hidden="true">✦</span>
       <div>
         <strong>课堂点名</strong><small id="connection">正在连接主课堂…</small>
       </div>
@@ -110,5 +111,6 @@
       <span>同一课堂 · 实时同步</span><button id="skip">跳过演出</button>
     </footer>
     <script src="picker.js"></script>
+    <script src="tooltips.js"></script>
   </body>
 </html>

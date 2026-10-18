@@ -5,6 +5,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 const require = createRequire(import.meta.url),
   asar = require("@electron/asar");
+const {version}=JSON.parse(await readFile("package.json","utf8"));
 const archive = path.resolve("release/win-unpacked/resources/app.asar");
 const html = asar.extractFile(archive, "resources/index.html");
 const info = JSON.parse(
@@ -15,11 +16,13 @@ assert.deepEqual(info, local);
 assert.equal(createHash("sha256").update(html).digest("hex"), info.htmlSha256);
 assert.equal(
   JSON.parse(asar.extractFile(archive, "package.json")).version,
-  "3.0.0",
+  version,
 );
 for (const file of [
   "main.cjs",
   "build/icon.ico",
+  "build/marx-icon.png",
+  "build/classic-icon.png",
   "desktop/detached.cjs",
   "renderer/window.js",
   "preload/desktop.cjs",
@@ -44,11 +47,11 @@ assert.ok(
     (f) => f.endsWith("test-probe.cjs") || f.endsWith("smoke-probe.cjs"),
   ),
 );
-const zipName = "上帝的力量-3.0.0-win.zip",
+const zipName = `上帝的力量-${version}-win.zip`,
   zip = await readFile(path.join("release", zipName));
 const result = {
   status: "PASS",
-  version: "3.0.0",
+  version: version,
   source: info,
   zip: {
     name: zipName,

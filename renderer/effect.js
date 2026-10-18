@@ -21,6 +21,11 @@ api.onReveal((payload) => {
   if (id) return;
   id = payload.id;
   const r = payload.result;
+  const marx = payload.theme === "marx";
+  document.body.classList.toggle("theme-marx", marx);
+  document.body.dataset.theme = marx ? "marx" : "classic";
+  stage.dataset.mode = r.mode;
+  document.title = `${marx ? "马克思的力量" : "上帝的力量"} · 全屏揭晓`;
   document.getElementById("name").textContent = r.name;
   document.getElementById("group").textContent = r.groupName;
   document.getElementById("number").textContent =
@@ -37,7 +42,7 @@ api.onReveal((payload) => {
     group: "LUCKY TEAM · 小组揭晓",
     two_tier: "TEAM & STUDENT · 双层揭晓",
   }[r.mode];
-  stage.style.setProperty("--group", r.color);
+  stage.style.setProperty("--group", marx && r.mode !== "score" ? "#d6ad58" : r.color);
   stage.classList.add("active", payload.effects.style);
   exitTimer = setTimeout(exit, payload.effects.duration + 900);
 });

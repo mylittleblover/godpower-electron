@@ -9,6 +9,7 @@ const {
 const path = require("node:path");
 const { randomUUID } = require("node:crypto");
 const { URLS, authorize, sanitizeSnapshot } = require("./contracts.cjs");
+const { branding } = require("./theme.cjs");
 const { Broker } = require("./broker.cjs");
 const { EscapeLease } = require("./escape-lease.cjs");
 const {
@@ -95,6 +96,7 @@ class Windows {
       show: false,
       backgroundColor: "#f1f7f5",
       title: "上帝的力量",
+      icon: path.join(this.root, branding("classic").icon),
       webPreferences: this.preferencesFor("main"),
     });
     this.secure(this.main, "main");
@@ -168,7 +170,8 @@ class Windows {
       show: false,
       backgroundColor: "#00000000",
       alwaysOnTop: this.preferences.value.alwaysOnTop,
-      title: "课堂点名 · 上帝的力量",
+      title: `课堂点名 · ${branding(this.broker.snapshot?.theme).title}`,
+      icon: path.join(this.root, branding(this.broker.snapshot?.theme).icon),
       webPreferences: this.preferencesFor("picker"),
     });
     this.picker = win;
@@ -294,11 +297,26 @@ class Windows {
     };
   }
   broadcast() {
+    this.updateBranding();
     this.revision++;
     if (this.picker && !this.picker.isDestroyed())
       this.picker.webContents.send("gp:state", this.state());
     if (this.main && !this.main.isDestroyed())
       this.main.webContents.send("gp:shell", this.preferences.value);
+  }
+  updateBranding() {
+    const theme = this.broker.snapshot?.theme === "marx" ? "marx" : "classic";
+    if (this.appliedTheme === theme) return;
+    this.appliedTheme = theme;
+    const brand = branding(theme);
+    for (const [win, prefix] of [[this.main, ""], [this.picker, "课堂点名 · "]]) {
+      if (win && !win.isDestroyed()) {
+        win.setTitle(prefix + brand.title);
+        win.setIcon(path.join(this.root, brand.icon));
+      }
+    }
+    if (this.main && !this.main.isDestroyed()) this.main.setBackgroundColor(brand.background);
+    this.onThemeChange?.(brand);
   }
   targetDisplay() {
     return (
@@ -341,6 +359,7 @@ class Windows {
     });
     this.effectPayload = {
       id,
+      theme: snapshot.theme === "marx" ? "marx" : "classic",
       result: snapshot.result,
       effects: snapshot.effects,
     };
@@ -406,6 +425,7 @@ class Windows {
           : 1800,
       };
       this.present({
+        theme: this.broker.snapshot?.theme,
         phase: "revealed",
         effects,
         result: {

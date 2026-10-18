@@ -35,12 +35,17 @@ if (!html.equals(committed))
   throw Error(
     "HTML build differs from committed artifact. Commit rebuilt source/artifacts first.",
   );
+const tooltipAssets=Object.fromEntries(['js','css'].map(ext=>{
+  const content=execFileSync('git',['-C',sourceRoot,'show',`${sourceCommit}:src/ui/tooltips.${ext}`],{maxBuffer:2e6});
+  return [ext,content];
+}));
 const info = {
   sourceRepository: "mylittleblover/godpower-html",
   sourceFile: relative,
   sourceCommit,
   htmlSha256: createHash("sha256").update(html).digest("hex"),
   htmlBytes: html.length,
+  presentationAssets:Object.fromEntries(Object.entries(tooltipAssets).map(([ext,content])=>[`tooltips.${ext}`,createHash('sha256').update(content).digest('hex')])) ,
 };
 await mkdir(path.join(root, "resources"), { recursive: true });
 await writeFile(path.join(root, "resources/index.html"), html);
@@ -48,4 +53,5 @@ await writeFile(
   path.join(root, "resources/BUILD_INFO.json"),
   JSON.stringify(info, null, 2) + "\n",
 );
+for(const [ext,content] of Object.entries(tooltipAssets)) await writeFile(path.join(root,`renderer/tooltips.${ext}`),content);
 console.log(JSON.stringify(info, null, 2));

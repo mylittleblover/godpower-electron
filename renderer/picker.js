@@ -48,6 +48,12 @@ function render(state) {
   const s = state.snapshot,
     ready = state.ready && !!s,
     busy = !ready || pending;
+  const marx = s?.theme === "marx";
+  document.body.dataset.theme = marx ? "marx" : "classic";
+  document.body.classList.toggle("theme-marx", marx);
+  $("pickerGlyph").textContent = marx ? "★" : "✦";
+  $("brandGlyph").textContent = marx ? "★" : "✦";
+  document.title = `课堂点名 · ${marx ? "马克思的力量" : "上帝的力量"}`;
   document.body.dataset.ready = ready;
   $("connection").textContent = ready
     ? "主课堂已连接 · 实时同步"

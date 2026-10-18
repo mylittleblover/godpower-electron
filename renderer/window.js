@@ -53,6 +53,8 @@ function render(next) {
   const first = !snapshot;
   snapshot = next;
   document.body.className = next.bodyClass || "";
+  document.body.dataset.theme = document.body.classList.contains("theme-marx") ? "marx" : "classic";
+  document.documentElement.dataset.theme = document.body.dataset.theme;
   document.body.dataset.motion = next.motion || "full";
   if (
     first &&

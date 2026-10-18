@@ -48,6 +48,7 @@ function installProtocol(protocol, root) {
     ],
   };
   for(const [name,mime] of [["index.html","text/html"],["window.js","text/javascript"],["window.css","text/css"]]) files[`classroom://window/${name}`]=[`renderer/${name === "index.html" ? "window.html" : name}`,mime+"; charset=utf-8"];
+  for (const role of ['picker','window']) for(const [name,mime] of [['tooltips.js','text/javascript'],['tooltips.css','text/css']]) files[`classroom://${role}/${name}`]=[`renderer/${name}`,mime+'; charset=utf-8'];
   protocol.handle("classroom", (request) => {
     const entry = files[request.url];
     if (request.method !== "GET" || !entry)

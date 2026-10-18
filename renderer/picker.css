@@ -214,8 +214,39 @@ main {
   white-space: nowrap;
   gap: 4px;
 }
+/* Boolean controls match the main classroom's shared switch geometry. */
 input[type="checkbox"] {
-  accent-color: var(--teal);
+  appearance: none;
+  position: relative;
+  box-sizing: content-box;
+  flex: none;
+  width: 52px;
+  height: 28px;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #e5ece8;
+  cursor: pointer;
+  transition: background 140ms;
+}
+input[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  box-sizing: content-box;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 140ms var(--ease);
+}
+input[type="checkbox"]:checked { background: var(--teal); border-color: var(--teal); }
+input[type="checkbox"]:checked::after { transform: translateX(24px); }
+input[type="checkbox"]:disabled { cursor: not-allowed; opacity: .5; }
+@media(prefers-reduced-motion:reduce) {
+  input[type="checkbox"], input[type="checkbox"]::after {transition:none;}
 }
 .text-button {
   border: 0;
@@ -465,3 +496,29 @@ body[data-collapsed="false"] {
   overflow-x: hidden;
   overflow-y: auto;
 }
+
+#pickerGlyph { font-style: normal; line-height: 1; }
+body.theme-marx {
+  --teal: #a52225;
+  --coral: #b12a2b;
+  --text: #43231d;
+  --muted: #795d48;
+  --line: #d9c69a;
+  background: #f7f0dc;
+}
+.theme-marx .titlebar { background: #a52225; color: #fff7df; border-bottom: 3px solid #d6ad58; }
+.theme-marx .titlebar small { color: #f3dfb8; }
+.theme-marx .brand { color: #f4d47d; }
+.theme-marx button { border-radius: 5px; }
+.theme-marx button:hover { background: #f3e4be; }
+.theme-marx :is(button,input,select,summary):focus-visible { outline-color: #a52225; }
+.theme-marx .modes { background: #e9dcc0; border-radius: 6px; }
+.theme-marx .machine { border-color: #cba14e; background: #efe0b9; border-radius: 8px; }
+.theme-marx .machine-window { border-color: #d6ad58; outline-color: #a52225; background: #fffbed; border-radius: 5px; }
+.theme-marx .lever i { background: #b59453; }
+.theme-marx .score-panel { background: #fffbed; border-radius: 6px; }
+.theme-marx footer { background: #f2e7cc; }
+.theme-marx .slots .positive { background: #e8f6ef; color: #1a7350; }
+.theme-marx .slots .negative { background: #fff0ec; color: #b3493d; }
+body.theme-marx[data-collapsed="true"] { background: transparent; }
+body.theme-marx[data-collapsed="true"] #pickerIcon { background: #a52225; color: #f4d47d; border-color: #d6ad58; border-radius: 12px; }

@@ -61,6 +61,15 @@ async function run(w, resultPath) {
       (await win.webContents.capturePage()).toPNG(),
     );
   }
+  async function settledShot(win, name) {
+    // Headless native windows may return the previous compositor frame even
+    // after DOM/CSS synchronization. Request a frame, allow entrance/paint to
+    // settle, then capture the newly painted presentation.
+    await win.webContents.capturePage();
+    await js(win, `new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))`);
+    await delay(600);
+    await shot(win, name);
+  }
   try {
     if (process.argv.includes("--desktop-test-inject-setup-failure"))
       throw Error("Injected setup failure");
@@ -407,6 +416,79 @@ async function run(w, resultPath) {
       await delay(500);
       await shot(w.picker, "picker-ready");
       return security;
+    });
+    await test("Marx theme crosses HTML, native branding, picker reload, detached windows and effects", async () => {
+      const before = await main(`state.groups.map(g=>g.score)`);
+      const iconChanges = [];
+      const originalSetters = [w.main, w.picker].map((win) => {
+        const original = win.setIcon;
+        win.setIcon = function (icon) {
+          // Forward the real native call; Electron does not expose an icon getter.
+          original.call(this, icon);
+          iconChanges.push({ role: win === w.main ? "main" : "picker", icon });
+        };
+        return { win, original };
+      });
+      try {
+        await main(`GodpowerTheme.set('marx',{animate:false});GodpowerPicker.notify()`);
+        await until(() => w.broker.snapshot?.theme === "marx", "HTML theme reaches sanitized snapshot");
+        assert.equal(await main(`GodpowerTheme.get()`), "marx");
+        assert.equal(await main(`GodpowerPicker.getSnapshot().theme`), "marx");
+        await until(() => w.main.getTitle().startsWith("马克思的力量"), "native main title");
+        assert.equal(w.picker.getTitle(), "课堂点名 · 马克思的力量");
+        for (const role of ["main", "picker"])
+          assert.ok(iconChanges.some((v) => v.role === role && v.icon === path.join(w.root, "build/marx-icon.png")), role + " native icon updated");
+        assert.ok(fs.statSync(path.join(w.root, "build/marx-icon.png")).size > 0);
+        await until(() => picker(`document.body.classList.contains('theme-marx') && document.body.dataset.theme==='marx'`), "picker theme");
+        assert.equal(await picker(`getComputedStyle(document.body).backgroundColor`), "rgb(247, 240, 220)");
+        const switches=await picker(`['antiRepeat','pin','effects'].map(id=>{const s=getComputedStyle(document.getElementById(id));return [s.appearance,s.width,s.height]})`);
+        assert.deepEqual(switches,Array.from({length:3},()=>['none','52px','28px']));
+        await settledShot(w.picker, "marx-picker-expanded");
+        await picker(`godpowerDesktop.windowAction('collapse')`);
+        await until(() => w.pickerCollapsed, "theme collapsed icon");
+        assert.equal(await picker(`document.getElementById('pickerGlyph').textContent`), "★");
+        assert.equal(await picker(`getComputedStyle(document.getElementById('pickerIcon')).backgroundColor`), "rgb(165, 34, 37)");
+        await settledShot(w.picker, "marx-picker-icon");
+        w.picker.reload();
+        await until(() => !w.picker.webContents.isLoading(), "themed picker reload");
+        await until(() => picker(`current?.ready && document.body.dataset.theme==='marx'`), "theme survives picker reload");
+        assert.deepEqual([w.picker.getBounds().width, w.picker.getBounds().height], [72, 72]);
+        await picker(`godpowerDesktop.windowAction('expand')`);
+        await main(`openScoreModal(1)`);
+        await until(() => w.detached.entries.has("scoreModalBackdrop"), "themed score window created");
+        const entry = w.detached.entries.get("scoreModalBackdrop");
+        await until(() => !entry.win.webContents.isLoading(), "themed score window loaded");
+        await until(() => js(entry.win, `document.body.classList.contains('theme-marx') && document.body.dataset.theme==='marx' && !!document.querySelector('#mount > *')`), "detached body inherits theme class");
+        assert.equal(await js(entry.win, `document.documentElement.dataset.theme`), "marx");
+        assert.equal(await js(entry.win, `getComputedStyle(document.documentElement).backgroundColor`), "rgb(250, 246, 241)");
+        await settledShot(entry.win, "marx-native-score");
+        await main(`ClassroomFeedback.setOptions({scoreEffects:true});ClassroomFeedback.score('主题积分展示',5)`);
+        await until(() => w.effect && !w.effect.webContents.isLoading(), "themed score effect loaded");
+        await until(() => js(w.effect, `document.body.dataset.theme==='marx' && document.getElementById('name').textContent==='+5'`), "themed score effect presented");
+        assert.equal(w.effectPayload.theme, "marx");
+        assert.equal(await js(w.effect, `getComputedStyle(document.getElementById('name')).color`), "rgb(21, 145, 106)");
+        await settledShot(w.effect, "marx-positive-effect");
+        w.closeEffect();
+        await main(`ClassroomFeedback.score('主题积分展示',-3)`);
+        await until(() => w.effect && !w.effect.webContents.isLoading(), "negative themed score effect loaded");
+        await until(() => js(w.effect, `document.getElementById('name').textContent==='−3'`), "negative themed score presented");
+        assert.equal(await js(w.effect, `getComputedStyle(document.getElementById('name')).color`), "rgb(218, 79, 81)");
+        w.closeEffect();
+        await main(`ClassroomFeedback.setOptions({scoreEffects:false});GodpowerTheme.set('classic',{animate:false});GodpowerPicker.notify()`);
+        await until(() => w.broker.snapshot?.theme === "classic" && w.main.getTitle().startsWith("上帝的力量"), "classic native branding restored");
+        await until(() => picker(`document.body.dataset.theme==='classic' && !document.body.classList.contains('theme-marx')`), "classic picker restored");
+        await until(() => js(entry.win, `document.body.dataset.theme==='classic' && !document.body.classList.contains('theme-marx')`), "open detached window changes theme live");
+        assert.equal(w.picker.getTitle(), "课堂点名 · 上帝的力量");
+        assert.ok(iconChanges.some((v) => v.icon === path.join(w.root, "build/classic-icon.png")), "classic native icon restored");
+        entry.win.close();
+        await until(() => !w.detached.entries.has("scoreModalBackdrop"), "theme probe window closes");
+        assert.deepEqual(await main(`state.groups.map(g=>g.score)`), before, "presentation changes preserve all scores");
+        return { themes: ["classic", "marx", "classic"], nativeIconCalls: iconChanges.length, pickerReload: true, detachedLiveUpdate: true, semanticScores: true };
+      } finally {
+        for (const { win, original } of originalSetters)
+          if (!win.isDestroyed()) win.setIcon = original;
+        w.closeEffect();
+      }
     });
     await test("closing main keeps authoritative renderer alive and can restore it", async () => {
       const wc = w.main.webContents.id,
