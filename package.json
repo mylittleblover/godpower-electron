@@ -1,0 +1,56 @@
+{
+  "name": "godpower-electron",
+  "productName": "上帝的力量",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Offline Electron desktop shell for 上帝的力量",
+  "author": "mylittleblover",
+  "license": "UNLICENSED",
+  "main": "main.cjs",
+  "scripts": {
+    "sync:html": "node scripts/sync-html.mjs",
+    "start": "electron .",
+    "test": "node --test",
+    "test:smoke": "node scripts/smoke.mjs",
+    "build:win": "electron-builder --win nsis portable --x64",
+    "build:win:cross": "electron-builder --win dir zip --x64 --config.win.signAndEditExecutable=false",
+    "build:dir": "electron-builder --dir"
+  },
+  "devDependencies": {
+    "electron": "44.9.0",
+    "electron-builder": "26.8.1"
+  },
+  "build": {
+    "appId": "com.mylittleblover.godpower",
+    "productName": "上帝的力量",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.cjs",
+      "resources/index.html",
+      "resources/BUILD_INFO.json",
+      "package.json"
+    ],
+    "asar": true,
+    "compression": "normal",
+    "electronLanguages": ["en-US", "zh-CN"],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": ["nsis"]
+    },
+    "nsis": {
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "deleteAppDataOnUninstall": false
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-portable.${ext}"
+    }
+  }
+}
