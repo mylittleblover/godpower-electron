@@ -140,6 +140,18 @@ test("window preferences survive a new store instance and malformed files fall b
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+test("detached functional windows use frameless resizable native windows", () => {
+  const { detachedWindowOptions } = require("../desktop/detached.cjs");
+  const options = detachedWindowOptions(
+    { id: "scoreModalBackdrop", title: "自由赋分" },
+    { contextIsolation: true, sandbox: true, webSecurity: true },
+  );
+  assert.equal(options.frame, false);
+  assert.equal(options.resizable, true);
+  assert.equal(options.width, 600);
+  assert.equal(options.title, "自由赋分");
+  assert.equal(options.webPreferences.sandbox, true);
+});
 test("bundled HTML verifies SHA-256 and rejects any changed byte", () => {
   const fs = require("node:fs"),
     os = require("node:os"),

@@ -35,6 +35,18 @@ body {
   max-height: calc(100vh - 40px) !important;
   overflow: auto;
 }
+#mount .ui-function-surface > :is(h2, h3, .score-modal-title, .member-search-title),
+#mount .ui-function-surface :is(.theme-dialog-head-v21727, .quick-person-head-v218, .classroom-head, .item-main-head, .v214-about-head, .v2170-ency-head, .window-titlebar) {
+  -webkit-app-region: drag;
+}
+#mount .ui-function-surface button,
+#mount .ui-function-surface input,
+#mount .ui-function-surface select,
+#mount .ui-function-surface textarea,
+#mount .ui-function-surface a,
+#mount .ui-function-surface label {
+  -webkit-app-region: no-drag;
+}
 #mount > dialog {
   border: 0;
   max-width: 100%;

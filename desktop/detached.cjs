@@ -18,6 +18,37 @@ const IDS = new Set([
   "quickPersonBackdropV218",
   "programConfirmV28",
 ]);
+function detachedWindowOptions(item, webPreferences) {
+  return {
+    width: [
+      "scoreModalBackdrop",
+      "pwdModal",
+      "settlementNameModal",
+      "themeDialogV21727",
+      "programConfirmV28",
+    ].includes(item.id)
+      ? 600
+      : 1080,
+    height: [
+      "pwdModal",
+      "settlementNameModal",
+      "themeDialogV21727",
+      "programConfirmV28",
+    ].includes(item.id)
+      ? 480
+      : item.id === "scoreModalBackdrop"
+        ? 640
+        : 820,
+    minWidth: 500,
+    minHeight: 380,
+    resizable: true,
+    frame: false,
+    show: false,
+    backgroundColor: "#f1f7f5",
+    title: item.title || "课堂工具",
+    webPreferences,
+  };
+}
 class DetachedWindows {
   constructor(owner) {
     this.owner = owner;
@@ -43,33 +74,9 @@ class DetachedWindows {
         wanted.add(item.id);
         let entry = this.entries.get(item.id);
         if (!entry) {
-          const win = new BrowserWindow({
-            width: [
-              "scoreModalBackdrop",
-              "pwdModal",
-              "settlementNameModal",
-              "themeDialogV21727",
-              "programConfirmV28",
-            ].includes(item.id)
-              ? 600
-              : 1080,
-            height: [
-              "pwdModal",
-              "settlementNameModal",
-              "themeDialogV21727",
-              "programConfirmV28",
-            ].includes(item.id)
-              ? 480
-              : item.id === "scoreModalBackdrop"
-                ? 640
-                : 820,
-            minWidth: 500,
-            minHeight: 380,
-            show: false,
-            backgroundColor: "#f1f7f5",
-            title: item.title || "课堂工具",
-            webPreferences: owner.preferencesFor("window"),
-          });
+          const win = new BrowserWindow(
+            detachedWindowOptions(item, owner.preferencesFor("window")),
+          );
           entry = { win, id: item.id, session: randomUUID(), snapshot: null };
           this.entries.set(item.id, entry);
           const wc = win.webContents;
@@ -185,4 +192,4 @@ class DetachedWindows {
     for (const entry of entries) entry.win.destroy();
   }
 }
-module.exports = { DetachedWindows, IDS };
+module.exports = { DetachedWindows, IDS, detachedWindowOptions };
