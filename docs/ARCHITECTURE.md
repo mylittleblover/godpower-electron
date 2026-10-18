@@ -65,3 +65,14 @@ HTML 源码侧 `core/picker-bridge.js` 提供 snapshot/command/notify，直接�
 独立窗口入场/退场由稳定的容器动画承担，原数据更新不重放入场。主页面刷新/崩溃销毁辅助窗口；辅助窗口刷新更新传输会话。明确退出时不拦截窗口关闭。
 
 功能独立窗口使用 `frame: false` 移除操作系统标题栏，保留系统可调整大小的窗口边缘。弹窗原有标题区承担窗口拖动，原有统一关闭按钮仍负责关闭；不额外叠加第二套标题栏或关闭按钮。窗口选项由 `detachedWindowOptions` 集中定义并经过单测验证。
+
+
+## 3.0.1 外观主题与提示
+
+主课堂唯一拥有GodpowerTheme，theme通过现有Picker DTO同步。contracts.cjs只接收classic/marx，旧快照回退classic；theme.cjs将白名单映射到本地图标和名称，无法传入任意本机路径。Windows.updateBranding更新窗口/托盘而不改变appId、userData或业务状态。Linux无法使用ICO作为部分原生窗口运行时图标，经典PNG由原ICO无损生成；Windows安装ICO保持不变。
+
+picker渲染器只消费theme并更新红/暖白/金外观；effect消费已确定结果及theme，正分仍绿负分仍红。独立工具窗口从主课堂snapshot获得bodyClass，再同步body与html的theme状态，保证继承的原始样式与根背景一致。点名悬浮窗三个布尔开关使用与课堂一致的轨道尺寸，原事件入口不变。
+
+sync:html从已提交HTML源码同时读取tooltips.js/css，写入renderer并记录SHA-256。picker/window通过classroom协议白名单加载同一实现；禁止手改该派生文件。没有新增Node或通用IPC权限。
+
+版本统一3.0.1：HTML包/顶栏/运行时/备份appVersion由单一package token构建；Electron package与HTML一致后才允许verify:bundle/build。发行校验逐个比较asar源码和HTML SHA，包含两个运行时图标及共享提示资源。

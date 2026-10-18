@@ -32,3 +32,24 @@
 | NW-04 | P2 / NOT TESTED | 全屏自定义音效人工听感与长文件中断 | 人工验证音量、停止滚动与揭晓衔接、快速连续演出及跳过长音频，记录结果 |
 | NW-05 | 已完成 | 输入序号按 renderer session 隔离；快速输入提交、密码本地保留、关闭再开/刷新回归 | 见 `artifacts/detached-windows/results.json` |
 | NW-06 | 已完成 | 独立窗口内容区隔离主页面边距，修复按人赋分顶部裁切；入退场动画独立 | 各窗口 DOM 边界及截图见同目录 |
+
+
+## EL-THEME-301 主题及原生窗口同步
+- 分类：UI/IPC；优先级P1；状态DONE。
+- 问题：HTML主题需同步到独立点名、特效、工具窗口与原生标题/图标。
+- 证据：desktop/theme.cjs/windows.cjs/contracts.cjs；renderer/window.js、picker.js；artifacts/marx-theme。
+- 影响：三个角色和全部工具子窗口；不更改抽选或计分。
+- 方案：严格theme枚举DTO、内部图标映射、根节点主题同步、跨平台PNG运行图标、原图标ICO保留。
+- 依赖：HTML主题API；复杂度中；风险：Windows实际任务栏缓存行为仍需真机观察。
+- 验收：原15案例不退化，新增第16案例检查主题、原生setter、重载、积分语义和实时恢复；20单元测试通过。
+- 推荐测试：npm test与DESKTOP_ARTIFACTS=artifacts/marx-theme npm run test:desktop。
+
+## EL-THEME-302 Windows真机主题与任务栏验收
+- 分类：兼容；优先级P2；状态NOT TESTED。
+- 问题：Linux Electron与WindowsZIP构建不能证明Windows任务栏图标缓存、多显示器或安装行为。
+- 证据：当前Linux环境；本轮发行报告。
+- 影响：Windows图标/托盘/跨应用覆盖。
+- 建议：在真实Windows用隔离课堂数据逐项切换主题、重启、恢复背景运行并检查任务栏/多屏。exe文件自身固有图标不会随运行时主题切换。
+- 依赖：EL-THEME-301；复杂度低；风险：禁止以Wine或Linux图像替代真机结论。
+- 验收：记录Windows版本、DPI、显示器和照片/截图；正确标记失败。
+- 推荐测试：GODPOWER_WINDOWS_EXE配合现有Windows smoke及人工任务栏检查。

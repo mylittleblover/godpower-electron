@@ -1,0 +1,33 @@
+
+> godpower-electron@3.0.1 test
+> node --test tests/*.test.cjs
+
+✔ reject unknown commands, arbitrary IPC, invalid scores and modes (1.561126ms)
+✔ authorize exact webContents, main frame and URL (0.177419ms)
+✔ snapshot rejects malformed payload, oversized arrays and injected result data (0.337893ms)
+✔ concurrent replay dispatches once; changed payload cannot reuse id (8.541404ms)
+✔ reload rejects pending score without replay; stale epochs rejected (0.345693ms)
+Window preferences unavailable: Unexpected token 'b', "broken json" is not valid JSON
+✔ timeout fails once and ignores late acknowledgement (49.602563ms)
+✔ closed secondary window cleanup cancels receipts and cannot replay later (2.05458ms)
+✔ removed displays and oversized saved windows are clamped into visible work area (0.266827ms)
+✔ window preferences survive a new store instance and malformed files fall back safely (0.872204ms)
+✔ detached functional windows use frameless resizable native windows (1.122561ms)
+✔ bundled HTML verifies SHA-256 and rejects any changed byte (5.562706ms)
+✔ valid snapshots strip private state and preserve display data without HTML interpretation (0.266886ms)
+✔ Escape ownership survives duplicate readiness and is released exactly once (0.500164ms)
+✔ icon stays 72px and is clamped to work area (1.266308ms)
+✔ icon restores saved position independently from expanded bounds (0.145598ms)
+✔ snapshot theme is strictly whitelisted and old snapshots default to classic (0.87385ms)
+✔ picker applies Marx branding from its snapshot and resets on legacy snapshots (6.195826ms)
+✔ effect theme leaves score colors semantic and uses gold for Marx picker reveal (7.805358ms)
+✔ native branding uses local icon and classic remains the fallback (0.585418ms)
+✔ native branding updates open main and picker windows and notifies tray once (14.993358ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 673.491515

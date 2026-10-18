@@ -1,0 +1,267 @@
+
+> godpower-electron@3.0.1 test:desktop
+> node scripts/desktop-test.mjs
+
+[128346:1018/223539.384826:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[128346:1018/223539.384882:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[128346:1018/223539.421506:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[128346:1018/223539.421530:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[128346:1018/223539.471625:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[128346:1018/223539.472266:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[128346:1018/223539.477291:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+PASS 1920×1080 1x, 14 group fit and unchanged main layout
+Native geometry memberSearchBackdrop {"viewport":[1080,820],"body":"modern-flat-v217","root":"<div id=\"memberSearchBackdrop\" class=\"member-search-backdrop active\" style=\"\" data-remote-token=\"18\">\n  <div class=\"member-search-card ui-function-surface\" role","children":[{"tag":"DIV","class":"member-search-card ui-function-surface","x":200,"y":285,"width":680,"height":250,"display":"block","opacity":"1","visibility":"visible"}]}
+Native geometry pwdModal {"viewport":[600,480],"body":"modern-flat-v217","root":"<div id=\"pwdModal\" class=\"modal-overlay active\" style=\"\" data-remote-token=\"28\">\n  <div class=\"modal-box ui-function-surface\" role=\"dialog\" aria-modal=\"true\" ar","children":[{"tag":"DIV","class":"modal-box ui-function-surface","x":60,"y":100,"width":480,"height":280,"display":"flex","opacity":"1","visibility":"visible"}]}
+Native geometry itemModalBackdrop {"viewport":[1080,820],"body":"modern-flat-v217","root":"<div id=\"itemModalBackdrop\" class=\"item-modal-backdrop active\" style=\"\" data-remote-token=\"37\">\n  <div class=\"item-window ui-function-surface\" role=\"dialog\" ari","children":[{"tag":"DIV","class":"item-window ui-function-surface","x":60,"y":75.296875,"width":960,"height":669.390625,"display":"grid","opacity":"1","visibility":"visible"}]}
+Native geometry handRaiseBackdrop {"viewport":[1080,820],"body":"modern-flat-v217","root":"<div id=\"handRaiseBackdrop\" class=\"classroom-backdrop active\" style=\"\" data-remote-token=\"130\">\n  <div class=\"classroom-window ui-function-surface\" role=\"dialog","children":[{"tag":"DIV","class":"classroom-window ui-function-surface","x":80,"y":255.5,"width":920,"height":309,"display":"block","opacity":"1","visibility":"visible"}]}
+Native geometry aboutBackdrop {"viewport":[1080,820],"body":"modern-flat-v217","root":"<div id=\"aboutBackdrop\" class=\"about-backdrop active\" style=\"\" data-remote-token=\"185\">\n  <div class=\"about-window ui-function-surface\" role=\"dialog\" aria-modal","children":[{"tag":"DIV","class":"about-window ui-function-surface","x":35,"y":237.015625,"width":1010,"height":345.953125,"display":"grid","opacity":"1","visibility":"visible"}]}
+Native geometry batchImportModal {"viewport":[1080,820],"body":"modern-flat-v217","root":"<div id=\"batchImportModal\" class=\"modal-overlay active\" style=\"\" data-remote-token=\"200\">\n  <div class=\"modal-box large ui-function-surface\" role=\"dialog\" aria-","children":[{"tag":"DIV","class":"modal-box large ui-function-surface","x":200,"y":240,"width":680,"height":340,"display":"flex","opacity":"1","visibility":"visible"}]}
+Native geometry quickPersonBackdropV218 {"viewport":[1080,820],"body":"modern-flat-v217","root":"<div id=\"quickPersonBackdropV218\" class=\"quick-person-backdrop-v218 active\" style=\"\" data-remote-token=\"208\">\n  <div class=\"quick-person-card-v218 ui-function-s","children":[{"tag":"DIV","class":"quick-person-card-v218 ui-function-surface","x":50,"y":20,"width":980,"height":780,"display":"grid","opacity":"1","visibility":"visible"}]}
+Native geometry themeDialogV21727 {"viewport":[600,480],"body":"modern-flat-v217","root":"<div id=\"themeDialogV21727\" class=\"theme-dialog-v21727 active\" aria-hidden=\"false\" data-ui-notice=\"info\" style=\"\" data-remote-token=\"395\">\n  <div class=\"theme-d","children":[{"tag":"DIV","class":"theme-dialog-card-v21727 ui-function-surface","x":80,"y":141.546875,"width":440,"height":196.890625,"display":"block","opacity":"1","visibility":"visible"}]}
+Native geometry programConfirmV28 {"viewport":[600,480],"body":"modern-flat-v217","root":"<div id=\"programConfirmV28\" class=\"program-confirm-overlay\" style=\"\" data-remote-token=\"404\"><div class=\"program-confirm-window ui-function-surface\" role=\"dialo","children":[{"tag":"DIV","class":"program-confirm-window ui-function-surface","x":24,"y":107.5,"width":552,"height":265,"display":"flex","opacity":"1","visibility":"visible"}]}
+Native geometry settlementNameModal {"viewport":[600,480],"body":"modern-flat-v217","root":"<div id=\"settlementNameModal\" class=\"modal-overlay active\" style=\"\" data-remote-token=\"414\">\n  <div class=\"modal-box ui-function-surface\" role=\"dialog\" aria-mod","children":[{"tag":"DIV","class":"modal-box ui-function-surface","x":60,"y":72,"width":480,"height":336,"display":"flex","opacity":"1","visibility":"visible"}]}
+Native geometry grandModalOverlay {"viewport":[1080,820],"body":"modern-flat-v217","root":"<div id=\"grandModalOverlay\" class=\"grand-modal-overlay active\" style=\"\" data-remote-token=\"426\">\n  <canvas id=\"confettiCanvas\" data-remote-token=\"427\" width=\"10","children":[{"tag":"CANVAS","class":"","x":0,"y":0,"width":1080,"height":820,"display":"block","opacity":"1","visibility":"visible"},{"tag":"DIV","class":"grand-card ui-function-surface","x":32,"y":281.5,"width":1016,"height":257,"display":"block","opacity":"1","visibility":"visible"},{"tag":"BUTTON","class":"btn ui-cinematic-skip","x":888,"y":750,"width":164,"height":46,"display":"block","opacity":"1","visibility":"visible"}]}
+PASS native functional windows forward inputs and preserve single score owner
+PASS fullscreen sound slots are configurable and score reveal is a native overlay
+PASS secure preload and isolated origin in independent picker
+PASS Marx theme crosses HTML, native branding, picker reload, detached windows and effects
+PASS closing main keeps authoritative renderer alive and can restore it
+PASS individual authoritative draw, continuous reel, overlay and score
+PASS group authoritative draw, continuous reel, overlay and score
+PASS two_tier authoritative draw, continuous reel, overlay and score
+PASS close/reopen while spinning keeps one engine and retained window bounds
+PASS picker reload accepts fresh commands without sequence conflicts
+PASS duplicate effect ready always releases Escape registration
+PASS effect interrupts and stale finish cannot close a newer result
+[128370:1018/223633.394498:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.395653:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.396903:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.396934:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.396956:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.396982:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397003:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397023:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397045:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397075:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397124:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397146:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397167:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397188:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397208:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397227:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397247:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397267:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397290:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397310:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397330:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397353:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397379:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397400:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397422:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397442:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397488:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397508:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397527:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397550:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397570:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397649:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397669:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397689:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397710:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397730:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397749:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397772:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397792:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397814:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397834:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397859:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397880:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397899:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397923:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397947:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.397967:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.398048:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.398118:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.398145:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.398171:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.398192:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.398212:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.398235:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.398255:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.398280:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.398299:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.398321:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.398351:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.398371:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.398396:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.398417:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.398438:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.398459:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.398481:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[128370:1018/223633.398502:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+PASS reload cancels transient picker, preserves classroom storage and rejects stale outcome
+PASS custom audio/resource store remains accessible to main only
+[128398:1018/223637.764341:FATAL:content/child/child_thread_impl.cc:380] Crashing because hung
+Error sending from webContents:  Error: Render frame was disposed before WebFrameMain could be accessed
+    at WebContents.send (node:electron/js2c/browser_init:1:94985)
+    at Windows.broadcast (/workspace/godpower-electron-020/desktop/windows.cjs:305:29)
+    at Windows.closeEffect (/workspace/godpower-electron-020/desktop/windows.cjs:398:10)
+    at WebContents.<anonymous> (/workspace/godpower-electron-020/desktop/windows.cjs:112:12)
+    at WebContents.emit (node:events:526:24)
+Error sending from webContents:  Error: Render frame was disposed before WebFrameMain could be accessed
+    at WebContents.send (node:electron/js2c/browser_init:1:94985)
+    at Windows.broadcast (/workspace/godpower-electron-020/desktop/windows.cjs:305:29)
+    at Broker.onChange (/workspace/godpower-electron-020/desktop/windows.cjs:36:30)
+    at Broker.reset (/workspace/godpower-electron-020/desktop/broker.cjs:99:10)
+    at WebContents.<anonymous> (/workspace/godpower-electron-020/desktop/windows.cjs:113:19)
+    at WebContents.emit (node:events:526:24)
+PASS main renderer crash blocks commands until explicit recovery without reroll
+{
+  "status": "PASS",
+  "results": [
+    {
+      "name": "1920×1080 1x, 14 group fit and unchanged main layout",
+      "status": "PASS",
+      "detail": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "name": "native functional windows forward inputs and preserve single score owner",
+      "status": "PASS",
+      "detail": "12 native windows, rapid input forwarding, one score commit, isolated storage"
+    },
+    {
+      "name": "fullscreen sound slots are configurable and score reveal is a native overlay",
+      "status": "PASS",
+      "detail": [
+        "fullscreen_pick",
+        "fullscreen_score_add",
+        "fullscreen_score_sub"
+      ]
+    },
+    {
+      "name": "secure preload and isolated origin in independent picker",
+      "status": "PASS",
+      "detail": {
+        "node": "undefined",
+        "process": "undefined",
+        "role": "picker",
+        "mainAPI": "undefined",
+        "storage": null
+      }
+    },
+    {
+      "name": "Marx theme crosses HTML, native branding, picker reload, detached windows and effects",
+      "status": "PASS",
+      "detail": {
+        "themes": [
+          "classic",
+          "marx",
+          "classic"
+        ],
+        "nativeIconCalls": 4,
+        "pickerReload": true,
+        "detachedLiveUpdate": true,
+        "semanticScores": true
+      }
+    },
+    {
+      "name": "closing main keeps authoritative renderer alive and can restore it",
+      "status": "PASS",
+      "detail": "same renderer and data after close; picker commands remain available"
+    },
+    {
+      "name": "individual authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1792362981781-1",
+        "groupId": 12,
+        "historyEntries": 1,
+        "scoreDelta": 5
+      }
+    },
+    {
+      "name": "group authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1792362985087-2",
+        "groupId": 6,
+        "historyEntries": 1,
+        "scoreDelta": 5
+      }
+    },
+    {
+      "name": "two_tier authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1792362988350-3",
+        "groupId": 3,
+        "historyEntries": 1,
+        "scoreDelta": 5
+      }
+    },
+    {
+      "name": "close/reopen while spinning keeps one engine and retained window bounds",
+      "status": "PASS",
+      "detail": {
+        "bounds": {
+          "x": 100,
+          "y": 80,
+          "width": 480,
+          "height": 760
+        },
+        "alwaysOnTop": false
+      }
+    },
+    {
+      "name": "picker reload accepts fresh commands without sequence conflicts",
+      "status": "PASS"
+    },
+    {
+      "name": "duplicate effect ready always releases Escape registration",
+      "status": "PASS",
+      "detail": {
+        "registeredBeforeClose": true
+      }
+    },
+    {
+      "name": "effect interrupts and stale finish cannot close a newer result",
+      "status": "PASS"
+    },
+    {
+      "name": "reload cancels transient picker, preserves classroom storage and rejects stale outcome",
+      "status": "PASS"
+    },
+    {
+      "name": "custom audio/resource store remains accessible to main only",
+      "status": "PASS",
+      "detail": {
+        "indexedDB": "object",
+        "items": 26
+      }
+    },
+    {
+      "name": "main renderer crash blocks commands until explicit recovery without reroll",
+      "status": "PASS"
+    }
+  ],
+  "errors": [],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}

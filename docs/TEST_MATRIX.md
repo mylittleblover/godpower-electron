@@ -33,3 +33,8 @@ Linux 无桌面服务的测试启动用了 --no-sandbox；生产未加入该参�
 ## 原生窗口增补（2026-10-18）
 
 Node 14 PASS，真实 Electron 15 场景 PASS；12 类窗口尺寸与截图、后台关闭和明确退出、输入重开/刷新、自定义音效与 14 组布局证据见 [验收记录](reports/DETACHED_WINDOWS.md)。Windows 系统托盘、多屏及物理拖动 NOT TESTED；不计入通过数量。
+
+
+## 3.0.1 主题回归
+
+新增第16个真实Electron案例：主课堂theme→严格IPC→原生名称/图标→独立点名（重载与收起）→工具窗口实时换肤→全屏正绿负红。不修改原15个场景。源码与发行版本均3.0.1。提示实现来自HTML同一提交，3秒生命周期使用上游Chromium测试与SHA校验；原生窗口Windows真机仍NOT TESTED。详见reports/MARX_THEME_3_0_1.md。

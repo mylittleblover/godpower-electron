@@ -1,0 +1,41 @@
+[126849:1018/222750.207802:INFO:third_party/webrtc/rtc_base/cpu_info.cc:77] Available number of cores: 3
+[126849:1018/222750.208427:VERBOSE1:content/zygote/zygote_main_linux.cc:202] ZygoteMain: initializing 0 fork delegates
+[126848:1018/222750.209701:INFO:third_party/webrtc/rtc_base/cpu_info.cc:77] Available number of cores: 3
+[126842:1018/222750.209918:VERBOSE1:base/allocator/scheduler_loop_quarantine_config.cc:195] No entry found for browser/global.
+[126842:1018/222750.209933:VERBOSE1:base/allocator/scheduler_loop_quarantine_config.cc:195] No entry found for browser/*.
+[126848:1018/222750.210051:VERBOSE1:content/zygote/zygote_main_linux.cc:202] ZygoteMain: initializing 0 fork delegates
+[126842:1018/222750.260885:VERBOSE1:components/os_crypt/sync/key_storage_util_linux.cc:46] Password storage detected desktop environment: (unknown)
+[126842:1018/222750.261332:VERBOSE1:net/proxy_resolution/proxy_config_service_linux.cc:1349] Obtained proxy settings from environment variables
+[126842:1018/222750.261339:VERBOSE1:components/proxy_config/pref_proxy_config_tracker_impl.cc:466] 0xc9c00090680: set chrome proxy config service to 0xc9c001c81e0
+[126842:1018/222750.261967:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[126842:1018/222750.261983:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[126842:1018/222750.261992:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[126842:1018/222750.261999:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[126878:1018/222750.267557:VERBOSE1:base/allocator/scheduler_loop_quarantine_config.cc:195] No entry found for gpu-process/global.
+[126878:1018/222750.268555:VERBOSE1:base/allocator/scheduler_loop_quarantine_config.cc:195] No entry found for gpu-process/*.
+[126878:1018/222750.268972:VERBOSE1:base/allocator/scheduler_loop_quarantine_config.cc:195] No entry found for gpu-process/main.
+[126878:1018/222750.271491:WARNING:media/gpu/vaapi/vaapi_wrapper.cc:1660] drmGetDevices2() has not found any devices
+[126878:1018/222750.277634:VERBOSE1:media/gpu/vaapi/vaapi_wrapper.cc:1755] GetHandle(): Either VADisplayStateSingleton::PreSandboxInitialization() hasn't been called or that method failed to find a suitable render node
+[126878:1018/222750.278480:VERBOSE1:components/viz/service/main/viz_main_impl.cc:87] VizNullHypothesis is disabled (not a warning)
+[126842:1018/222750.278681:VERBOSE1:net/proxy_resolution/proxy_config_service_linux.cc:1349] Obtained proxy settings from environment variables
+[126842:1018/222750.278689:VERBOSE1:components/proxy_config/pref_proxy_config_tracker_impl.cc:466] 0xc9c00091a00: set chrome proxy config service to 0xc9c001c9860
+[126878:1018/222750.279031:VERBOSE1:base/allocator/scheduler_loop_quarantine_config.cc:195] No entry found for gpu-process/viz-compositor.
+[126842:1018/222750.279655:VERBOSE1:base/files/file_util_posix.cc:314] Cannot stat "/home/agent/.config/上帝的力量/Code Cache/pc": No such file or directory (2)
+[126842:1018/222750.279839:VERBOSE1:net/disk_cache/simple/simple_index_file.cc:625] Simple Cache Index is being restored from disk.
+[126842:1018/222750.279858:VERBOSE1:base/files/file_util_posix.cc:314] Cannot stat "/home/agent/.config/上帝的力量/Code Cache/js/index-dir/the-real-index": No such file or directory (2)
+[126842:1018/222750.279864:VERBOSE1:net/disk_cache/simple/simple_index_file.cc:625] Simple Cache Index is being restored from disk.
+[126842:1018/222750.280047:VERBOSE1:base/files/file_util_posix.cc:314] Cannot stat "/home/agent/.config/上帝的力量/Code Cache/wasm/index-dir/the-real-index": No such file or directory (2)
+[126842:1018/222750.282235:VERBOSE1:base/files/file_util_posix.cc:314] Cannot stat "/home/agent/.config/上帝的力量/Dictionaries/en-US-10-1.bdic": No such file or directory (2)
+[126892:1018/222750.290592:VERBOSE1:base/allocator/scheduler_loop_quarantine_config.cc:195] No entry found for renderer/global.
+[126892:1018/222750.292312:VERBOSE1:base/allocator/scheduler_loop_quarantine_config.cc:195] No entry found for renderer/*.
+[126892:1018/222750.292695:VERBOSE1:base/allocator/scheduler_loop_quarantine_config.cc:195] No entry found for renderer/main.
+[126842:1018/222750.296009:WARNING:electron/shell/common/api/electron_api_native_image.cc:229] Failed to load image from path '/workspace/godpower-electron-020/build/icon.ico'
+[126842:1018/222750.297282:WARNING:electron/shell/browser/ui/views/menu_bar.cc:229] No GTK UI theme is available; using default menu colors.
+[126842:1018/222750.297335:WARNING:electron/shell/browser/ui/views/menu_bar.cc:229] No GTK UI theme is available; using default menu colors.
+[126901:1018/222750.305861:VERBOSE1:base/allocator/scheduler_loop_quarantine_config.cc:195] No entry found for renderer/global.
+[126901:0100/000000.307951:VERBOSE1:base/allocator/scheduler_loop_quarantine_config.cc:195] No entry found for renderer/*.
+[126901:0100/000000.317767:VERBOSE1:base/allocator/scheduler_loop_quarantine_config.cc:195] No entry found for renderer/main.
+/workspace/godpower-electron/node_modules/electron/dist/electron exited with signal SIGTRAP
+[126879:1018/222750.324633:VERBOSE1:base/allocator/scheduler_loop_quarantine_config.cc:195] No entry found for utility.net..workService/global.
+[126879:1018/222750.324682:VERBOSE1:base/allocator/scheduler_loop_quarantine_config.cc:195] No entry found for utility.netwo..etworkService/*.
+[126879:1018/222750.326925:VERBOSE1:base/allocator/scheduler_loop_quarantine_config.cc:195] No entry found for utility.netw..tworkService/main.
