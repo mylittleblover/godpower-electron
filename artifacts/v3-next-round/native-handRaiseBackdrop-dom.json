@@ -1,0 +1,21 @@
+{
+  "viewport": [
+    1080,
+    820
+  ],
+  "body": "modern-flat-v217",
+  "root": "<div id=\"handRaiseBackdrop\" class=\"classroom-backdrop active\" style=\"\" data-remote-token=\"130\">\n  <div class=\"classroom-window ui-function-surface\" role=\"dialog",
+  "children": [
+    {
+      "tag": "DIV",
+      "class": "classroom-window ui-function-surface",
+      "x": 80,
+      "y": 255.5,
+      "width": 920,
+      "height": 309,
+      "display": "block",
+      "opacity": "1",
+      "visibility": "visible"
+    }
+  ]
+}

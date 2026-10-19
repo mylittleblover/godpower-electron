@@ -174,3 +174,7 @@ Synced HTML 2afe165; package/bundle SHA and source commit verified by sync:html.
 ## 3.0.15 guarded force-end checkpoint
 
 Synced HTML 9804af5. Source SHA/bundle integrity validated; Electron unit20/20 and desktop16/16 PASS at1920×1080 1x,14-group fit, renderer errors empty. Evidence artifacts/v3-force-end. Linux DBus/GPU diagnostics remain in the log; Windows native NOT TESTED. No default backend cutover.
+
+## 3.0.16 stale next-round asynchronous completion
+
+Synced HTML 2189574. Electron bundle integrity/source SHA verified; unit20/20 and desktop16/16 PASS,1920×1080 1x14-group geometry retained, renderer errors=[]; native process logs include environment GPU/DBus diagnostics. Windows native NOT TESTED. Evidence artifacts/v3-next-round. Next-round reset itself is now being moved under one command in the following HTML checkpoint.
