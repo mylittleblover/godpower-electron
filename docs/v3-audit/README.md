@@ -33,3 +33,7 @@ HTML449f2c1已同步；来源/源码/产物hash由BUILD_INFO验证。单元20/20
 ## 3.0.3异步命令与迁移工具同步
 
 HTML da00d1b已同步，7957422字节，SHA-256 c744d8fce56c256878a707c7141ffa425c9cfc4c4fcde00c3ec1fa634441ca6f。Electron单元20/20、桌面16/16通过，结果errors=[]。新异步应用服务与设置迁移副本工具已包含在源码包；生产权威仍未切换，全部旧命令尚未迁完。截图/DOM位于artifacts/v3-async，Windows真机仍NOT TESTED，CircleCI未操作。
+
+## V3 competition rules review gate (2026-10-20)
+
+The user-provided `GodPower_Competition_Rules_V3_2026-10-20.zip` has now reached its deferred review stage. HTML source commit `6dcc2be` contains the verbatim specification/handoff, `legacy-item-baseline.md`, `competition-rules-difference-matrix.md`, and `competition-rules-implementation-plan.md`. No V3 random-event, scoring, status or item-extension behavior was implemented in this review step. The supplied handoff requires design/plan review before such coding. It also references a companion architecture specification missing from the archive and both worktrees. Current 3.0.24 and the separately approved achievement migration remain unchanged.
