@@ -1,7 +1,7 @@
 {
   "name": "godpower-electron",
   "productName": "上帝的力量",
-  "version": "3.0.23",
+  "version": "3.0.24",
   "private": true,
   "description": "Offline Electron desktop shell for 上帝的力量",
   "author": "mylittleblover",
