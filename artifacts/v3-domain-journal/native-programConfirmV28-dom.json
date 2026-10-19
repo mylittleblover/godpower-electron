@@ -1,0 +1,21 @@
+{
+  "viewport": [
+    600,
+    480
+  ],
+  "body": "modern-flat-v217",
+  "root": "<div id=\"programConfirmV28\" class=\"program-confirm-overlay\" style=\"\" data-remote-token=\"404\"><div class=\"program-confirm-window ui-function-surface\" role=\"dialo",
+  "children": [
+    {
+      "tag": "DIV",
+      "class": "program-confirm-window ui-function-surface",
+      "x": 24,
+      "y": 107.5,
+      "width": 552,
+      "height": 265,
+      "display": "flex",
+      "opacity": "1",
+      "visibility": "visible"
+    }
+  ]
+}

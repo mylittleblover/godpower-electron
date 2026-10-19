@@ -143,3 +143,8 @@ Electron已同步该提交，HTML SHA-256 c466552cbe587a277b79838970935d33107417
 ## 3.0.4 architecture checkpoint
 
 Synced HTML e714dbe3c665f46431ffbc9fa7d8c537f9493dfe; SHA-256 d76c5eba28101da45c5c8af1470a8ebca5ea89a0522a7f1a66bc3e6850361d7c. Explicit round pipeline replaces four overrides without changing competition rules. Electron Node20/20 and Linux desktop16/16 PASS;1920×1080 1x14group fit and single score owner verified. Evidence artifacts/v3-round/results.json and screenshots. Runtime emitted Linux DBus/GPU diagnostics; application errors array empty. Windows native NOT TESTED. Default storage remains legacy authority; achievement runtime not yet enabled. New competition rules ZIP is intentionally deferred to the rules stage.
+
+
+## 3.0.7 domain and migration journal checkpoint
+
+Synced source eab8c7caf1c5dc86056fa8f8b15151064cf3a1e1;SHA25621611c7997b972e90b845cc33fa915b3e8b2f189758e93caa95a28c56ad53579;7940476bytes. Includes verified item override-chain removal14→1, pure ranking/injected target policy and persistent migration verification journals. Electron Node20/20 and Linux desktop16/16 PASS,1920×1080 1x14group fit and original IPC/window/score authority preserved. Evidenceartifacts/v3-domain-journal. Runtime Linux DBus/GPU diagnostics remain; application errors=[]. WindowsnativeNOT TESTED. No default storage cutover or achievement activation yet. New competition rules deferred to rule stage.
