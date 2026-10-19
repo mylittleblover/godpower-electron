@@ -158,3 +158,7 @@ Sourcecf3ebc8fae2a230fcd16d786cc294e658b327582;SHA25696299af93c3d84ff027bd7eabd5
 ## 3.0.11 async ACK and defense ownership checkpoint
 
 Synced HTML7440eef67a5dfab0ee5abae2f01d013eb440ed14;SHA256a3466b2811464c9a57ea22b8adc4621d1592f959beadc029947f7824a4a34a55;7945038bytes. Includes pure defense policy,GP-010pending request ownership fix and async command acknowledgments. ElectronNode20/20 andLinuxdesktop16/16PASS at1920×1080 1x,14groupfit,one score owner and secure independent windows retained, errors=[]. LinuxDBus/GPU diagnostics logged;WindowsnativeNOT TESTED. Evidenceartifacts/v3-async-lifecycle. Production storage remains legacy authority;async repository cutover still requires remaining mutation boundaries.
+
+## 3.0.12 destructive-write barrier checkpoint
+
+Synced HTML 3b3d7bc777aa3fadf3a5c291cec99be9932510e2; SHA256 aeb9fc54dade8a4fddfc9e58cfa4a070cabbe4cd9c448128466dc2591085f49b, 7,948,166 bytes. History clear now persists after fresh confirmation and rolls back on save failure. Destructive entry points reject in-flight durable commits. Node 20/20 and Linux desktop 16/16 PASS at 1920×1080 1x, including 14-group fit. Evidence: artifacts/v3-write-barrier. Linux DBus/GPU diagnostics remain; application errors empty. Windows native NOT TESTED. Default storage cutover remains pending.
