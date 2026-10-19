@@ -192,3 +192,7 @@ Synced HTML cd23c47. Bundle/source hash validated; Electron Node20/20 and Linux 
 ## 3.0.20 batch answer synchronization
 
 Synced HTML source commit `f857173d8ea9b90bcacd84851a63c3eb15d59374`; SHA-256 `af148d07e942a1e416f6fbf916a7889eb8318ca64259d648827399d89bb4722c`, 7,955,065 bytes. Electron package/source bundle integrity verified. Node 20/20 and Linux desktop 16/16 PASS; desktop viewport 1920×1080 at 1x, all 14 group cards fit, application renderer errors empty. Windows x64 unpacked executable and ZIP built; ZIP checksum test PASS. Linux emits DBus/GPU environment diagnostics. Windows native execution remains NOT TESTED (`wine` is not installed in the current environment). Evidence: `artifacts/v3-electron-320`; ZIP SHA-256 `806506a39256afca296ddac9b3265bd10de45fdbb537373fbe880a12a826a6f2`. Build did not touch CircleCI or publish externally.
+
+## 3.0.21 transactional round settlement sync
+
+Synced HTML source commit `7353143b9638379213eb53d3c04f3c762d30fdc9`; SHA-256 `ba45611d2da1d9e0ae1efb75adc0b1ef0c8de7dce7b894a58adf1d0619b6ee2d`, 7,955,756 bytes. Electron source/package/bundle integrity verified. Node20/20 and Linux desktop16/16 PASS; 1920×1080 1x,14-group fit, application errors=[]. Windows x64 executable and ZIP built; ZIP passes archive integrity (`c003054d74e79e083c132b2a9c39ef63bcc5c8269438d2d4c83b4a48e32850e1`). Windows native launch NOT TESTED because Wine is unavailable. Linux DBus/GPU messages are environment diagnostics. Evidence `artifacts/v3-electron-321`. No CircleCI operation or external publication.

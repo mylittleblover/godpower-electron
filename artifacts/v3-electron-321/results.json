@@ -1,0 +1,149 @@
+{
+  "status": "PASS",
+  "results": [
+    {
+      "name": "1920×1080 1x, 14 group fit and unchanged main layout",
+      "status": "PASS",
+      "detail": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "name": "native functional windows forward inputs and preserve single score owner",
+      "status": "PASS",
+      "detail": "12 native windows, rapid input forwarding, one score commit, isolated storage"
+    },
+    {
+      "name": "fullscreen sound slots are configurable and score reveal is a native overlay",
+      "status": "PASS",
+      "detail": [
+        "fullscreen_pick",
+        "fullscreen_score_add",
+        "fullscreen_score_sub"
+      ]
+    },
+    {
+      "name": "secure preload and isolated origin in independent picker",
+      "status": "PASS",
+      "detail": {
+        "node": "undefined",
+        "process": "undefined",
+        "role": "picker",
+        "mainAPI": "undefined",
+        "storage": null
+      }
+    },
+    {
+      "name": "Marx theme crosses HTML, native branding, picker reload, detached windows and effects",
+      "status": "PASS",
+      "detail": {
+        "themes": [
+          "classic",
+          "marx",
+          "classic"
+        ],
+        "nativeIconCalls": 4,
+        "pickerReload": true,
+        "detachedLiveUpdate": true,
+        "semanticScores": true
+      }
+    },
+    {
+      "name": "closing main keeps authoritative renderer alive and can restore it",
+      "status": "PASS",
+      "detail": "same renderer and data after close; picker commands remain available"
+    },
+    {
+      "name": "individual authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1792450463603-1",
+        "groupId": 5,
+        "historyEntries": 1,
+        "scoreDelta": 5
+      }
+    },
+    {
+      "name": "group authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1792450466684-2",
+        "groupId": 4,
+        "historyEntries": 1,
+        "scoreDelta": 5
+      }
+    },
+    {
+      "name": "two_tier authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1792450469699-3",
+        "groupId": 2,
+        "historyEntries": 1,
+        "scoreDelta": 5
+      }
+    },
+    {
+      "name": "close/reopen while spinning keeps one engine and retained window bounds",
+      "status": "PASS",
+      "detail": {
+        "bounds": {
+          "x": 100,
+          "y": 80,
+          "width": 480,
+          "height": 760
+        },
+        "alwaysOnTop": false
+      }
+    },
+    {
+      "name": "picker reload accepts fresh commands without sequence conflicts",
+      "status": "PASS"
+    },
+    {
+      "name": "duplicate effect ready always releases Escape registration",
+      "status": "PASS",
+      "detail": {
+        "registeredBeforeClose": true
+      }
+    },
+    {
+      "name": "effect interrupts and stale finish cannot close a newer result",
+      "status": "PASS"
+    },
+    {
+      "name": "reload cancels transient picker, preserves classroom storage and rejects stale outcome",
+      "status": "PASS"
+    },
+    {
+      "name": "custom audio/resource store remains accessible to main only",
+      "status": "PASS",
+      "detail": {
+        "indexedDB": "object",
+        "items": 26
+      }
+    },
+    {
+      "name": "main renderer crash blocks commands until explicit recovery without reroll",
+      "status": "PASS"
+    }
+  ],
+  "errors": [],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}
