@@ -1,0 +1,43 @@
+{
+  "viewport": [
+    1080,
+    820
+  ],
+  "body": "modern-flat-v217",
+  "root": "<div id=\"grandModalOverlay\" class=\"grand-modal-overlay active\" style=\"\" data-remote-token=\"426\">\n  <canvas id=\"confettiCanvas\" data-remote-token=\"427\" width=\"10",
+  "children": [
+    {
+      "tag": "CANVAS",
+      "class": "",
+      "x": 0,
+      "y": 0,
+      "width": 1080,
+      "height": 820,
+      "display": "block",
+      "opacity": "1",
+      "visibility": "visible"
+    },
+    {
+      "tag": "DIV",
+      "class": "grand-card ui-function-surface",
+      "x": 32,
+      "y": 281.5,
+      "width": 1016,
+      "height": 257,
+      "display": "block",
+      "opacity": "1",
+      "visibility": "visible"
+    },
+    {
+      "tag": "BUTTON",
+      "class": "btn ui-cinematic-skip",
+      "x": 888,
+      "y": 750,
+      "width": 164,
+      "height": 46,
+      "display": "block",
+      "opacity": "1",
+      "visibility": "visible"
+    }
+  ]
+}

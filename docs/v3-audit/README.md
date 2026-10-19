@@ -1,6 +1,6 @@
-# GodPower V3 只读审计交付
+# GodPower V3 审计与实施记录
 
-审计日期：2026-10-19。范围来自 GodPower_V3_Design_Handoff_2026-10-19.zip。本轮只读取仓库、既有报告和测试证据，并新增审计文档；没有改动运行时代码、规则、依赖、存档、构建产物，没有运行测试，没有提交或推送。
+审计基线：2026-10-19。范围来自 GodPower_V3_Design_Handoff_2026-10-19.zip。用户已批准实施，并要求连续推进直至全项目完成。当前在 `feat/v3-foundation-sp01-sp02` 逐阶段开发；本记录既保留初始只读基线，也跟踪真实测试结果。测试只用 Chromium 1920×1080、1×；不运行 CircleCI。
 
 ## 基线
 
@@ -20,8 +20,12 @@ Electron resources/BUILD_INFO.json 指向 HTML 提交 2ba6bedd，SHA-256 为 2ea
 - risk-register.md：架构风险、规格未决项、平台和数据风险。
 - implementation-plan.md：AD/FR/QA 追踪、SP-00/01/02 分步计划、验收、提交边界和回滚。
 
-## 证据限制
+## 初始基线证据限制
 
-PASS/BLOCKED/NOT TESTED 均引用开发分支既有文档和 artifacts，不是本轮重新执行的结果。当前树没有用户真实课堂配置；14 组证据是合成数据的 DOM/截图基线。“60 个成就”在当前源码中未找到可核对定义、模型、持久化字段或解锁条件，不把它描述成已实现。26 道具差分和 seeded draw 结果引用 HTML 仓库 docs/reports/ITEM_MODULES_AND_CONTENT.md 中的既有验收。
+上表记录的是启动前的只读状态。新增实施与测试证据见 HTML 仓库 `docs/v3/IMPLEMENTATION_LOG.md` 及 Electron `artifacts/v3-baseline/`。14 组场景使用匿名合成数据，不代表读取或复现了用户真实课堂配置。60项成就已录入纯元数据目录，但运行时进度、撤销与归档授予仍未实现。未运行项继续标为 BLOCKED/NOT TESTED，不计作通过。
 
-60项规则现由用户补充规格，但程序尚未实现成就系统。Superpowers 插件技能在本会话的云技能目录中不可用；按交接规格执行只读审计与实施计划，没有声称已调用该插件。
+60项规则以用户提供的设计稿为规范来源；当前目录只实现元数据，仍不能声称成就系统已完成。初始阶段没有可用的 Superpowers 插件 MCP；本次代码实施遵循本窗口可用的 Superpowers 工作流技能，不声称调用了缺失的插件工具。
+
+## 当前迁移开发检查点（3.0.2）
+
+HTML449f2c1已同步；来源/源码/产物hash由BUILD_INFO验证。单元20/20、桌面16/16通过；1920×1080、1×14组布局截图和DOM见artifacts/v3-migration。新事务后端尚未切换，成就运行时尚未实现，整个V3仍在开发。Windows真机NOT TESTED，CircleCI未操作。
