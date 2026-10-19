@@ -1,0 +1,21 @@
+{
+  "viewport": [
+    1080,
+    820
+  ],
+  "body": "modern-flat-v217",
+  "root": "<div id=\"batchImportModal\" class=\"modal-overlay active\" data-ui-modal-open=\"true\" style=\"z-index: 300008; --ui-modal-layer: 300008;\" data-remote-token=\"200\">\n  ",
+  "children": [
+    {
+      "tag": "DIV",
+      "class": "modal-box large ui-function-surface",
+      "x": 200,
+      "y": 240,
+      "width": 680,
+      "height": 340,
+      "display": "flex",
+      "opacity": "1",
+      "visibility": "visible"
+    }
+  ]
+}

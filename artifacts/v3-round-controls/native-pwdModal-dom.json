@@ -1,0 +1,21 @@
+{
+  "viewport": [
+    600,
+    480
+  ],
+  "body": "modern-flat-v217",
+  "root": "<div id=\"pwdModal\" class=\"modal-overlay active\" style=\"\" data-remote-token=\"28\">\n  <div class=\"modal-box ui-function-surface\" role=\"dialog\" aria-modal=\"true\" ar",
+  "children": [
+    {
+      "tag": "DIV",
+      "class": "modal-box ui-function-surface",
+      "x": 60,
+      "y": 100,
+      "width": 480,
+      "height": 280,
+      "display": "flex",
+      "opacity": "1",
+      "visibility": "visible"
+    }
+  ]
+}

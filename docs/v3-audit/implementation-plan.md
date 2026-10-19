@@ -166,3 +166,7 @@ Synced HTML 3b3d7bc777aa3fadf3a5c291cec99be9932510e2; SHA256 aeb9fc54dade8a4fddf
 ## 3.0.13 history command checkpoint
 
 Source 39e451430bf14fbba4d44ed4bac51eebebaa2fcc; SHA256 d8ee1fb85033e3db035f69a95f2a34f84ff3d6b92748a2aada8e30c964ff4e08, 7,949,374 bytes. History restore/undo/revert now have one command owner and one primary save; stale defense cancellation no longer restores discarded history. Electron Node20/20 and Linux desktop16/16 PASS at1920×1080 1x,14-group fit, errors=[]. Evidence artifacts/v3-history. LinuxDBus/GPU diagnostics remain; Windowsnative NOT TESTED. Production default storage unchanged.
+
+## 3.0.14 correct-answer persistence checkpoint
+
+Synced HTML 2afe165; package/bundle SHA and source commit verified by sync:html. Electron Node20/20 and Linux desktop16/16 PASS at 1920×1080 1x with14-group fit, no renderer errors. Evidence artifacts/v3-round-controls. DBus/GPU environment diagnostics logged; Windows native NOT TESTED. Rules ZIP and default storage switch remain pending.
