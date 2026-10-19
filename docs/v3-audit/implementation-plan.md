@@ -153,3 +153,8 @@ Synced source eab8c7caf1c5dc86056fa8f8b15151064cf3a1e1;SHA25621611c7997b972e90b8
 ## 3.0.9 actual scoring/answer command checkpoint
 
 Sourcecf3ebc8fae2a230fcd16d786cc294e658b327582;SHA25696299af93c3d84ff027bd7eabd5eb734a751bf6f16768debd5c43bade4bfe83d;7942522bytes. Manual scoring/direct editing,answer selection andAllInnowshare the verified legacy command lifecycle. Undo semantics,26items,14groupgeometry andone native score owner remain. ElectronNode20/20,desktop16/16PASS at1920×1080 1x, errors=[];LinuxDBus/GPU diagnostics recorded. Evidenceartifacts/v3-commands. WindowsnativeNOT TESTED. Async repository default cutover is still pending;no achievement-runtime completion claimed.
+
+
+## 3.0.11 async ACK and defense ownership checkpoint
+
+Synced HTML7440eef67a5dfab0ee5abae2f01d013eb440ed14;SHA256a3466b2811464c9a57ea22b8adc4621d1592f959beadc029947f7824a4a34a55;7945038bytes. Includes pure defense policy,GP-010pending request ownership fix and async command acknowledgments. ElectronNode20/20 andLinuxdesktop16/16PASS at1920×1080 1x,14groupfit,one score owner and secure independent windows retained, errors=[]. LinuxDBus/GPU diagnostics logged;WindowsnativeNOT TESTED. Evidenceartifacts/v3-async-lifecycle. Production storage remains legacy authority;async repository cutover still requires remaining mutation boundaries.

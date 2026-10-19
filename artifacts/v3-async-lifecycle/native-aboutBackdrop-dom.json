@@ -1,0 +1,21 @@
+{
+  "viewport": [
+    1080,
+    820
+  ],
+  "body": "modern-flat-v217",
+  "root": "<div id=\"aboutBackdrop\" class=\"about-backdrop active\" data-ui-modal-open=\"true\" style=\"z-index: 300007; --ui-modal-layer: 300007;\" data-remote-token=\"185\">\n  <d",
+  "children": [
+    {
+      "tag": "DIV",
+      "class": "about-window ui-function-surface",
+      "x": 35,
+      "y": 237.015625,
+      "width": 1010,
+      "height": 345.953125,
+      "display": "grid",
+      "opacity": "1",
+      "visibility": "visible"
+    }
+  ]
+}
