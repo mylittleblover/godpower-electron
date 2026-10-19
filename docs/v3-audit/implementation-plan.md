@@ -178,3 +178,7 @@ Synced HTML 9804af5. Source SHA/bundle integrity validated; Electron unit20/20 a
 ## 3.0.16 stale next-round asynchronous completion
 
 Synced HTML 2189574. Electron bundle integrity/source SHA verified; unit20/20 and desktop16/16 PASS,1920×1080 1x14-group geometry retained, renderer errors=[]; native process logs include environment GPU/DBus diagnostics. Windows native NOT TESTED. Evidence artifacts/v3-next-round. Next-round reset itself is now being moved under one command in the following HTML checkpoint.
+
+## 3.0.18 new-round transactional initialization
+
+Synced HTML 2d96e4b. Electron source/package/bundle integrity validated. Node20/20 and Linux desktop16/16 PASS at1920×1080 1x; 14 groups fit, renderer errors empty. Evidence in source phase artifacts/v3-start-command and Electron desktop archive. Linux DBus/GPU diagnostics recorded; Windows native NOT TESTED. Source audio manager remains legacy and awaits lifecycle integration.
