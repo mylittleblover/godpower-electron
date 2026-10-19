@@ -138,3 +138,8 @@ HTML提交449f2c1：领域/应用/基础设施分层、Schema2安全复制与恢
 Electron已同步该提交，HTML SHA-256 c466552cbe587a277b79838970935d331074173513f85d767b0e044f1de6b209，7937655字节。Electron20项单元测试及16个桌面场景通过。阶段证据见artifacts/v3-migration。
 
 3.0.3：异步命令服务已验证actor/scope/revision、可信handler、在途/持久化意图去重、取消与提交后表现隔离；迁移协调已验证目标完整hash、确定性重试与设置点击。下一步迁出真实旧规则/命令，先治理五处legacyJudgeRound写入；还不能默认切换存储。
+
+
+## 3.0.4 architecture checkpoint
+
+Synced HTML e714dbe3c665f46431ffbc9fa7d8c537f9493dfe; SHA-256 d76c5eba28101da45c5c8af1470a8ebca5ea89a0522a7f1a66bc3e6850361d7c. Explicit round pipeline replaces four overrides without changing competition rules. Electron Node20/20 and Linux desktop16/16 PASS;1920×1080 1x14group fit and single score owner verified. Evidence artifacts/v3-round/results.json and screenshots. Runtime emitted Linux DBus/GPU diagnostics; application errors array empty. Windows native NOT TESTED. Default storage remains legacy authority; achievement runtime not yet enabled. New competition rules ZIP is intentionally deferred to the rules stage.
