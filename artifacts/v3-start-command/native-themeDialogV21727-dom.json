@@ -4,7 +4,7 @@
     480
   ],
   "body": "modern-flat-v217",
-  "root": "<div id=\"themeDialogV21727\" class=\"theme-dialog-v21727 active\" aria-hidden=\"false\" data-ui-notice=\"info\" style=\"\" data-remote-token=\"395\">\n  <div class=\"theme-d",
+  "root": "<div id=\"themeDialogV21727\" class=\"theme-dialog-v21727 active\" aria-hidden=\"false\" data-ui-notice=\"info\" data-ui-modal-open=\"true\" style=\"z-index: 300010; --ui-",
   "children": [
     {
       "tag": "DIV",
