@@ -148,3 +148,8 @@ Synced HTML e714dbe3c665f46431ffbc9fa7d8c537f9493dfe; SHA-256 d76c5eba28101da45c
 ## 3.0.7 domain and migration journal checkpoint
 
 Synced source eab8c7caf1c5dc86056fa8f8b15151064cf3a1e1;SHA25621611c7997b972e90b845cc33fa915b3e8b2f189758e93caa95a28c56ad53579;7940476bytes. Includes verified item override-chain removal14→1, pure ranking/injected target policy and persistent migration verification journals. Electron Node20/20 and Linux desktop16/16 PASS,1920×1080 1x14group fit and original IPC/window/score authority preserved. Evidenceartifacts/v3-domain-journal. Runtime Linux DBus/GPU diagnostics remain; application errors=[]. WindowsnativeNOT TESTED. No default storage cutover or achievement activation yet. New competition rules deferred to rule stage.
+
+
+## 3.0.9 actual scoring/answer command checkpoint
+
+Sourcecf3ebc8fae2a230fcd16d786cc294e658b327582;SHA25696299af93c3d84ff027bd7eabd5eb734a751bf6f16768debd5c43bade4bfe83d;7942522bytes. Manual scoring/direct editing,answer selection andAllInnowshare the verified legacy command lifecycle. Undo semantics,26items,14groupgeometry andone native score owner remain. ElectronNode20/20,desktop16/16PASS at1920×1080 1x, errors=[];LinuxDBus/GPU diagnostics recorded. Evidenceartifacts/v3-commands. WindowsnativeNOT TESTED. Async repository default cutover is still pending;no achievement-runtime completion claimed.
