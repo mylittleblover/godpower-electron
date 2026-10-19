@@ -184,3 +184,7 @@ Synced HTML 2189574. Electron bundle integrity/source SHA verified; unit20/20 an
 Synced HTML 2d96e4b. Electron source/package/bundle integrity validated. Node20/20 and Linux desktop16/16 PASS at1920×1080 1x; 14 groups fit, renderer errors empty. Evidence in source phase artifacts/v3-start-command and Electron desktop archive. Linux DBus/GPU diagnostics recorded; Windows native NOT TESTED. Source audio manager remains legacy and awaits lifecycle integration.
 
 3.0.18 Electron evidence final: source `2d96e4b` verified through sync:html; unit20/20, desktop16/16 PASS, 14-group fit at1920×1080 1x, renderer errors empty. Linux DBus/GPU messages remain environmental diagnostics; Windows-native execution NOT TESTED. Evidence `artifacts/v3-start-command`.
+
+## 3.0.19 immutable archive retries
+
+Synced HTML cd23c47. Bundle/source hash validated; Electron Node20/20 and Linux desktop16/16 PASS at1920×1080 1x,14 groups fit, renderer errors=[]; DBus/GPU diagnostics are logged. Evidence artifacts/v3-archive-immutability. Windows native NOT TESTED.
