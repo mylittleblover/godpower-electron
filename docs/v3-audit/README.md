@@ -29,3 +29,7 @@ Electron resources/BUILD_INFO.json 指向 HTML 提交 2ba6bedd，SHA-256 为 2ea
 ## 当前迁移开发检查点（3.0.2）
 
 HTML449f2c1已同步；来源/源码/产物hash由BUILD_INFO验证。单元20/20、桌面16/16通过；1920×1080、1×14组布局截图和DOM见artifacts/v3-migration。新事务后端尚未切换，成就运行时尚未实现，整个V3仍在开发。Windows真机NOT TESTED，CircleCI未操作。
+
+## 3.0.3异步命令与迁移工具同步
+
+HTML da00d1b已同步，7957422字节，SHA-256 c744d8fce56c256878a707c7141ffa425c9cfc4c4fcde00c3ec1fa634441ca6f。Electron单元20/20、桌面16/16通过，结果errors=[]。新异步应用服务与设置迁移副本工具已包含在源码包；生产权威仍未切换，全部旧命令尚未迁完。截图/DOM位于artifacts/v3-async，Windows真机仍NOT TESTED，CircleCI未操作。

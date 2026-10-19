@@ -1,0 +1,21 @@
+{
+  "viewport": [
+    1080,
+    820
+  ],
+  "body": "modern-flat-v217",
+  "root": "<div id=\"batchImportModal\" class=\"modal-overlay active\" style=\"\" data-remote-token=\"200\">\n  <div class=\"modal-box large ui-function-surface\" role=\"dialog\" aria-",
+  "children": [
+    {
+      "tag": "DIV",
+      "class": "modal-box large ui-function-surface",
+      "x": 200,
+      "y": 240,
+      "width": 680,
+      "height": 340,
+      "display": "flex",
+      "opacity": "1",
+      "visibility": "visible"
+    }
+  ]
+}
