@@ -170,3 +170,7 @@ Source 39e451430bf14fbba4d44ed4bac51eebebaa2fcc; SHA256 d8ee1fb85033e3db035f69a9
 ## 3.0.14 correct-answer persistence checkpoint
 
 Synced HTML 2afe165; package/bundle SHA and source commit verified by sync:html. Electron Node20/20 and Linux desktop16/16 PASS at 1920×1080 1x with14-group fit, no renderer errors. Evidence artifacts/v3-round-controls. DBus/GPU environment diagnostics logged; Windows native NOT TESTED. Rules ZIP and default storage switch remain pending.
+
+## 3.0.15 guarded force-end checkpoint
+
+Synced HTML 9804af5. Source SHA/bundle integrity validated; Electron unit20/20 and desktop16/16 PASS at1920×1080 1x,14-group fit, renderer errors empty. Evidence artifacts/v3-force-end. Linux DBus/GPU diagnostics remain in the log; Windows native NOT TESTED. No default backend cutover.
