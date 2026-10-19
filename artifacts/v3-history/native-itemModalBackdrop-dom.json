@@ -1,0 +1,21 @@
+{
+  "viewport": [
+    1080,
+    820
+  ],
+  "body": "modern-flat-v217",
+  "root": "<div id=\"itemModalBackdrop\" class=\"item-modal-backdrop active\" style=\"\" data-remote-token=\"37\">\n  <div class=\"item-window ui-function-surface\" role=\"dialog\" ari",
+  "children": [
+    {
+      "tag": "DIV",
+      "class": "item-window ui-function-surface",
+      "x": 60,
+      "y": 75.296875,
+      "width": 960,
+      "height": 669.390625,
+      "display": "grid",
+      "opacity": "1",
+      "visibility": "visible"
+    }
+  ]
+}

@@ -162,3 +162,7 @@ Synced HTML7440eef67a5dfab0ee5abae2f01d013eb440ed14;SHA256a3466b2811464c9a57ea22
 ## 3.0.12 destructive-write barrier checkpoint
 
 Synced HTML 3b3d7bc777aa3fadf3a5c291cec99be9932510e2; SHA256 aeb9fc54dade8a4fddfc9e58cfa4a070cabbe4cd9c448128466dc2591085f49b, 7,948,166 bytes. History clear now persists after fresh confirmation and rolls back on save failure. Destructive entry points reject in-flight durable commits. Node 20/20 and Linux desktop 16/16 PASS at 1920×1080 1x, including 14-group fit. Evidence: artifacts/v3-write-barrier. Linux DBus/GPU diagnostics remain; application errors empty. Windows native NOT TESTED. Default storage cutover remains pending.
+
+## 3.0.13 history command checkpoint
+
+Source 39e451430bf14fbba4d44ed4bac51eebebaa2fcc; SHA256 d8ee1fb85033e3db035f69a95f2a34f84ff3d6b92748a2aada8e30c964ff4e08, 7,949,374 bytes. History restore/undo/revert now have one command owner and one primary save; stale defense cancellation no longer restores discarded history. Electron Node20/20 and Linux desktop16/16 PASS at1920×1080 1x,14-group fit, errors=[]. Evidence artifacts/v3-history. LinuxDBus/GPU diagnostics remain; Windowsnative NOT TESTED. Production default storage unchanged.

@@ -1,0 +1,21 @@
+{
+  "viewport": [
+    600,
+    480
+  ],
+  "body": "modern-flat-v217",
+  "root": "<div id=\"settlementNameModal\" class=\"modal-overlay active\" style=\"\" data-remote-token=\"414\">\n  <div class=\"modal-box ui-function-surface\" role=\"dialog\" aria-mod",
+  "children": [
+    {
+      "tag": "DIV",
+      "class": "modal-box ui-function-surface",
+      "x": 60,
+      "y": 72,
+      "width": 480,
+      "height": 336,
+      "display": "flex",
+      "opacity": "1",
+      "visibility": "visible"
+    }
+  ]
+}
