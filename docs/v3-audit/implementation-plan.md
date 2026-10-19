@@ -196,3 +196,7 @@ Synced HTML source commit `f857173d8ea9b90bcacd84851a63c3eb15d59374`; SHA-256 `a
 ## 3.0.21 transactional round settlement sync
 
 Synced HTML source commit `7353143b9638379213eb53d3c04f3c762d30fdc9`; SHA-256 `ba45611d2da1d9e0ae1efb75adc0b1ef0c8de7dce7b894a58adf1d0619b6ee2d`, 7,955,756 bytes. Electron source/package/bundle integrity verified. Node20/20 and Linux desktop16/16 PASS; 1920×1080 1x,14-group fit, application errors=[]. Windows x64 executable and ZIP built; ZIP passes archive integrity (`c003054d74e79e083c132b2a9c39ef63bcc5c8269438d2d4c83b4a48e32850e1`). Windows native launch NOT TESTED because Wine is unavailable. Linux DBus/GPU messages are environment diagnostics. Evidence `artifacts/v3-electron-321`. No CircleCI operation or external publication.
+
+## 3.0.22 stale Power feedback synchronization
+
+Synced HTML source commit `90deeae9f8fa9b15a2a271067bbda14ddc18c2cb`; SHA-256 `cfff1e6ad134ed40cc6bf351c98d9036cfb9ebf52b26f35f7b09814dad315c00`, 7,955,914 bytes. Bundle integrity verified. Electron Node20/20 and desktop16/16 PASS at1920×1080 1x; 14 groups fit and application errors=[]. Windows x64 app ZIP built and archive test PASS; SHA-256 `8a2f4e0c138d4620294e1b67a5956e8e32661d0651fa477f7f816dc59a72a7f5`. Windows native launch NOT TESTED because current image has no Wine. Linux DBus/GPU diagnostics remain environmental. Evidence `artifacts/v3-electron-322`.
