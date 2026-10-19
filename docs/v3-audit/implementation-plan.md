@@ -200,3 +200,7 @@ Synced HTML source commit `7353143b9638379213eb53d3c04f3c762d30fdc9`; SHA-256 `b
 ## 3.0.22 stale Power feedback synchronization
 
 Synced HTML source commit `90deeae9f8fa9b15a2a271067bbda14ddc18c2cb`; SHA-256 `cfff1e6ad134ed40cc6bf351c98d9036cfb9ebf52b26f35f7b09814dad315c00`, 7,955,914 bytes. Bundle integrity verified. Electron Node20/20 and desktop16/16 PASS at1920×1080 1x; 14 groups fit and application errors=[]. Windows x64 app ZIP built and archive test PASS; SHA-256 `8a2f4e0c138d4620294e1b67a5956e8e32661d0651fa477f7f816dc59a72a7f5`. Windows native launch NOT TESTED because current image has no Wine. Linux DBus/GPU diagnostics remain environmental. Evidence `artifacts/v3-electron-322`.
+
+## 3.0.23 achievement ledger foundation synchronization
+
+Synced HTML commit `b7d26a340cc7282a9feb5c3cd8ae67c09cefbbc0`; embedded HTML SHA-256 `b5cbfd2815fc40158e411181c36c07da56fb049b66488f3ac40cc7b6d5c3574e`, 7,963,057 bytes. Electron unit20/20 and desktop16/16 PASS; Chromium viewport1920×1080 1x, all14 groups fit, renderer errors=[]; achievement ledger remains infrastructure only (no unlock rules/UI). Windows x64 directory/ZIP cross-build completed; ZIP integrity test PASS (19 files, 345,025,539 uncompressed bytes), SHA-256 `08610fe9a9277d9619be3fe19ceb03f24e6a9c38883fe2b188f0694ec3022796`. Windows native launch NOT TESTED: Wine unavailable. Linux DBus/GPU diagnostics and renderer teardown messages were emitted by Electron during test shutdown; all 16 asserted desktop scenarios PASS. Evidence: `artifacts/v3-electron-323`. No CircleCI or external publishing.

@@ -1,0 +1,21 @@
+{
+  "viewport": [
+    1080,
+    820
+  ],
+  "body": "modern-flat-v217",
+  "root": "<div id=\"memberSearchBackdrop\" class=\"member-search-backdrop active\" style=\"\" data-remote-token=\"18\">\n  <div class=\"member-search-card ui-function-surface\" role",
+  "children": [
+    {
+      "tag": "DIV",
+      "class": "member-search-card ui-function-surface",
+      "x": 200,
+      "y": 285,
+      "width": 680,
+      "height": 250,
+      "display": "block",
+      "opacity": "1",
+      "visibility": "visible"
+    }
+  ]
+}
