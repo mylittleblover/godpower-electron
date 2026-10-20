@@ -35,6 +35,21 @@
       }
     },
     {
+      "name": "Marx theme crosses HTML, native branding, picker reload, detached windows and effects",
+      "status": "PASS",
+      "detail": {
+        "themes": [
+          "classic",
+          "marx",
+          "classic"
+        ],
+        "nativeIconCalls": 4,
+        "pickerReload": true,
+        "detachedLiveUpdate": true,
+        "semanticScores": true
+      }
+    },
+    {
       "name": "closing main keeps authoritative renderer alive and can restore it",
       "status": "PASS",
       "detail": "same renderer and data after close; picker commands remain available"
@@ -43,8 +58,8 @@
       "name": "individual authoritative draw, continuous reel, overlay and score",
       "status": "PASS",
       "detail": {
-        "resultId": "pick-1792333416304-1",
-        "groupId": 1,
+        "resultId": "pick-1792517842871-1",
+        "groupId": 10,
         "historyEntries": 1,
         "scoreDelta": 5
       }
@@ -53,8 +68,8 @@
       "name": "group authoritative draw, continuous reel, overlay and score",
       "status": "PASS",
       "detail": {
-        "resultId": "pick-1792333419488-2",
-        "groupId": 13,
+        "resultId": "pick-1792517845833-2",
+        "groupId": 4,
         "historyEntries": 1,
         "scoreDelta": 5
       }
@@ -63,8 +78,8 @@
       "name": "two_tier authoritative draw, continuous reel, overlay and score",
       "status": "PASS",
       "detail": {
-        "resultId": "pick-1792333422637-3",
-        "groupId": 14,
+        "resultId": "pick-1792517849090-3",
+        "groupId": 13,
         "historyEntries": 1,
         "scoreDelta": 5
       }
