@@ -1,6 +1,6 @@
 # Electron 0.2.0 架构
 
-当前同步 HTML 应用版本：3.0.45；来源提交 `mylittleblover/godpower-html@9e50582909c676298d74f4fcc7309e460f9af7b5`，SHA-256 与同步结果见 `docs/validation/v3.0.45-electron-sync.md`。HTML 新增首页12列布局纯域模型、独立偏好仓储和只读迁移预览，但尚未接入首页渲染；Electron当前只同步并离线运行该源码，不声称自定义首页已交付。
+当前同步 HTML 应用版本：3.0.46；来源提交 `mylittleblover/godpower-html@4628419c7c0bd40d5a718a867bdc3976d86cfd5d`，SHA-256 与同步结果见 `docs/validation/v3.0.46-electron-sync.md`。HTML已把标题卡下方首页内容接入统一只读网格；可视编辑器及插件启停管理尚未完成。
 
 ## 模块职责
 
