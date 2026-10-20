@@ -4,7 +4,7 @@ async function runSmokeProbe(window, resultPath) {
     `(async () => {
     const keys = [...document.querySelectorAll('[data-view]')]
       .map((element) => element.dataset.view);
-    const requiredViews = ['welcome', 'battle', 'history', 'archives', 'settings'];
+    const requiredViews = ['welcome', 'battle', 'history', 'archives', 'plugins', 'settings'];
     const visibleView = document.querySelector('#view-welcome');
     const errors = [];
     window.addEventListener('error', (event) => errors.push(event.message));
@@ -27,6 +27,7 @@ async function runSmokeProbe(window, resultPath) {
       origin: location.origin,
       views: requiredViews.filter((view) => keys.includes(view)),
       hasWelcome: Boolean(visibleView),
+      hasPluginCenter: Boolean(document.querySelector('#view-plugins')),
       localStorage: localStorage.getItem('gp-electron-smoke'),
       indexedDB: typeof indexedDB !== 'undefined',
       errors
@@ -65,8 +66,9 @@ async function runSmokeProbe(window, resultPath) {
     JSON.stringify(
       {
         status:
-          firstLoad.views.length === 5 &&
+          firstLoad.views.length === 6 &&
           firstLoad.hasWelcome &&
+          firstLoad.hasPluginCenter &&
           firstLoad.indexedDB &&
           secondLoad.storage === "isolated-profile" &&
           secondLoad.indexedDB === "isolated-profile" &&

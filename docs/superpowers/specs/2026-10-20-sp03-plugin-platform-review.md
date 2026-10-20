@@ -54,3 +54,10 @@ UI方案明确复用SP03的唯一ContributionRegistry，比赛14组基线和Elec
 - HTML验证：`npm test` 257/257；页面生命周期E2E、贡献注册E2E、桌面UI 23/23、五页截图/14组布局均PASS，统一为Chromium 1920×1080 1x。
 - Electron v3.0.26 已从上述干净提交同步，单文件7,987,373 bytes，SHA-256 `3ce8cfb9c8bcf07ebf7cf442152627ddcfb68db39bba935d596cc16426204f56`；详情见 `docs/validation/v3.0.26-electron-sync.md`。
 - Electron验证：`npm test` 20/20、`test:smoke`、`test:desktop` 16/16及`verify:bundle` PASS。CircleCI未运行；Windows NOT TESTED。
+
+## 执行续记：M3 声明式插件中心（2026-10-20）
+
+- HTML v3.0.27已提交 `8ceef67a253b117f017571780e19237551193f54` 并推送。六个core routes新增「插件」入口；提供manifest校验、权限审阅、启停、受限插件页workspace、scope私有数据与卸载留存。插件当前只接受声明式JSON，不执行第三方JavaScript。
+- 验证：build/check/format通过；unit/integration 268/268；plugin Center E2E与注册/生命周期、release-smoke 4/4、Chromium 1920×1080 1x desktop-ui 23/23及14组布局均PASS。CircleCI未运行。
+- Electron v3.0.27同步 commit `8ceef67`，commit与SHA记录在 `docs/validation/v3.0.27-electron-plugin-center.md`。Electron unit 20/20、smoke六页及持久化、desktop 16/16 PASS。Windows未测。
+- 后续仍需PLUG-M2隔离执行沙箱、PLUG-M3签名ZIP/迁移存储、PLUG-M4管理授权UI、PLUG-M5 Electron broker，见HTML仓 `docs/MAINTENANCE_BACKLOG.md`。
