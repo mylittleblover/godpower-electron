@@ -1,6 +1,6 @@
 # Electron 0.2.0 架构
 
-当前同步 HTML 应用版本：3.0.42；来源与同步证据见 `docs/validation/v3.0.42-electron-sync.md`。最近一次完整桌面矩阵为 3.0.41，版本仅更新时本轮采用 bundle、单测和启动烟测。
+当前同步 HTML 应用版本：3.0.43；来源与同步证据见 `docs/validation/v3.0.43-electron-sync.md`。本版本包含道具事务的持久 ITEM_USED 事件；本次重新运行完整桌面矩阵。
 
 ## 模块职责
 
