@@ -1,5 +1,7 @@
 # Electron 0.2.0 架构
 
+当前同步 HTML 应用版本：3.0.41；来源与桌面回归证据见 `docs/validation/v3.0.41-electron-sync.md`。
+
 ## 模块职责
 
 | 文件/目录 | 职责 |
