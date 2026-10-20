@@ -28,6 +28,19 @@ api.onReveal((payload) => {
   document.title = `${marx ? "马克思的力量" : "上帝的力量"} · 全屏揭晓`;
   document.getElementById("name").textContent = r.name;
   document.getElementById("group").textContent = r.groupName;
+  const avatarFrame = document.getElementById("avatarFrame");
+  const avatar = document.getElementById("avatar");
+  if (
+    typeof r.avatarDataUrl === "string" &&
+    /^data:image\/webp;base64,[A-Za-z0-9+/=]+$/.test(r.avatarDataUrl) &&
+    r.avatarDataUrl.length <= 180_000
+  ) {
+    avatar.src = r.avatarDataUrl;
+    avatarFrame.hidden = false;
+  } else {
+    avatar.removeAttribute("src");
+    avatarFrame.hidden = true;
+  }
   document.getElementById("number").textContent =
     r.number !== null
       ? "学号 " + r.number

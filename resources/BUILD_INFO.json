@@ -1,9 +1,9 @@
 {
   "sourceRepository": "mylittleblover/godpower-html",
   "sourceFile": "dist/godpower.html",
-  "sourceCommit": "4628419c7c0bd40d5a718a867bdc3976d86cfd5d",
-  "htmlSha256": "48cb77df194b8febb8f8ed3c914f7726f25a7ef8175e43d0f1fd4fcb53eca5d0",
-  "htmlBytes": 8224525,
+  "sourceCommit": "bb3160cf0761695472bdf6df13a7ced1cdf42659",
+  "htmlSha256": "6ddbaa5669e6b423ffded20fdfd683a2b0b7b4b0f46b4f7fef5491c0653a79a3",
+  "htmlBytes": 8258349,
   "presentationAssets": {
     "tooltips.js": "135a4f8960548e008f69bdb81d871333c621ef24d4730c0808ea0fa316577ecd",
     "tooltips.css": "199af0df74b1d69a75c0e7d15157aa85623d02787c9f87dd4bcdbff8800e6eac"

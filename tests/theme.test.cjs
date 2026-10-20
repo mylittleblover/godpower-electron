@@ -13,7 +13,7 @@ test('snapshot theme is strictly whitelisted and old snapshots default to classi
 function renderer(file) {
   const nodes = new Map();
   const get = id => {
-    if (!nodes.has(id)) nodes.set(id, { dataset:{}, style:{values:{},setProperty(k,v){this.values[k]=v;}}, classList:{values:new Set(),add(...v){v.forEach(x=>this.values.add(x));},toggle(k,v){v?this.values.add(k):this.values.delete(k);}}, children:[], addEventListener(){}, setAttribute(){}, replaceChildren(){}, querySelectorAll(){return [];}, querySelector(){return get('button');}, append(){} });
+    if (!nodes.has(id)) nodes.set(id, { dataset:{}, style:{values:{},setProperty(k,v){this.values[k]=v;}}, classList:{values:new Set(),add(...v){v.forEach(x=>this.values.add(x));},toggle(k,v){v?this.values.add(k):this.values.delete(k);}}, children:[], hidden:true, addEventListener(){}, setAttribute(){}, removeAttribute(){}, replaceChildren(){}, querySelectorAll(){return [];}, querySelector(){return get('button');}, append(){} });
     return nodes.get(id);
   };
   const api = { onReveal(fn){this.reveal=fn;}, onState(fn){this.state=fn;}, getState(){return Promise.resolve(null);}, ready(){} };
@@ -39,6 +39,15 @@ test('effect theme leaves score colors semantic and uses gold for Marx picker re
     assert.equal(document.body.classList.values.has('theme-marx'),true);
     assert.equal(get('stage').style.values['--group'],expected);
   }
+});
+test('full-screen reveal displays only bounded local WebP avatar data', () => {
+  const {api,get} = renderer('effect.js');
+  api.reveal({id:'avatar',theme:'classic',result:{mode:'individual',color:'#123456',name:'甲',groupName:'一组',number:null,avatarDataUrl:'data:image/webp;base64,QUJD'},effects:{style:'aurora',duration:1200}});
+  assert.equal(get('avatar').src,'data:image/webp;base64,QUJD');
+  assert.equal(get('avatarFrame').hidden,false);
+  const second = renderer('effect.js');
+  second.api.reveal({id:'plain',theme:'classic',result:{mode:'group',color:'#123456',name:'一组',groupName:'一组',number:null,avatarDataUrl:''},effects:{style:'aurora',duration:1200}});
+  assert.equal(second.get('avatarFrame').hidden,true);
 });
 test('native branding uses local icon and classic remains the fallback', () => {
   const { branding } = require('../desktop/theme.cjs');

@@ -203,6 +203,24 @@ test("valid snapshots strip private state and preserve display data without HTML
   assert.equal(dto.groups[0].color, "#0f766e");
   assert.equal(dto.groups[0].name, "<script>甲</script>");
 });
+test("snapshot sanitizer accepts only bounded local WebP reveal thumbnails", () => {
+  const snapshot = {
+    protocolVersion: 1,
+    phase: "revealed",
+    mode: "individual",
+    groups: [{ id: 1, name: "第一组", color: "#123456", members: 1, score: 0 }],
+    result: {
+      id: "r1", mode: "individual", groupId: 1, groupName: "第一组", groupNo: 1,
+      color: "#123456", score: 0, name: "甲", number: null,
+      avatarDataUrl: "data:image/webp;base64,QUJD",
+    },
+    slots: [1, 2, 3, -1, -2, -3],
+    history: [],
+  };
+  assert.equal(sanitizeSnapshot(snapshot).result.avatarDataUrl, "data:image/webp;base64,QUJD");
+  assert.equal(sanitizeSnapshot({ ...snapshot, result: { ...snapshot.result, avatarDataUrl: "data:image/svg+xml,<svg/>" } }).result.avatarDataUrl, "");
+  assert.equal(sanitizeSnapshot({ ...snapshot, result: { ...snapshot.result, avatarDataUrl: "data:image/webp;base64," + "A".repeat(180_000) } }).result.avatarDataUrl, "");
+});
 test("Escape ownership survives duplicate readiness and is released exactly once", () => {
   const { EscapeLease } = require("../desktop/escape-lease.cjs");
   let registered = false,

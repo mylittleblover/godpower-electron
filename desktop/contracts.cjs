@@ -92,6 +92,12 @@ function sanitizeSnapshot(s) {
       name: text(r.name),
       number: r.number == null ? null : text(String(r.number), 40),
       memberName: r.memberName == null ? null : text(r.memberName),
+      avatarDataUrl:
+        typeof r.avatarDataUrl === "string" &&
+        r.avatarDataUrl.length <= 180_000 &&
+        /^data:image\/webp;base64,[A-Za-z0-9+/=]+$/.test(r.avatarDataUrl)
+          ? r.avatarDataUrl
+          : "",
     };
   }
   const effects = s.effects || {};
