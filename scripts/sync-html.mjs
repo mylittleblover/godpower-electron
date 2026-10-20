@@ -20,6 +20,20 @@ const sourceRoot = git("rev-parse", "--show-toplevel");
 const sourceCommit = git("rev-parse", "HEAD");
 if (git("status", "--porcelain"))
   throw Error("HTML source checkout must be clean and committed before sync");
+const sourcePackage = JSON.parse(
+  await readFile(path.join(sourceRoot, "package.json"), "utf8"),
+);
+if (typeof sourcePackage.version !== "string")
+  throw Error("HTML source package version is missing");
+const hostPackagePath = path.join(root, "package.json");
+const hostLockPath = path.join(root, "package-lock.json");
+const hostPackage = JSON.parse(await readFile(hostPackagePath, "utf8"));
+const hostLock = JSON.parse(await readFile(hostLockPath, "utf8"));
+hostPackage.version = sourcePackage.version;
+hostLock.version = sourcePackage.version;
+if (hostLock.packages?.[""]) hostLock.packages[""].version = sourcePackage.version;
+await writeFile(hostPackagePath, JSON.stringify(hostPackage, null, 2) + "\n");
+await writeFile(hostLockPath, JSON.stringify(hostLock, null, 2) + "\n");
 const relative = path.relative(sourceRoot, source).split(path.sep).join("/");
 const committed = execFileSync(
   "git",
