@@ -47,3 +47,10 @@ UI方案明确复用SP03的唯一ContributionRegistry，比赛14组基线和Elec
 - Electron随HTML提交同步版本3.0.25。`resources/BUILD_INFO.json`记录HTML源Commit `e0dc04ec4bda5b63927ae5e0a69d32f4e1453900`、SHA-256 `abc4f60b9b308c38fb95f78903ce8c71538947c8954823a36d791187a85fcd27`、7,981,868 bytes。
 - Electron实际测试：`npm test` 20/20 PASS；`npm run test:smoke` PASS；`DESKTOP_ARTIFACTS=/tmp/godpower-electron-m1 npm run test:desktop` 16/16场景PASS；`npm run verify:bundle` PASS。Headless运行日志有DBus/GPU以及测试退出时的hung-child诊断文本，结果JSON `status=PASS`、`errors=[]`。Windows原生安装包/真机NOT TESTED，未运行CircleCI。
 - Electron同步只更新配套版本与HTML资源，没有放宽CSP/preload/IPC权限，也没有改主窗口业务。
+
+## 执行续记：M2 页面生命周期与 Electron 同步（2026-10-20）
+
+- HTML M2提交 `42789c19f0c827d40cc9fe17c8b5c367a09b47e4`；v3.0.26，页面`DisposableScope`与scope绑定入场动画。详情：HTML仓 `docs/ui-audit/M2-page-lifecycle.md`、`docs/TEST_MATRIX.md`。
+- HTML验证：`npm test` 257/257；页面生命周期E2E、贡献注册E2E、桌面UI 23/23、五页截图/14组布局均PASS，统一为Chromium 1920×1080 1x。
+- Electron v3.0.26 已从上述干净提交同步，单文件7,987,373 bytes，SHA-256 `3ce8cfb9c8bcf07ebf7cf442152627ddcfb68db39bba935d596cc16426204f56`；详情见 `docs/validation/v3.0.26-electron-sync.md`。
+- Electron验证：`npm test` 20/20、`test:smoke`、`test:desktop` 16/16及`verify:bundle` PASS。CircleCI未运行；Windows NOT TESTED。
