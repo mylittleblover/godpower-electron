@@ -1,6 +1,6 @@
 # SP03 插件平台设计审阅入口
 
-日期：2026-10-20。状态：设计待用户审阅，尚未开始产品实现或实施计划。当前Electron版本保留3.0.24；本提交仅为文档。
+日期：2026-10-20。状态：设计已获用户批准；后续授权已开始分阶段实施。当前Electron版本3.0.25。M0/M1源端实现已提交，详情见本文件末尾的执行续记。
 
 ## 权威设计源
 
@@ -24,13 +24,13 @@
 
 ## 本轮验证和下一闸门
 
-实际执行Electron npm test：20/20通过；npm run verify:bundle通过；HTML npm test：246/246通过。两端HTML实际字节和SHA一致。以上仅为既有基线验证，不证明插件运行环境完成。本轮未进行浏览器/Windows真机/新插件测试，不执行CircleCI，不包含已有未跟踪截图文件。
+原审阅阶段执行Electron npm test：20/20通过；npm run verify:bundle通过；HTML npm test：246/246通过。后续M1阶段结果见执行续记。
 
-按用户任务单第十五节，先等待六份设计规格批准，随后才调用writing-plans并交付独立实施计划；实施计划仍需批准并确定执行方式。未审竞技规则差异继续阻塞相关规则，不阻塞审阅平台设计。
+原任务单阶段门已由用户后续明确批准两套设计并授权连续实施，计划已提交。竞技规则差异仍阻塞相关规则改动，但不阻塞UI基础和插件运行框架。
 
 ## UI治理设计审阅入口
 
-2026-10-20新增的UI治理包经最新HTML源码二次核验，设计与审计位于HTML源码仓（Electron不复制另一套UI SDK）：
+2026-10-20新增的UI治理包设计与审计位于HTML源码仓（Electron不复制另一套UI SDK）：
 
 - HTML开发分支提交：32893708c24d8cd32e9c82d18b35be164a2cf345
 - [UI治理设计规格](https://github.com/mylittleblover/godpower-html/blob/32893708c24d8cd32e9c82d18b35be164a2cf345/docs/superpowers/specs/2026-10-20-godpower-v3-ui-governance-design.md)
@@ -39,4 +39,11 @@
 - [UI回归矩阵](https://github.com/mylittleblover/godpower-html/blob/32893708c24d8cd32e9c82d18b35be164a2cf345/docs/ui-audit/03-regression-matrix.md)
 - [风险登记](https://github.com/mylittleblover/godpower-html/blob/32893708c24d8cd32e9c82d18b35be164a2cf345/docs/ui-audit/04-risk-register.md)
 
-UI方案明确复用SP03的唯一ContributionRegistry，比赛14组基线和Electron现有CSP/IPC不放宽。本轮没有修改UI产品代码或执行UI验收，所有RG项目均NOT TESTED。UI设计与插件平台设计应作为一个一致的阶段审阅；设计批准后分别纳入同一份writing-plans实施计划。
+UI方案明确复用SP03的唯一ContributionRegistry，比赛14组基线和Electron现有CSP/IPC不放宽。原审阅时没有修改产品代码；M0/M1阶段完成度与真实验收见下方执行续记。
+
+## 执行续记：M0–M1（2026-10-20）
+
+- HTML计划提交 `1b95aae`；M0资产所有权与浏览器基线提交 `fd57f6a`；M1唯一ContributionRegistry与core routes提交 `e0dc04e`。源仓库均在 `feat/v3-foundation-sp01-sp02`，已推送。
+- Electron随HTML提交同步版本3.0.25。`resources/BUILD_INFO.json`记录HTML源Commit `e0dc04ec4bda5b63927ae5e0a69d32f4e1453900`、SHA-256 `abc4f60b9b308c38fb95f78903ce8c71538947c8954823a36d791187a85fcd27`、7,981,868 bytes。
+- Electron实际测试：`npm test` 20/20 PASS；`npm run test:smoke` PASS；`DESKTOP_ARTIFACTS=/tmp/godpower-electron-m1 npm run test:desktop` 16/16场景PASS；`npm run verify:bundle` PASS。Headless运行日志有DBus/GPU以及测试退出时的hung-child诊断文本，结果JSON `status=PASS`、`errors=[]`。Windows原生安装包/真机NOT TESTED，未运行CircleCI。
+- Electron同步只更新配套版本与HTML资源，没有放宽CSP/preload/IPC权限，也没有改主窗口业务。
