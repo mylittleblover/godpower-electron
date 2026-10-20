@@ -1,6 +1,6 @@
 # Electron 0.2.0 架构
 
-当前同步 HTML 应用版本：3.0.43；来源与同步证据见 `docs/validation/v3.0.43-electron-sync.md`。本版本包含道具事务的持久 ITEM_USED 事件；本次重新运行完整桌面矩阵。
+当前同步 HTML 应用版本：3.0.44；来源提交 `mylittleblover/godpower-html@fafa47dbb859d0e111ade0f84ff868de717d47ac`，SHA-256 与同步结果见 `docs/validation/v3.0.44-electron-sync.md`。HTML 新增首页12列布局纯域模型，但尚未接入首页渲染或持久化；Electron当前只同步并离线运行该源码，不声称自定义首页已交付。
 
 ## 模块职责
 
