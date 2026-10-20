@@ -1,9 +1,9 @@
 {
   "name": "godpower-electron",
-  "productName": "\u4e0a\u5e1d\u7684\u529b\u91cf",
-  "version": "3.0.30",
+  "productName": "上帝的力量",
+  "version": "3.0.31",
   "private": true,
-  "description": "Offline Electron desktop shell for \u4e0a\u5e1d\u7684\u529b\u91cf",
+  "description": "Offline Electron desktop shell for 上帝的力量",
   "author": "mylittleblover",
   "license": "UNLICENSED",
   "main": "main.cjs",
@@ -29,7 +29,7 @@
   },
   "build": {
     "appId": "com.mylittleblover.godpower",
-    "productName": "\u4e0a\u5e1d\u7684\u529b\u91cf",
+    "productName": "上帝的力量",
     "directories": {
       "output": "release",
       "buildResources": "build"
