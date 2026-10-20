@@ -27,3 +27,16 @@
 实际执行Electron npm test：20/20通过；npm run verify:bundle通过；HTML npm test：246/246通过。两端HTML实际字节和SHA一致。以上仅为既有基线验证，不证明插件运行环境完成。本轮未进行浏览器/Windows真机/新插件测试，不执行CircleCI，不包含已有未跟踪截图文件。
 
 按用户任务单第十五节，先等待六份设计规格批准，随后才调用writing-plans并交付独立实施计划；实施计划仍需批准并确定执行方式。未审竞技规则差异继续阻塞相关规则，不阻塞审阅平台设计。
+
+## UI治理设计审阅入口
+
+2026-10-20新增的UI治理包经最新HTML源码二次核验，设计与审计位于HTML源码仓（Electron不复制另一套UI SDK）：
+
+- HTML开发分支提交：32893708c24d8cd32e9c82d18b35be164a2cf345
+- [UI治理设计规格](https://github.com/mylittleblover/godpower-html/blob/32893708c24d8cd32e9c82d18b35be164a2cf345/docs/superpowers/specs/2026-10-20-godpower-v3-ui-governance-design.md)
+- [证据与全仓统计](https://github.com/mylittleblover/godpower-html/blob/32893708c24d8cd32e9c82d18b35be164a2cf345/docs/ui-audit/01-evidence-and-findings.md)
+- [依赖与迁移映射](https://github.com/mylittleblover/godpower-html/blob/32893708c24d8cd32e9c82d18b35be164a2cf345/docs/ui-audit/02-dependency-and-migration-map.md)
+- [UI回归矩阵](https://github.com/mylittleblover/godpower-html/blob/32893708c24d8cd32e9c82d18b35be164a2cf345/docs/ui-audit/03-regression-matrix.md)
+- [风险登记](https://github.com/mylittleblover/godpower-html/blob/32893708c24d8cd32e9c82d18b35be164a2cf345/docs/ui-audit/04-risk-register.md)
+
+UI方案明确复用SP03的唯一ContributionRegistry，比赛14组基线和Electron现有CSP/IPC不放宽。本轮没有修改UI产品代码或执行UI验收，所有RG项目均NOT TESTED。UI设计与插件平台设计应作为一个一致的阶段审阅；设计批准后分别纳入同一份writing-plans实施计划。
