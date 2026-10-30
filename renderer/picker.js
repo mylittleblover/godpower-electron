@@ -253,18 +253,29 @@ $("unlockClassroom").addEventListener("click", async () => {
   const r = await api.windowAction("unlock");
   if (!r.ok) message("无法打开课堂解锁窗口，请检查主课堂状态。");
 });
-$("pickerIcon").addEventListener("pointerdown", async (e) => {
-  if (e.button !== 0) return;
-  e.preventDefault();
+let iconPointer=null, iconMoveFrame=null, iconMovePoint=null;
+const pointerPoint=e=>({x:e.screenX,y:e.screenY});
+$("pickerIcon").addEventListener("pointerdown",e=>{
+  if(e.button!==0||e.isPrimary===false)return;
+  e.preventDefault();iconPointer=e.pointerId;
   e.currentTarget.setPointerCapture(e.pointerId);
-  await api.windowAction("dragStart");
+  void api.windowAction("dragStart",pointerPoint(e));
 });
-$("pickerIcon").addEventListener("pointerup", () =>
-  api.windowAction("dragEnd"),
-);
-$("pickerIcon").addEventListener("pointercancel", () =>
-  api.windowAction("dragCancel"),
-);
+$("pickerIcon").addEventListener("pointermove",e=>{
+  if(e.pointerId!==iconPointer)return;
+  e.preventDefault();iconMovePoint=pointerPoint(e);
+  if(iconMoveFrame!==null)return;
+  iconMoveFrame=requestAnimationFrame(()=>{iconMoveFrame=null;void api.windowAction("dragMove",iconMovePoint)});
+});
+function endIconPointer(e,cancelled=false){
+  if(e.pointerId!==iconPointer)return;
+  if(iconMoveFrame!==null)cancelAnimationFrame(iconMoveFrame);
+  iconMoveFrame=null;iconPointer=null;
+  void api.windowAction(cancelled?"dragCancel":"dragEnd",pointerPoint(e));
+}
+$("pickerIcon").addEventListener("pointerup",e=>endIconPointer(e));
+$("pickerIcon").addEventListener("pointercancel",e=>endIconPointer(e,true));
+$("pickerIcon").addEventListener("lostpointercapture",e=>endIconPointer(e,true));
 $("pickerIcon").addEventListener("keydown", (e) => {
   if (e.key === "Enter" || e.key === " ") {
     e.preventDefault();

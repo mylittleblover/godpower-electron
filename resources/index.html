@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>上帝的力量 V3.0.53</title>
+<title>上帝的力量 V3.0.57</title>
 <script>/* Host-owned, declarative UI contributions. Plugin code never receives DOM callbacks here. */
 (function installGodPowerContributionRegistry(root) {
   "use strict";
@@ -17,8 +17,6 @@
     "commandShortcut",
     "viewPreset",
     "decoration",
-    "theme",
-    "textBundle",
   ]);
   const SLOTS = new Set([
     "home.cards",
@@ -35,14 +33,7 @@
     "builtin.command-shortcut",
     "builtin.decoration",
   ]);
-  const CORE_PAGES = [
-    "welcome",
-    "battle",
-    "history",
-    "archives",
-    "plugins",
-    "settings",
-  ];
+  const CORE_PAGES = ["welcome", "battle", "history", "archives", "settings"];
   const REQUIRED = {
     page: "ui.page.register",
     navigation: "ui.navigation.register",
@@ -52,8 +43,6 @@
     commandShortcut: "ui.commandShortcut.register",
     viewPreset: "ui.viewPreset.register",
     decoration: "ui.decoration.register",
-    theme: "ui.theme.register",
-    textBundle: "ui.text.register",
   };
   const EXECUTABLE_FIELD =
     /^(?:html|markup|script|module|mount|handler|callback|function|css|csstext|javascript|__proto__|prototype|constructor)$/i;
@@ -96,8 +85,6 @@
     commandShortcut: new Set(["commandId", "titleKey", "renderer", "schema"]),
     viewPreset: new Set(["presetId", "titleKey", "renderer", "tokens"]),
     decoration: new Set(["slot", "renderer", "titleKey", "asset"]),
-    theme: new Set(["displayNameKey", "tokens"]),
-    textBundle: new Set(["locale", "messages"]),
   };
   const clone = (value) => JSON.parse(JSON.stringify(value));
   const equal = (left, right) => JSON.stringify(left) === JSON.stringify(right);
@@ -325,77 +312,6 @@
       ) {
         fail("competition overlay must use the transient notice renderer");
       }
-      if (input.kind === "theme") {
-        if (
-          !/^[a-z][a-zA-Z0-9_.-]{0,127}$/.test(descriptor.displayNameKey || "")
-        )
-          fail("theme displayNameKey is required");
-        const allowedTokens = new Set([
-          "--ui-primary",
-          "--ui-primary-hover",
-          "--ui-accent",
-          "--ui-accent-hover",
-          "--ui-bg",
-          "--ui-panel",
-          "--ui-soft",
-          "--ui-soft-2",
-          "--ui-text",
-          "--ui-muted",
-          "--ui-border",
-          "--ui-border-strong",
-        ]);
-        if (
-          !descriptor.tokens ||
-          typeof descriptor.tokens !== "object" ||
-          Array.isArray(descriptor.tokens)
-        )
-          fail("theme tokens must be a token map");
-        for (const [token, value] of Object.entries(descriptor.tokens)) {
-          if (!allowedTokens.has(token))
-            fail(`theme token is not allowed: ${token}`);
-          if (typeof value !== "string" || !/^#[0-9a-f]{6}$/i.test(value))
-            fail(`theme token ${token} must be a six-digit hex color`);
-        }
-        if (!Object.keys(descriptor.tokens).length)
-          fail("theme tokens are empty");
-      }
-      if (input.kind === "textBundle") {
-        if (!/^[a-z]{2,3}(?:-[A-Z]{2})?$/.test(descriptor.locale || ""))
-          fail("text bundle locale is invalid");
-        const allowedKeys = new Set([
-          "app.name",
-          "nav.welcome",
-          "nav.battle",
-          "nav.history",
-          "nav.archives",
-          "nav.plugins",
-          "nav.settings",
-          "home.description",
-        ]);
-        if (
-          !descriptor.messages ||
-          typeof descriptor.messages !== "object" ||
-          Array.isArray(descriptor.messages)
-        )
-          fail("text bundle messages must be a map");
-        const keys = Object.keys(descriptor.messages);
-        if (!keys.length || keys.length > 32)
-          fail("text bundle message count is invalid");
-        for (const [key, value] of Object.entries(descriptor.messages)) {
-          if (
-            !allowedKeys.has(key) ||
-            /^(safety|permissions|dataLoss|transaction)\./.test(key)
-          )
-            fail(`text key is not allowed: ${key}`);
-          if (
-            typeof value !== "string" ||
-            !value.trim() ||
-            value.length > 120 ||
-            /[<>]/.test(value)
-          )
-            fail(`text value for ${key} must be plain bounded text`);
-        }
-      }
       return {
         id: `${activationRecord.pluginId}/${input.localId}`,
         pluginId: activationRecord.pluginId,
@@ -521,893 +437,6 @@
       },
     });
   }
-})(globalThis);
-</script>
-<script>/* Host-owned declarative plugin lifecycle. It never evaluates plugin code. */
-(function installGodPowerPluginPlatform(root) {
-  "use strict";
-
-  const KNOWN_CAPABILITIES = new Set([
-    "classroom.read",
-    "students.read",
-    "groups.read",
-    "competition.stats.read",
-    "competition.commands.request",
-    "rules.register",
-    "resources.read",
-    "resources.write",
-    "plugin.storage",
-    "network.request",
-    "files.open",
-    "files.save",
-    "audio.play",
-    "audio.capture",
-    "midi.access",
-    "camera.capture",
-    "microphone.capture",
-    "native.device",
-    "ui.page.register",
-    "ui.navigation.register",
-    "ui.card.register",
-    "ui.panel.register",
-    "ui.settings.register",
-    "ui.commandShortcut.register",
-    "ui.viewPreset.register",
-    "ui.decoration.register",
-    "ui.theme.register",
-    "ui.text.register",
-  ]);
-  const TYPES = new Set([
-    "gameplay",
-    "subject",
-    "theme",
-    "tool",
-    "resource",
-    "native",
-  ]);
-  const SUBJECTS = new Set([
-    "chinese",
-    "math",
-    "english",
-    "physics",
-    "chemistry",
-    "biology",
-    "history",
-    "politics",
-    "geography",
-    "art",
-    "music",
-  ]);
-  const PLATFORMS = new Set(["html", "electron"]);
-  const ID = /^[a-z0-9]+(?:[.-][a-z0-9]+)+$/;
-  const LOCAL_ID = /^[a-z0-9][a-z0-9._-]{0,63}$/;
-  const SEMVER =
-    /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\+[0-9A-Za-z.-]+)?$/;
-  const SAFE_KEY = /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,95}$/;
-  const MANIFEST_FIELDS = new Set([
-    "manifestVersion",
-    "id",
-    "name",
-    "description",
-    "author",
-    "version",
-    "sdk",
-    "types",
-    "subjects",
-    "platforms",
-    "entry",
-    "permissions",
-    "dependencies",
-    "optionalDependencies",
-    "contributes",
-    "data",
-  ]);
-  const clone = (value) => JSON.parse(JSON.stringify(value));
-  // A conservative UTF-8 upper bound that also works in the isolated test VM.
-  const bytes = (value) => JSON.stringify(value).length * 3;
-  const fail = (message) => {
-    throw new TypeError(message);
-  };
-
-  function parseSemver(value) {
-    if (typeof value !== "string" || !SEMVER.test(value)) return null;
-    const [buildless] = value.split("+");
-    const [core, prerelease = ""] = buildless.split("-");
-    return {
-      core: core.split(".").map(Number),
-      prerelease: prerelease ? prerelease.split(".") : [],
-    };
-  }
-  function compareSemver(left, right) {
-    const a = parseSemver(left),
-      b = parseSemver(right);
-    if (!a || !b) fail("invalid semantic version");
-    for (let i = 0; i < 3; i++)
-      if (a.core[i] !== b.core[i]) return a.core[i] < b.core[i] ? -1 : 1;
-    if (!a.prerelease.length || !b.prerelease.length)
-      return a.prerelease.length === b.prerelease.length
-        ? 0
-        : a.prerelease.length
-          ? -1
-          : 1;
-    const length = Math.max(a.prerelease.length, b.prerelease.length);
-    for (let i = 0; i < length; i++) {
-      if (a.prerelease[i] === undefined || b.prerelease[i] === undefined)
-        return a.prerelease[i] === undefined ? -1 : 1;
-      const an = /^(0|[1-9]\d*)$/.test(a.prerelease[i]),
-        bn = /^(0|[1-9]\d*)$/.test(b.prerelease[i]);
-      if (an && bn && Number(a.prerelease[i]) !== Number(b.prerelease[i]))
-        return Number(a.prerelease[i]) < Number(b.prerelease[i]) ? -1 : 1;
-      if (an !== bn) return an ? -1 : 1;
-      if (a.prerelease[i] !== b.prerelease[i])
-        return a.prerelease[i] < b.prerelease[i] ? -1 : 1;
-    }
-    return 0;
-  }
-  function dependencyRange(value) {
-    if (typeof value !== "string" || value.length > 80) return null;
-    const exact = value.match(
-      /^((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?)$/,
-    );
-    if (exact && SEMVER.test(exact[1]))
-      return { lower: exact[1], upper: exact[1], exact: true };
-    const operator = value.match(
-      /^([~^])((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?)$/,
-    );
-    if (operator && SEMVER.test(operator[2])) {
-      const [major, minor, patch] = operator[2]
-        .split("-")[0]
-        .split(".")
-        .map(Number);
-      let upper;
-      if (operator[1] === "~") upper = `${major}.${minor + 1}.0`;
-      else if (major > 0) upper = `${major + 1}.0.0`;
-      else if (minor > 0) upper = `0.${minor + 1}.0`;
-      else upper = `0.0.${patch + 1}`;
-      return { lower: operator[2], upper };
-    }
-    const bounds = value.match(
-      /^>=(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?) <(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)$/,
-    );
-    if (
-      bounds &&
-      SEMVER.test(bounds[1]) &&
-      SEMVER.test(bounds[2]) &&
-      compareSemver(bounds[1], bounds[2]) < 0
-    )
-      return { lower: bounds[1], upper: bounds[2] };
-    return null;
-  }
-  function satisfiesRange(version, range) {
-    const parsed = dependencyRange(range);
-    if (!parsed || !parseSemver(version)) return false;
-    if (parsed.exact) return compareSemver(version, parsed.lower) === 0;
-    return (
-      compareSemver(version, parsed.lower) >= 0 &&
-      compareSemver(version, parsed.upper) < 0
-    );
-  }
-
-  function plainJson(value, path = "value", depth = 0) {
-    if (depth > 32) fail(`${path} exceeds maximum JSON depth`);
-    if (
-      value === null ||
-      typeof value === "string" ||
-      typeof value === "boolean"
-    )
-      return;
-    if (typeof value === "number") {
-      if (!Number.isFinite(value)) fail(`${path} contains non-finite number`);
-      return;
-    }
-    if (Array.isArray(value)) {
-      if (value.length > 1000) fail(`${path} contains too many entries`);
-      value.forEach((item, i) => plainJson(item, `${path}[${i}]`, depth + 1));
-      return;
-    }
-    const prototype = value && Object.getPrototypeOf(value);
-    if (
-      !value ||
-      Object.prototype.toString.call(value) !== "[object Object]" ||
-      (prototype !== null && Object.getPrototypeOf(prototype) !== null)
-    )
-      fail(`${path} must be plain JSON`);
-    for (const [key, item] of Object.entries(value)) {
-      if (["__proto__", "constructor", "prototype"].includes(key))
-        fail(`${path} has unsafe key`);
-      plainJson(item, `${path}.${key}`, depth + 1);
-    }
-  }
-
-  function localized(value, required, label) {
-    if (!value || typeof value !== "object" || Array.isArray(value))
-      fail(`${label} must be localized text`);
-    const result = {};
-    for (const [locale, text] of Object.entries(value)) {
-      if (
-        !/^[a-z]{2,3}(?:-[A-Z]{2})?$/.test(locale) ||
-        typeof text !== "string" ||
-        !text.trim() ||
-        text.length > 200
-      )
-        fail(`${label} contains invalid locale text`);
-      result[locale] = text.trim();
-    }
-    if (!result["zh-CN"] && !result.en) fail(`${label} requires zh-CN or en`);
-    if (required && !Object.keys(result).length) fail(`${label} is required`);
-    return result;
-  }
-
-  function safePackagePath(value, label) {
-    if (
-      typeof value !== "string" ||
-      !value ||
-      value.length > 200 ||
-      value.includes("\\") ||
-      value.includes("\0") ||
-      value.startsWith("/") ||
-      /^[a-z]+:/i.test(value)
-    )
-      fail(`${label} must be a package-relative JSON path`);
-    const parts = value.split("/");
-    if (parts.some((part) => !part || part === "." || part === ".."))
-      fail(`${label} contains unsafe path segments`);
-    if (!value.toLowerCase().endsWith(".json"))
-      fail(`${label} must reference declarative JSON, not executable code`);
-    return value;
-  }
-
-  function validateManifest(input, platform = "html") {
-    plainJson(input, "manifest");
-    if (bytes(input) > 65536) fail("manifest exceeds 64 KiB");
-    if (!input || input.manifestVersion !== 1)
-      fail("unsupported manifestVersion");
-    for (const key of Object.keys(input))
-      if (!MANIFEST_FIELDS.has(key)) fail(`unsupported manifest field: ${key}`);
-    if (
-      typeof input.id !== "string" ||
-      input.id.length > 120 ||
-      !ID.test(input.id)
-    )
-      fail("invalid reverse-domain plugin id");
-    const name = localized(input.name, true, "name");
-    const description = localized(
-      input.description || { "zh-CN": "" },
-      false,
-      "description",
-    );
-    const version = input.version;
-    if (typeof version !== "string" || !SEMVER.test(version))
-      fail("invalid plugin version");
-    const sdk = input.sdk;
-    const sdkMatch =
-      typeof sdk === "string" &&
-      sdk.match(
-        /^>=((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)) <((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*))$/,
-      );
-    if (!sdkMatch) fail("SDK range must use the supported >=x.y.z <x.y.z form");
-    const parseVersion = (v) => v.split(".").map(Number);
-    const current = [1, 0, 0];
-    const compare = (a, b) => {
-      for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] - b[i];
-      return 0;
-    };
-    if (
-      compare(current, parseVersion(sdkMatch[1])) < 0 ||
-      compare(current, parseVersion(sdkMatch[2])) >= 0
-    )
-      fail("plugin SDK is incompatible");
-    if (
-      !input.author ||
-      typeof input.author.name !== "string" ||
-      !input.author.name.trim() ||
-      input.author.name.length > 120
-    )
-      fail("author.name is required");
-    if (
-      !Array.isArray(input.types) ||
-      !input.types.length ||
-      input.types.some((v) => !TYPES.has(v)) ||
-      new Set(input.types).size !== input.types.length
-    )
-      fail("invalid plugin types");
-    if (
-      !Array.isArray(input.subjects || []) ||
-      (input.subjects || []).some((v) => !SUBJECTS.has(v))
-    )
-      fail("invalid subject list");
-    if (
-      !Array.isArray(input.platforms) ||
-      !input.platforms.includes(platform) ||
-      input.platforms.some((v) => !PLATFORMS.has(v))
-    )
-      fail("plugin does not support this platform");
-    if (
-      !input.entry ||
-      typeof input.entry !== "object" ||
-      Array.isArray(input.entry) ||
-      !Object.keys(input.entry).length
-    )
-      fail("entry is required");
-    for (const [kind, path] of Object.entries(input.entry)) {
-      if (!["content", "theme", "views", "rules"].includes(kind))
-        fail(`unsupported declarative entry: ${kind}`);
-      safePackagePath(path, `entry.${kind}`);
-    }
-    if (!Array.isArray(input.permissions) || input.permissions.length > 64)
-      fail("permissions must be an array");
-    const seenPermissions = new Set();
-    const permissions = input.permissions.map((grant) => {
-      if (
-        !grant ||
-        !KNOWN_CAPABILITIES.has(grant.capability) ||
-        typeof grant.required !== "boolean" ||
-        seenPermissions.has(grant.capability)
-      )
-        fail("invalid or duplicate permission capability");
-      seenPermissions.add(grant.capability);
-      return { capability: grant.capability, required: grant.required };
-    });
-    for (const field of ["dependencies", "optionalDependencies"]) {
-      if (input[field] !== undefined) {
-        if (
-          !input[field] ||
-          typeof input[field] !== "object" ||
-          Array.isArray(input[field])
-        )
-          fail(`${field} must be an object`);
-        for (const [id, range] of Object.entries(input[field]))
-          if (!ID.test(id) || id === input.id || !dependencyRange(range))
-            fail(`${field} contains invalid dependency`);
-      }
-    }
-    if (
-      Object.keys(input.dependencies || {}).some((id) =>
-        Object.hasOwn(input.optionalDependencies || {}, id),
-      )
-    )
-      fail("dependency cannot be both required and optional");
-    if (
-      !Array.isArray(input.contributes || []) ||
-      (input.contributes || []).length > 100
-    )
-      fail("contributes must be a bounded array");
-    const contributes = clone(input.contributes || []);
-    const localIds = new Set();
-    for (const contribution of contributes) {
-      if (
-        !contribution ||
-        !LOCAL_ID.test(contribution.localId || "") ||
-        localIds.has(contribution.localId)
-      )
-        fail("invalid or duplicate contribution localId");
-      localIds.add(contribution.localId);
-      if (
-        !Array.isArray(contribution.requiredPermissions || []) ||
-        (contribution.requiredPermissions || []).some(
-          (cap) => !KNOWN_CAPABILITIES.has(cap),
-        )
-      )
-        fail("contribution requests unknown permission");
-    }
-    if (
-      !input.data ||
-      !Number.isSafeInteger(input.data.schemaVersion) ||
-      input.data.schemaVersion < 1
-    )
-      fail("data.schemaVersion must be a positive integer");
-    return Object.freeze({
-      manifestVersion: 1,
-      id: input.id,
-      name,
-      description,
-      author: { name: input.author.name.trim() },
-      version,
-      sdk,
-      types: [...input.types],
-      subjects: [...(input.subjects || [])],
-      platforms: [...input.platforms],
-      entry: clone(input.entry),
-      permissions,
-      dependencies: clone(input.dependencies || {}),
-      optionalDependencies: clone(input.optionalDependencies || {}),
-      contributes,
-      data: { schemaVersion: input.data.schemaVersion },
-    });
-  }
-
-  function canonical(value) {
-    if (Array.isArray(value)) return value.map(canonical);
-    if (value && typeof value === "object")
-      return Object.fromEntries(
-        Object.keys(value)
-          .sort()
-          .map((key) => [key, canonical(value[key])]),
-      );
-    return value;
-  }
-  function scopeKey(scope) {
-    plainJson(scope, "scope");
-    if (!scope || typeof scope !== "object" || Array.isArray(scope))
-      fail("host scope must be an object");
-    return JSON.stringify(canonical(scope));
-  }
-
-  function createPluginPlatform(options = {}) {
-    const registry = options.contributions;
-    const repository = options.repository;
-    const currentScope =
-      options.currentScope || (() => ({ teacherId: "local" }));
-    const platform = options.platform || "html";
-    const isTrustedBuiltin = options.isTrustedBuiltin || (() => false);
-    if (
-      !registry ||
-      !repository ||
-      typeof repository.load !== "function" ||
-      typeof repository.save !== "function"
-    )
-      fail("plugin registry and repository are required");
-    const records = new Map();
-    const capabilities = new WeakMap();
-    const pending = new Map();
-    if (repository.list) {
-      for (const persisted of repository.list()) {
-        if (persisted.state === "active" || persisted.state === "paused") {
-          const recovered = {
-            ...persisted,
-            state: "installed",
-            activationId: null,
-            activeScopeKey: null,
-          };
-          repository.save(persisted.manifest.id, clone(recovered));
-          records.set(persisted.manifest.id, recovered);
-        }
-      }
-    }
-    const read = (id) =>
-      records.has(id)
-        ? records.get(id)
-        : (records.set(id, repository.load(id)), records.get(id));
-    const save = (record) => {
-      repository.save(record.manifest.id, clone(record));
-      records.set(record.manifest.id, record);
-    };
-    const assertHandle = (handle) => {
-      const capability = capabilities.get(handle);
-      if (!capability || !capability.active)
-        fail("plugin activation is inactive or stale");
-      if (scopeKey(currentScope()) !== capability.scopeKey)
-        fail("plugin activation scope is stale");
-      return capability;
-    };
-    function install(input, config = {}) {
-      const manifest = validateManifest(input, platform);
-      if (
-        manifest.id.startsWith("official.") &&
-        (config.source !== "builtin" || !isTrustedBuiltin(manifest))
-      )
-        fail("unsigned package cannot claim an official plugin id");
-      const prior = read(manifest.id);
-      if (prior && prior.state !== "uninstalled")
-        fail("plugin is already installed");
-      const record = prior
-        ? {
-            ...prior,
-            manifest: clone(manifest),
-            state: "installed",
-            activationId: null,
-            grantsByScope: {},
-          }
-        : {
-            manifest: clone(manifest),
-            state: "installed",
-            activationId: null,
-            grantsByScope: {},
-            privateData: {},
-          };
-      save(record);
-      return publicRecord(record);
-    }
-    function publicRecord(record) {
-      return Object.freeze({
-        id: record.manifest.id,
-        name: clone(record.manifest.name),
-        version: record.manifest.version,
-        state: record.state,
-        types: [...record.manifest.types],
-        grantedPermissions: Object.keys(
-          record.grantsByScope[scopeKey(currentScope())] || {},
-        ),
-      });
-    }
-    function inspect(id) {
-      const record = read(id);
-      return record && record.state !== "uninstalled"
-        ? Object.freeze({
-            manifest: clone(record.manifest),
-            state: record.state,
-          })
-        : null;
-    }
-    function get(id) {
-      const record = read(id);
-      return record && record.state !== "uninstalled"
-        ? publicRecord(record)
-        : null;
-    }
-    function list() {
-      return repository.list
-        ? repository
-            .list()
-            .filter((r) => r.state !== "uninstalled")
-            .map(publicRecord)
-        : [...records.values()]
-            .filter((r) => r.state !== "uninstalled")
-            .map(publicRecord);
-    }
-    function grantPermissions(id, requested) {
-      const record = read(id);
-      if (!record || record.state === "uninstalled")
-        fail("plugin is not installed");
-      if (record.state === "active" || record.state === "paused")
-        fail("deactivate plugin before changing permissions");
-      if (!Array.isArray(requested)) fail("permission grant must be an array");
-      const declared = new Map(
-        record.manifest.permissions.map((p) => [p.capability, p]),
-      );
-      const grants = {};
-      for (const capability of requested) {
-        if (!declared.has(capability))
-          fail(`permission was not declared: ${capability}`);
-        grants[capability] = true;
-      }
-      const missing = record.manifest.permissions.filter(
-        (p) => p.required && !grants[p.capability],
-      );
-      if (missing.length)
-        fail(
-          `required permission not granted: ${missing.map((p) => p.capability).join(", ")}`,
-        );
-      const candidate = {
-        ...record,
-        grantsByScope: {
-          ...record.grantsByScope,
-          [scopeKey(currentScope())]: grants,
-        },
-      };
-      save(candidate);
-      return publicRecord(candidate);
-    }
-    function activate(id, scope = currentScope()) {
-      const record = read(id);
-      if (!record || record.state === "uninstalled")
-        fail("plugin is not installed");
-      if (record.state === "active") fail("plugin is already active");
-      if (record.state === "quarantined")
-        fail("quarantined plugin requires explicit restore");
-      const key = scopeKey(scope);
-      const grants = record.grantsByScope[key] || {};
-      const missing = record.manifest.permissions.filter(
-        (p) => p.required && !grants[p.capability],
-      );
-      if (missing.length)
-        fail(
-          `required permission not granted: ${missing.map((p) => p.capability).join(", ")}`,
-        );
-      for (const dependency of Object.keys(record.manifest.dependencies)) {
-        const provider = read(dependency);
-        const range = record.manifest.dependencies[dependency];
-        if (!provider || provider.state === "uninstalled")
-          fail(`required dependency is not installed: ${dependency}`);
-        if (!satisfiesRange(provider.manifest.version, range))
-          fail(
-            `required dependency version mismatch: ${dependency} ${range} does not include ${provider.manifest.version}`,
-          );
-        if (provider.state !== "active" || provider.activeScopeKey !== key)
-          fail(`required dependency is inactive in this scope: ${dependency}`);
-      }
-      const activation = registry.activate(record.manifest.id, {
-        scope,
-        permissions: Object.keys(grants),
-      });
-      let registration;
-      try {
-        if (record.manifest.contributes.length)
-          registration = registry.register(
-            record.manifest.contributes.map((contribution) => ({
-              ...clone(contribution),
-              requiredPermissions: [
-                ...(contribution.requiredPermissions || []),
-              ],
-            })),
-            activation,
-          );
-        const candidate = {
-          ...record,
-          state: "active",
-          activationId: activation.activationId,
-          activeScopeKey: key,
-        };
-        save(candidate);
-        const handle = Object.freeze({
-          pluginId: id,
-          activationId: activation.activationId,
-        });
-        capabilities.set(handle, {
-          pluginId: id,
-          activationId: activation.activationId,
-          scopeKey: key,
-          grants,
-          active: true,
-        });
-        pending.set(id, { activation, handle });
-        return Object.freeze({
-          ...publicRecord(candidate),
-          registered: registration?.registeredIds || [],
-          handle,
-        });
-      } catch (error) {
-        registry.dispose(activation.activationId);
-        throw error;
-      }
-    }
-    function deactivate(id, nextState = "installed") {
-      const record = read(id);
-      if (
-        !record ||
-        !["active", "paused", "quarantined"].includes(record.state)
-      )
-        return false;
-      const active = pending.get(id);
-      if (active) {
-        const capability = capabilities.get(active.handle);
-        if (capability) capability.active = false;
-      }
-      registry.dispose(record.activationId);
-      pending.delete(id);
-      save({
-        ...record,
-        state: nextState,
-        activationId: null,
-        activeScopeKey: null,
-      });
-      return true;
-    }
-    function pause(id) {
-      const record = read(id);
-      if (record?.state !== "active") fail("plugin is not active");
-      deactivate(id, "paused");
-      return get(id);
-    }
-    function resume(id) {
-      if (read(id)?.state !== "paused") fail("plugin is not paused");
-      return activate(id);
-    }
-    function quarantine(id, reason = "runtime-error") {
-      const record = read(id);
-      if (!record || record.state === "uninstalled")
-        fail("plugin is not installed");
-      deactivate(id, "quarantined");
-      if (record.state !== "quarantined")
-        save({
-          ...read(id),
-          state: "quarantined",
-          diagnostic: String(reason).slice(0, 160),
-        });
-      return get(id);
-    }
-    function restore(id) {
-      const record = read(id);
-      if (record?.state !== "quarantined") fail("plugin is not quarantined");
-      save({ ...record, state: "installed", diagnostic: null });
-      return get(id);
-    }
-    function reconcileScope(scope = currentScope()) {
-      const key = scopeKey(scope);
-      const stopped = [];
-      for (const record of [...records.values()])
-        if (record.state === "active" && record.activeScopeKey !== key) {
-          deactivate(record.manifest.id);
-          stopped.push(record.manifest.id);
-        }
-      return stopped;
-    }
-    function uninstall(id, config = {}) {
-      const record = read(id);
-      if (!record || record.state === "uninstalled") return false;
-      if (["active", "paused"].includes(record.state))
-        fail("deactivate plugin before uninstall");
-      for (const other of [...records.values()])
-        if (other.state !== "uninstalled" && other.manifest.dependencies[id])
-          fail(`plugin is required by ${other.manifest.id}`);
-      if (config.purgeData === true) {
-        repository.delete?.(id);
-        records.delete(id);
-      } else
-        save({
-          ...record,
-          state: "uninstalled",
-          activationId: null,
-          activeScopeKey: null,
-        });
-      return true;
-    }
-    function storage(handle) {
-      const capability = assertHandle(handle);
-      if (!capability.grants["plugin.storage"])
-        fail("permission denied: plugin.storage");
-      const privateKey = `${capability.pluginId}:${capability.scopeKey}`;
-      const readData = () => {
-        const record = read(capability.pluginId);
-        return record.privateData[privateKey] || {};
-      };
-      return Object.freeze({
-        get(key) {
-          assertHandle(handle);
-          if (!SAFE_KEY.test(key)) fail("invalid plugin storage key");
-          const entry = readData()[key];
-          return entry
-            ? Object.freeze({
-                value: clone(entry.value),
-                revision: entry.revision,
-              })
-            : null;
-        },
-        set(key, value, expectedRevision = 0) {
-          assertHandle(handle);
-          if (!SAFE_KEY.test(key)) fail("invalid plugin storage key");
-          plainJson(value, "plugin storage value");
-          const record = read(capability.pluginId);
-          const priorData = record.privateData[privateKey] || {};
-          const prior = priorData[key];
-          const revision = prior?.revision || 0;
-          if (revision !== expectedRevision)
-            fail("plugin storage revision conflict");
-          const valueCopy = clone(value);
-          const nextData = {
-            ...priorData,
-            [key]: { value: valueCopy, revision: revision + 1 },
-          };
-          if (bytes(nextData) > 10 * 1024 * 1024)
-            fail("plugin scope storage exceeds 10 MiB quota");
-          const candidate = {
-            ...record,
-            privateData: { ...record.privateData, [privateKey]: nextData },
-          };
-          save(candidate);
-          return Object.freeze({ revision: revision + 1 });
-        },
-        remove(key, expectedRevision) {
-          assertHandle(handle);
-          if (!SAFE_KEY.test(key)) fail("invalid plugin storage key");
-          const record = read(capability.pluginId);
-          const data = record.privateData[privateKey] || {};
-          const prior = data[key];
-          if (!prior) return false;
-          if (prior.revision !== expectedRevision)
-            fail("plugin storage revision conflict");
-          const nextData = { ...data };
-          delete nextData[key];
-          save({
-            ...record,
-            privateData: { ...record.privateData, [privateKey]: nextData },
-          });
-          return true;
-        },
-      });
-    }
-    return Object.freeze({
-      install,
-      get,
-      list,
-      inspect,
-      grantPermissions,
-      activate,
-      deactivate,
-      pause,
-      resume,
-      quarantine,
-      restore,
-      reconcileScope,
-      uninstall,
-      storage,
-      contributions: registry,
-      validateManifest: (value) => validateManifest(value, platform),
-    });
-  }
-  root.GodPowerPluginPlatform = Object.freeze({
-    createPluginPlatform,
-    validateManifest: (manifest, platform) =>
-      validateManifest(manifest, platform),
-  });
-})(globalThis);
-</script>
-<script>(function installPluginLocalRepository(root) {
-  "use strict";
-  const KEY = "godpower_plugins_v1";
-  const clone = (value) => JSON.parse(JSON.stringify(value));
-  const fail = (message) => {
-    throw new Error(message);
-  };
-  function createPluginLocalRepository(storage) {
-    if (
-      !storage ||
-      typeof storage.getItem !== "function" ||
-      typeof storage.setItem !== "function"
-    )
-      fail("plugin storage is unavailable");
-    function read() {
-      const raw = storage.getItem(KEY);
-      if (raw === null) return { schemaVersion: 1, records: {} };
-      let parsed;
-      try {
-        parsed = JSON.parse(raw);
-      } catch {
-        fail("plugin repository is corrupt; existing data was left untouched");
-      }
-      if (
-        !parsed ||
-        parsed.schemaVersion !== 1 ||
-        !parsed.records ||
-        typeof parsed.records !== "object" ||
-        Array.isArray(parsed.records)
-      )
-        fail(
-          "plugin repository schema is invalid; existing data was left untouched",
-        );
-      return parsed;
-    }
-    function commit(next) {
-      const previous = storage.getItem(KEY);
-      const encoded = JSON.stringify(next);
-      try {
-        storage.setItem(KEY, encoded);
-        if (storage.getItem(KEY) !== encoded)
-          fail("plugin repository readback verification failed");
-      } catch (error) {
-        try {
-          if (previous === null) storage.removeItem(KEY);
-          else storage.setItem(KEY, previous);
-          if (storage.getItem(KEY) !== previous)
-            throw new Error("plugin repository rollback readback failed");
-        } catch (rollbackError) {
-          throw new Error(
-            `${error.message}; rollback failed: ${rollbackError.message}`,
-          );
-        }
-        throw error;
-      }
-    }
-    return Object.freeze({
-      load(id) {
-        const value = read().records[id];
-        return value ? clone(value) : null;
-      },
-      list() {
-        return Object.values(read().records).map(clone);
-      },
-      save(id, value) {
-        const current = read();
-        const next = {
-          schemaVersion: 1,
-          records: { ...current.records, [id]: clone(value) },
-        };
-        commit(next);
-      },
-      delete(id) {
-        const current = read();
-        if (!(id in current.records)) return false;
-        const records = { ...current.records };
-        delete records[id];
-        commit({ schemaVersion: 1, records });
-        return true;
-      },
-    });
-  }
-  root.GodPowerPluginLocalRepository = Object.freeze({
-    createPluginLocalRepository,
-    key: KEY,
-  });
 })(globalThis);
 </script>
 <script>/* Deterministic ownership for view-scoped UI work. No business operation belongs here. */
@@ -1654,7 +683,7 @@ window.GodpowerTheme = (() => {
   }
   function apply() {
     boot();
-    document.title = name() + " V3.0.53";
+    document.title = name() + " V3.0.57";
     const label = document.querySelector(".gp-brand-label");
     if (label?.firstChild?.nodeType === Node.TEXT_NODE)
       label.firstChild.textContent = name() + " ";
@@ -1703,7 +732,6 @@ window.GodpowerTheme = (() => {
         String(button.dataset.appearanceTheme === theme),
       );
     if (typeof updateWelcomeClock === "function") updateWelcomeClock();
-    window.GodPowerPluginAppearance?.selectBuiltinTheme?.(theme);
     // Dedicated event is consumed by presentation transports only.
     window.dispatchEvent(
       new CustomEvent("godpower:theme", { detail: { theme, name: name() } }),
@@ -1825,735 +853,6 @@ window.GodpowerTheme = (() => {
     isSwitching: () => !!active,
   };
 })();
-</script>
-<script>/* Host-owned, reversible appearance extensions. Contributions can select only fixed host tokens and text keys. */
-(function installPluginAppearance(root) {
-  "use strict";
-  const KEY = "godpower_plugin_appearance_v1";
-  const TOKEN_KEYS = new Set([
-    "--ui-primary",
-    "--ui-primary-hover",
-    "--ui-accent",
-    "--ui-accent-hover",
-    "--ui-bg",
-    "--ui-panel",
-    "--ui-soft",
-    "--ui-soft-2",
-    "--ui-text",
-    "--ui-muted",
-    "--ui-border",
-    "--ui-border-strong",
-  ]);
-  const TEXT_TARGETS = new Map([["home.description", ".gp-hero-description"]]);
-  const defaults = new Map();
-  let applied = null;
-
-  function selection() {
-    try {
-      return JSON.parse(localStorage.getItem(KEY) || "null");
-    } catch {
-      return null;
-    }
-  }
-  function restoreTexts() {
-    for (const [key, selector] of TEXT_TARGETS) {
-      const node = document.querySelector(selector);
-      if (node && defaults.has(key)) node.textContent = defaults.get(key);
-    }
-  }
-  function restore() {
-    for (const key of TOKEN_KEYS) {
-      document.documentElement.style.removeProperty(key);
-      document.body?.style.removeProperty(key);
-    }
-    document.documentElement.removeAttribute("data-plugin-theme");
-    restoreTexts();
-    applied = null;
-  }
-  function apply(
-    pluginId,
-    localId,
-    contributions = root.GodPowerPageShell?.listByPlugin(pluginId) || [],
-  ) {
-    const record = contributions.find(
-      (item) => item.id === `${pluginId}/${localId}` && item.kind === "theme",
-    );
-    if (!record) throw new Error("主题贡献不存在或插件未启用");
-    restore();
-    const tokens = record.descriptor.tokens || {};
-    for (const [key, value] of Object.entries(tokens)) {
-      if (!TOKEN_KEYS.has(key) || !/^#[0-9a-f]{6}$/i.test(value))
-        throw new Error(`宿主拒绝不安全主题令牌：${key}`);
-      document.documentElement.style.setProperty(key, value);
-      document.body?.style.setProperty(key, value);
-    }
-    document.documentElement.dataset.pluginTheme = `${pluginId}/${localId}`;
-    applied = { pluginId, localId };
-    try {
-      localStorage.setItem(
-        KEY,
-        JSON.stringify({ schemaVersion: 1, ...applied }),
-      );
-    } catch {
-      window.showToast?.("主题已临时应用，偏好保存失败");
-    }
-    return { ok: true, pluginId, localId };
-  }
-  function applyText(
-    pluginId,
-    contributions = root.GodPowerPageShell?.listByPlugin(pluginId) || [],
-  ) {
-    const bundles = contributions.filter((item) => item.kind === "textBundle");
-    for (const bundle of bundles) {
-      for (const [key, value] of Object.entries(
-        bundle.descriptor.messages || {},
-      )) {
-        const selector = TEXT_TARGETS.get(key);
-        if (!selector || typeof value !== "string" || /[<>]/.test(value))
-          continue;
-        const node = document.querySelector(selector);
-        if (!node) continue;
-        if (!defaults.has(key)) defaults.set(key, node.textContent);
-        node.textContent = value;
-      }
-    }
-    return { ok: true, count: bundles.length };
-  }
-  function sync() {
-    restore();
-    restoreTexts();
-    const saved = selection();
-    let restoredPluginTheme = false;
-    if (saved?.schemaVersion === 1 && saved.pluginId && saved.localId) {
-      const contributions =
-        root.GodPowerPageShell?.listByPlugin(saved.pluginId) || [];
-      if (
-        contributions.some(
-          (item) => item.kind === "theme" && item.localId === saved.localId,
-        )
-      ) {
-        try {
-          apply(saved.pluginId, saved.localId, contributions);
-          restoredPluginTheme = true;
-        } catch {
-          restore();
-        }
-      } else {
-        try {
-          localStorage.removeItem(KEY);
-        } catch {
-          /* Appearance preference only. */
-        }
-      }
-    }
-    if (!restoredPluginTheme && root.GodpowerTheme?.get?.() === "marx")
-      selectBuiltinTheme("marx");
-    for (const plugin of root.GodPowerPluginCenter?.platform?.list?.() || [])
-      if (plugin.state === "active") applyText(plugin.id);
-  }
-  function selectBuiltinTheme(theme) {
-    if (theme !== "marx") {
-      try {
-        localStorage.removeItem(KEY);
-      } catch {
-        window.showToast?.("主题已切换，但扩展主题偏好未能清除");
-      }
-      restore();
-      return { ok: true, restored: true };
-    }
-    const item = (
-      root.GodPowerPageShell?.listByPlugin("official.marx-theme") || []
-    ).find((entry) => entry.kind === "theme" && entry.localId === "marx");
-    if (!item) return { ok: false, reason: "official Marx theme is inactive" };
-    return apply("official.marx-theme", "marx");
-  }
-  root.GodPowerPluginAppearance = Object.freeze({
-    apply,
-    applyText,
-    restore,
-    sync,
-    selectBuiltinTheme,
-    get applied() {
-      return applied && { ...applied };
-    },
-  });
-  window.addEventListener("DOMContentLoaded", sync, { once: true });
-})(globalThis);
-</script>
-<script>/* Trusted, declarative catalog entry for the official Marx appearance plugin. */
-(function installOfficialMarxTheme(root) {
-  "use strict";
-  const manifest = {
-    manifestVersion: 1,
-    id: "official.marx-theme",
-    name: { "zh-CN": "马克思主题", en: "Marx Theme" },
-    description: {
-      "zh-CN": "提供马克思的力量受控主题令牌。",
-      en: "Provides the Marx visual theme tokens.",
-    },
-    author: { name: "GodPower Official" },
-    version: "1.0.0",
-    sdk: ">=1.0.0 <2.0.0",
-    types: ["theme"],
-    subjects: [],
-    platforms: ["html", "electron"],
-    entry: { theme: "themes/marx.json" },
-    permissions: [{ capability: "ui.theme.register", required: true }],
-    dependencies: {},
-    optionalDependencies: {},
-    contributes: [
-      {
-        localId: "marx",
-        kind: "theme",
-        descriptor: {
-          displayNameKey: "theme.marx.name",
-          tokens: {
-            "--ui-primary": "#a91e2c",
-            "--ui-primary-hover": "#831924",
-            "--ui-accent": "#b26519",
-            "--ui-accent-hover": "#874a12",
-            "--ui-bg": "#faf6f1",
-            "--ui-panel": "#fffdfa",
-            "--ui-soft": "#f9eae6",
-            "--ui-soft-2": "#fcf5f0",
-            "--ui-text": "#382624",
-            "--ui-muted": "#77534b",
-            "--ui-border": "#e3cec5",
-            "--ui-border-strong": "#c59d8e",
-          },
-        },
-      },
-    ],
-    data: { schemaVersion: 1 },
-  };
-  root.GodpowerMarxThemePlugin = Object.freeze({ manifest });
-})(globalThis);
-</script>
-<script>/* Trusted declarative catalog entry for the official gameplay plugin. */
-(function installOfficialMiyamotoPlugin(root) {
-  "use strict";
-  const manifest = {
-    manifestVersion: 1,
-    id: "official.miyamotos-power",
-    name: { "zh-CN": "宫本茂的力量", en: "Miyamoto's Power" },
-    description: {
-      "zh-CN":
-        "课堂道具玩法与百科。当前阶段仅迁移入口和功能开关，竞技规则仍由原业务内核执行。",
-      en: "Classroom item gameplay and encyclopedia. This stage migrates entry points and the feature toggle only.",
-    },
-    author: { name: "GodPower Official" },
-    version: "1.0.0",
-    sdk: ">=1.0.0 <2.0.0",
-    types: ["gameplay"],
-    subjects: [],
-    platforms: ["html", "electron"],
-    entry: { content: "gameplay/items.json" },
-    permissions: [
-      { capability: "ui.page.register", required: true },
-      { capability: "ui.settings.register", required: true },
-      { capability: "ui.card.register", required: true },
-    ],
-    dependencies: {},
-    optionalDependencies: {},
-    contributes: [
-      {
-        localId: "items",
-        kind: "page",
-        descriptor: {
-          titleKey: "plugin.miyamoto.items",
-          renderer: "builtin.plugin-workspace",
-        },
-      },
-      {
-        localId: "settings",
-        kind: "settings",
-        descriptor: {
-          slot: "settings.pluginLinks",
-          renderer: "builtin.plugin-workspace",
-          titleKey: "plugin.miyamoto.settings",
-          schema: { type: "object", properties: {} },
-        },
-      },
-      {
-        localId: "daily-item-tip",
-        kind: "card",
-        descriptor: {
-          slot: "home.cards",
-          renderer: "builtin.dashboard-card",
-          titleKey: "home.card.miyamoto.dailyItem",
-          dataSelector: ".gp-daily-item",
-          recommendedSize: { w: 6, h: 6 },
-          emptyState: "当前没有可展示的道具知识。",
-        },
-      },
-    ],
-    data: { schemaVersion: 1 },
-  };
-  root.GodpowerMiyamotoPlugin = Object.freeze({ manifest });
-})(globalThis);
-</script>
-<script>/* Declarative card contribution for the existing offline subject content. */
-(function installOfficialMarxPoliticsPlugin(root) {
-  "use strict";
-  const manifest = {
-    manifestVersion: 1,
-    id: "official.marx-politics",
-    name: { "zh-CN": "马克思的力量 · 思政课堂", en: "Marx Politics" },
-    description: {
-      "zh-CN": "管理首页的政治知识点与课堂挑战卡片。",
-      en: "Owns the politics knowledge and classroom challenge cards on Home.",
-    },
-    author: { name: "GodPower Official" },
-    version: "1.0.0",
-    sdk: ">=1.0.0 <2.0.0",
-    types: ["subject"],
-    subjects: ["politics"],
-    platforms: ["html", "electron"],
-    entry: { content: "subjects/politics.json" },
-    permissions: [{ capability: "ui.card.register", required: true }],
-    dependencies: {},
-    optionalDependencies: {},
-    contributes: [
-      {
-        localId: "daily-knowledge",
-        kind: "card",
-        descriptor: {
-          slot: "home.cards",
-          renderer: "builtin.dashboard-card",
-          titleKey: "home.card.politics.knowledge",
-          dataSelector: ".gp-daily-knowledge",
-          recommendedSize: { w: 6, h: 6 },
-          emptyState: "没有可审核的知识点内容。",
-        },
-      },
-      {
-        localId: "daily-challenge",
-        kind: "card",
-        descriptor: {
-          slot: "home.cards",
-          renderer: "builtin.dashboard-card",
-          titleKey: "home.card.politics.challenge",
-          dataSelector: ".gp-daily-challenge",
-          recommendedSize: { w: 6, h: 6 },
-          emptyState: "没有可用的课堂挑战。",
-        },
-      },
-    ],
-    data: { schemaVersion: 1 },
-  };
-  root.GodpowerMarxPoliticsPlugin = Object.freeze({ manifest });
-})(globalThis);
-</script>
-<script>(function installPluginCenter(root) {
-  "use strict";
-  const $ = (selector) => document.querySelector(selector);
-  const labels = {
-    "classroom.read": "课堂只读",
-    "students.read": "学生信息",
-    "groups.read": "小组信息",
-    "competition.stats.read": "竞技统计",
-    "competition.commands.request": "申请竞技命令",
-    "rules.register": "注册规则",
-    "resources.read": "读取资源",
-    "resources.write": "写入资源",
-    "plugin.storage": "插件私有存储",
-    "network.request": "网络访问",
-    "files.open": "打开文件",
-    "files.save": "保存文件",
-    "audio.play": "播放音频",
-    "audio.capture": "音频采集",
-    "midi.access": "MIDI设备",
-    "camera.capture": "摄像头",
-    "microphone.capture": "麦克风",
-    "native.device": "原生设备",
-    "ui.page.register": "注册插件页面",
-    "ui.navigation.register": "注册导航",
-    "ui.card.register": "主页卡片",
-    "ui.panel.register": "功能面板",
-    "ui.settings.register": "插件设置",
-    "ui.commandShortcut.register": "命令快捷入口",
-    "ui.viewPreset.register": "页面预设",
-    "ui.decoration.register": "页面装饰",
-    "ui.theme.register": "受控主题令牌",
-    "ui.text.register": "界面文案覆盖",
-  };
-  let platform;
-  let route = null;
-  let readyError = null;
-  let legacyLibraryContent = null;
-  let legacyItemAudio = null;
-  function status(message, kind = "info") {
-    const node = $("#pluginCenterStatus");
-    if (node) {
-      node.textContent = message;
-      node.dataset.kind = kind;
-    }
-  }
-  function safeStore() {
-    const repository =
-      root.GodPowerPluginLocalRepository.createPluginLocalRepository(
-        root.localStorage,
-      );
-    const builtins = [
-      root.GodpowerMarxThemePlugin?.manifest,
-      root.GodpowerMiyamotoPlugin?.manifest,
-      root.GodpowerMarxPoliticsPlugin?.manifest,
-    ].filter(Boolean);
-    const platform = root.GodPowerPluginPlatform.createPluginPlatform({
-      contributions: root.GodPowerPageShell,
-      repository,
-      platform: "html",
-      currentScope: () => ({ classroomId: "local-classroom" }),
-      isTrustedBuiltin: (manifest) =>
-        builtins.some(
-          (builtin) =>
-            manifest.id === builtin.id && manifest.version === builtin.version,
-        ),
-    });
-    for (const builtin of builtins) {
-      let installed = platform.get(builtin.id);
-      if (!installed)
-        installed = platform.install(builtin, { source: "builtin" });
-      if (installed.state !== "active") {
-        const required = builtin.permissions
-          .filter((permission) => permission.required)
-          .map((permission) => permission.capability);
-        platform.grantPermissions(builtin.id, required);
-        platform.activate(builtin.id);
-      }
-    }
-    return platform;
-  }
-  function addButton(parent, text, action, id, extra = "") {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.textContent = text;
-    button.dataset.pluginAction = action;
-    button.dataset.pluginId = id || "";
-    if (extra) button.className = extra;
-    parent.append(button);
-    return button;
-  }
-  function contributionTitle(value) {
-    return (
-      {
-        "plugin.miyamoto.items": "道具百科与玩法",
-        "plugin.miyamoto.settings": "宫本茂的力量设置",
-      }[value] || value
-    );
-  }
-  function renderWorkspace() {
-    const host = $("#pluginWorkspace");
-    if (!host) return;
-    if (!route) {
-      host.hidden = true;
-      host.replaceChildren();
-      return;
-    }
-    const page = root.GodPowerPageShell.resolvePage(route);
-    if (!page || page.core) {
-      route = null;
-      host.hidden = true;
-      host.replaceChildren();
-      return;
-    }
-    host.hidden = false;
-    host.replaceChildren();
-    if (route === "plugins/official.miyamotos-power/items") {
-      renderMiyamotoWorkspace(host);
-      return;
-    }
-    const title = document.createElement("h3");
-    title.textContent = contributionTitle(page.descriptor.titleKey);
-    const body = document.createElement("p");
-    body.textContent = `扩展页面 ${route} 由宿主的受限工作区承载。插件代码不会在主页面执行。`;
-    const code = document.createElement("code");
-    code.textContent = page.pluginId;
-    host.append(title, body, code);
-  }
-  function renderMiyamotoWorkspace(host) {
-    const section = document.createElement("div");
-    section.className = "miyamoto-plugin-workspace";
-    const eyebrow = document.createElement("span");
-    eyebrow.className = "ui-eyebrow";
-    eyebrow.textContent = "GAMEPLAY PLUGIN · 规则由主程序事务执行";
-    const heading = document.createElement("h3");
-    heading.textContent = "宫本茂的力量";
-    const intro = document.createElement("p");
-    intro.textContent =
-      "集中维护道具模块、图鉴与专属音效。比赛规则、库存、撤销和历史仍由原有业务内核负责。";
-    const moduleSettings = workspaceSection(
-      "道具模块工作台",
-      "分别配置每种道具的抽取流程与使用流程；配置即时生效并继续保存在现有本地存储中。",
-    );
-    const moduleHost = document.createElement("div");
-    moduleHost.className = "miyamoto-module-host";
-    moduleSettings.append(moduleHost);
-    root.ItemModuleSettings?.mount(moduleHost);
-
-    const library = workspaceSection(
-      "道具百科与自定义图标",
-      "图鉴、图标包导入导出和单项图片继续使用原有兼容存储。",
-    );
-    if (!legacyLibraryContent) {
-      const legacyLibrary = document.querySelector("#settingsV26_items");
-      if (legacyLibrary) {
-        legacyLibraryContent = document.createElement("div");
-        while (legacyLibrary.firstChild)
-          legacyLibraryContent.append(legacyLibrary.firstChild);
-      }
-    }
-    if (legacyLibraryContent) library.append(legacyLibraryContent);
-    library.querySelector(":scope > .setting-section-title")?.remove();
-    root.renderItemEncyclopedia?.();
-
-    const itemAudio = workspaceSection(
-      "道具音效",
-      "管理公共道具事件与每种道具的独立音效；音乐和基础操作音效仍留在音效与音乐设置。",
-    );
-    if (!legacyItemAudio)
-      legacyItemAudio = document.querySelector(
-        "#itemFxSoundListV26",
-      )?.parentElement;
-    if (legacyItemAudio) {
-      legacyItemAudio.hidden = false;
-      legacyItemAudio
-        .querySelector(":scope > .setting-section-title")
-        ?.remove();
-      itemAudio.append(legacyItemAudio);
-    }
-    root.renderItemFxSoundListV26?.();
-
-    section.append(eyebrow, heading, intro, moduleSettings, library, itemAudio);
-    host.append(section);
-  }
-  function workspaceSection(titleText, descriptionText) {
-    const card = document.createElement("section");
-    card.className = "miyamoto-encyclopedia";
-    const title = document.createElement("h4");
-    title.textContent = titleText;
-    title.className = "miyamoto-section-title";
-    const description = document.createElement("p");
-    description.textContent = descriptionText;
-    card.append(title, description);
-    return card;
-  }
-  function render() {
-    const host = $("#pluginCenterContent");
-    if (!host) return;
-    if (readyError) {
-      host.replaceChildren();
-      const p = document.createElement("p");
-      p.className = "plugin-center-empty";
-      p.textContent = `插件存储暂不可用：${readyError}`;
-      host.append(p);
-      return;
-    }
-    const plugins = platform.list();
-    host.replaceChildren();
-    if (!plugins.length) {
-      const empty = document.createElement("div");
-      empty.className = "plugin-center-empty";
-      const title = document.createElement("h3");
-      title.textContent = "插件空间已经准备好";
-      const copy = document.createElement("p");
-      copy.textContent =
-        "导入 JSON 声明清单来安装受限插件。当前版本不会执行外部脚本。";
-      empty.append(title, copy);
-      host.append(empty);
-    }
-    for (const plugin of plugins) {
-      const record = platform.inspect(plugin.id);
-      const card = document.createElement("article");
-      card.className = "plugin-card";
-      card.dataset.pluginId = plugin.id;
-      const head = document.createElement("div");
-      head.className = "plugin-card-head";
-      const identity = document.createElement("div");
-      const title = document.createElement("h3");
-      title.textContent = plugin.name["zh-CN"] || plugin.name.en || plugin.id;
-      const id = document.createElement("div");
-      id.className = "plugin-id";
-      id.textContent = `${plugin.id} · v${plugin.version}`;
-      identity.append(title, id);
-      const badge = document.createElement("span");
-      badge.className = "plugin-state";
-      badge.dataset.state = plugin.state;
-      badge.textContent =
-        {
-          installed: "已安装 · 未启用",
-          active: "已启用",
-          paused: "已暂停",
-          quarantined: "已隔离",
-        }[plugin.state] || plugin.state;
-      head.append(identity, badge);
-      card.append(head);
-      const description = document.createElement("p");
-      description.textContent =
-        record.manifest.description["zh-CN"] ||
-        record.manifest.description.en ||
-        "";
-      card.append(description);
-      const permissions = document.createElement("div");
-      permissions.className = "plugin-card-permissions";
-      permissions.textContent = `权限声明：${record.manifest.permissions.map((p) => `${labels[p.capability] || p.capability}${p.required ? "（必需）" : "（可选）"}`).join("、") || "无"}`;
-      card.append(permissions);
-      const actions = document.createElement("div");
-      actions.className = "plugin-card-actions";
-      if (plugin.state === "active")
-        addButton(actions, "停用", "disable", plugin.id);
-      else if (plugin.state === "installed" || plugin.state === "paused")
-        addButton(
-          actions,
-          plugin.state === "paused" ? "恢复" : "启用",
-          "enable",
-          plugin.id,
-        );
-      if (plugin.state !== "active" && plugin.state !== "paused")
-        addButton(actions, "卸载", "uninstall", plugin.id, "danger");
-      const contributions = root.GodPowerPageShell.listByPlugin(plugin.id);
-      if (plugin.state === "active") {
-        const homeCards = contributions.filter(
-          (entry) =>
-            entry.kind === "card" && entry.descriptor.slot === "home.cards",
-        );
-        if (homeCards.length) {
-          const summary = document.createElement("p");
-          summary.className = "plugin-card-contributions";
-          summary.textContent = `主页卡片：${homeCards.length} 项`;
-          card.append(summary);
-          addButton(actions, "管理主页卡片", "home-cards", plugin.id);
-        }
-        for (const item of contributions.filter(
-          (entry) => entry.kind === "theme",
-        ))
-          addButton(
-            actions,
-            `应用主题：${item.descriptor.displayNameKey}`,
-            "theme",
-            `${plugin.id}/${item.localId}`,
-          );
-        if (contributions.some((entry) => entry.kind === "textBundle"))
-          addButton(actions, "应用界面文案", "text", plugin.id);
-      }
-      for (const page of root.GodPowerPageShell.listPages().filter(
-        (item) => !item.core && item.pluginId === plugin.id,
-      ))
-        addButton(
-          actions,
-          `打开：${contributionTitle(page.descriptor.titleKey)}`,
-          "route",
-          page.route,
-        );
-      card.append(actions);
-      host.append(card);
-    }
-    renderWorkspace();
-    root.GodPowerPluginAppearance?.sync();
-    document.dispatchEvent(new Event("godpower:plugin-contributions-changed"));
-  }
-  async function importManifest(file) {
-    const text = await file.text();
-    if (text.length > 65536) throw new Error("清单超过 64 KiB");
-    const manifest = JSON.parse(text);
-    platform.install(manifest);
-    status(`已安装 ${manifest.id}。插件保持停用，启用前请审阅权限。`);
-    render();
-  }
-  async function onClick(event) {
-    const button = event.target.closest("[data-plugin-action]");
-    if (!button) return;
-    const action = button.dataset.pluginAction;
-    const id = button.dataset.pluginId;
-    try {
-      if (action === "import") {
-        $("#pluginManifestFile")?.click();
-        return;
-      }
-      if (action === "home-cards") {
-        root.switchView("welcome");
-        setTimeout(() => root.HomeDashboard?.beginEdit(), 320);
-        return;
-      }
-      if (action === "theme") {
-        const [pluginId, ...rest] = id.split("/");
-        root.GodPowerPluginAppearance.apply(pluginId, rest.join("/"));
-        status("宿主主题令牌已应用；比赛规则与布局保持不变。", "success");
-        render();
-        return;
-      } else if (action === "text") {
-        const result = root.GodPowerPluginAppearance.applyText(id);
-        status(`已应用受支持的界面文案：${result.count} 个文案包。`, "success");
-        render();
-        return;
-      }
-      if (action === "disable") {
-        platform.deactivate(id);
-        status("插件已停用；其私有数据仍保留。");
-      } else if (action === "enable") {
-        const entry = platform.inspect(id);
-        const required = entry.manifest.permissions
-          .filter((p) => p.required)
-          .map((p) => p.capability);
-        const approved = window.confirm(
-          `启用 ${entry.manifest.name["zh-CN"] || id}？\n\n必需权限：${required.map((p) => labels[p] || p).join("、") || "无"}\n\n仅受限 JSON 贡献会启用，不会执行外部 JavaScript。`,
-        );
-        if (!approved) return;
-        platform.grantPermissions(id, required);
-        platform.activate(id);
-        status("插件已启用；授权绑定到本地课堂范围。");
-      } else if (action === "uninstall") {
-        if (!window.confirm(`卸载 ${id} 并保留其私有数据？`)) return;
-        platform.uninstall(id);
-        status("插件已卸载，数据保留；重新安装相同 ID 可恢复。");
-      } else if (action === "route") {
-        if (id === "plugins/official.miyamotos-power/items") {
-          root.switchView(id);
-          return;
-        }
-        root.switchView(id);
-        return;
-      }
-      render();
-    } catch (error) {
-      status(error.message || String(error), "error");
-      render();
-    }
-  }
-  function init() {
-    try {
-      platform = safeStore();
-    } catch (error) {
-      readyError = error.message || String(error);
-    }
-    $("#view-plugins")?.addEventListener("click", onClick);
-    root.openItemEncyclopedia = () =>
-      root.switchView("plugins/official.miyamotos-power/items");
-    $("#pluginManifestFile")?.addEventListener("change", async (event) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      try {
-        await importManifest(file);
-      } catch (error) {
-        status(error.message || String(error), "error");
-      } finally {
-        event.target.value = "";
-      }
-    });
-    render();
-  }
-  root.GodPowerPluginCenter = Object.freeze({
-    init,
-    render,
-    showRoute(value) {
-      route = value;
-    },
-    get platform() {
-      return platform;
-    },
-  });
-  window.addEventListener("DOMContentLoaded", init, { once: true });
-})(globalThis);
 </script>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%228%22%20fill%3D%22%230f766e%22%2F%3E%3Cpath%20d%3D%22m16%205%203%208%208%203-8%203-3%208-3-8-8-3%208-3Z%22%20fill%3D%22%23fff%22%2F%3E%3C%2Fsvg%3E">
 
@@ -8776,6 +7075,17 @@ body {
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
+#groupList .row-score.row-score-light {
+  background-color: var(--group-color);
+  border-radius: 4px;
+  color: #fff;
+  text-shadow:
+    0 1px 2px #000b,
+    1px 0 1px #0008,
+    -1px 0 1px #0008;
+  -webkit-text-stroke: 0.3px #0008;
+  box-shadow: inset 0 0 0 1px #0002;
+}
 #groupList .member-count-tag {
   color: var(--theme-tone-527165, #527165);
   background: var(--theme-tone-f0f6f2, #f0f6f2);
@@ -11523,7 +9833,7 @@ body[data-welcome-motion="off"].gp-intro-reveal #view-welcome .gp-reveal {
   min-height: 0;
   height: 100%;
 }
-#view-welcome #homeDashboardGrid > .gp-daily-grid > [data-home-plugin-owner] {
+#view-welcome #homeDashboardGrid > .gp-daily-grid > [data-home-card-type] {
   grid-column: span 6;
   grid-row: span 6;
   border-radius: 17px;
@@ -11545,7 +9855,7 @@ body[data-welcome-motion="off"].gp-intro-reveal #view-welcome .gp-reveal {
   animation-delay: var(--home-enter-delay, 0ms);
 }
 body.gp-intro-reveal #view-welcome #homeDashboardGrid [data-home-card-type],
-body.gp-intro-reveal #view-welcome #homeDashboardGrid [data-home-plugin-owner] {
+body.gp-intro-reveal #view-welcome #homeDashboardGrid [data-home-card-type] {
   animation: gp-content-reveal 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   animation-delay: var(--home-enter-delay, 0ms);
 }
@@ -11556,7 +9866,7 @@ body.gp-intro-reveal #view-welcome #homeDashboardGrid [data-home-plugin-owner] {
   #view-welcome #homeDashboardGrid > [data-home-card-type] {
     grid-column: span 4 !important;
   }
-  #view-welcome #homeDashboardGrid > .gp-daily-grid > [data-home-plugin-owner] {
+  #view-welcome #homeDashboardGrid > .gp-daily-grid > [data-home-card-type] {
     grid-column: span 4;
   }
   #view-welcome #homeDashboardGrid > .gp-group-section {
@@ -11569,29 +9879,12 @@ body.gp-intro-reveal #view-welcome #homeDashboardGrid [data-home-plugin-owner] {
     grid-auto-rows: auto;
   }
   #view-welcome #homeDashboardGrid > [data-home-card-type],
-  #view-welcome #homeDashboardGrid > .gp-daily-grid > [data-home-plugin-owner],
+  #view-welcome #homeDashboardGrid > .gp-daily-grid > [data-home-card-type],
   #view-welcome #homeDashboardGrid > .gp-kpis > .gp-kpi {
     grid-column: 1 / -1 !important;
     grid-row: auto !important;
     min-height: 112px;
   }
-}
-
-.home-plugin-inactive-placeholder {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.65rem;
-  border: 1px dashed var(--ui-border-strong);
-  background: var(--ui-soft-2);
-  color: var(--ui-muted);
-}
-.home-plugin-inactive-placeholder p,
-.plugin-card-contributions {
-  margin: 0;
-  color: var(--ui-muted);
-  font-size: 0.9rem;
 }
 </style>
 <style id="global-tooltip-style">.gp-hover-tooltip {
@@ -11945,307 +10238,17 @@ html[data-theme="marx"] {
   pointer-events: none;
 }
 </style>
-<style id="plugin-center-style">.plugin-center-page {
-  width: min(1440px, calc(100% - 48px));
-  margin: 0 auto;
-  padding: 32px 0 54px;
-  color: var(--text, #183b3b);
-}
-.plugin-center-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 22px;
-}
-.plugin-center-header h2 {
-  margin: 7px 0;
-  font-size: 30px;
-  letter-spacing: -0.03em;
-}
-.plugin-center-header p {
-  margin: 0;
-  color: var(--muted, #667c7a);
-}
-.plugin-center-actions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-.plugin-safety-note {
-  display: flex;
-  gap: 12px;
-  align-items: baseline;
-  padding: 14px 18px;
-  margin: 0 0 22px;
-  border: 1px solid #f1d8a5;
-  border-radius: 16px;
-  background: #fff9e9;
-  color: #75551d;
-  font-size: 13px;
-}
-.plugin-center-status {
-  min-height: 24px;
-  margin: 0 0 12px;
-  color: #18776d;
-  font-size: 13px;
-}
-.plugin-center-status[data-kind="error"] {
-  color: #b33d50;
-}
-.plugin-center-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-.plugin-card {
-  display: flex;
-  flex-direction: column;
-  min-height: 212px;
-  padding: 21px;
-  border: 1px solid #dce9e6;
-  border-radius: 20px;
-  background: #fff;
-  box-shadow: 0 8px 28px #1b55520c;
-  animation: pluginCardEnter 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-.plugin-card-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-.plugin-card h3 {
-  margin: 0 0 5px;
-  font-size: 18px;
-}
-.plugin-card p {
-  margin: 8px 0;
-  color: #647875;
-  font-size: 13px;
-  line-height: 1.6;
-}
-.plugin-id {
-  font:
-    11px ui-monospace,
-    monospace;
-  color: #7a8d89;
-}
-.plugin-state {
-  padding: 5px 10px;
-  border-radius: 999px;
-  background: #eaf5f1;
-  color: #18776d;
-  font-size: 11px;
-  white-space: nowrap;
-}
-.plugin-state[data-state="active"] {
-  background: #d9f3e5;
-  color: #137847;
-}
-.plugin-state[data-state="quarantined"] {
-  background: #ffe8e9;
-  color: #a53643;
-}
-.plugin-card-permissions {
-  margin-top: auto;
-  padding-top: 12px;
-  color: #71827f;
-  font-size: 11px;
-}
-.plugin-card-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 14px;
-}
-.plugin-card-actions button {
-  border: 1px solid #dce8e5;
-  border-radius: 10px;
-  padding: 8px 12px;
-  background: #f7fbf9;
-  color: #275954;
-  font-weight: 650;
-  cursor: pointer;
-}
-.plugin-card-actions button:hover {
-  background: #e7f5f0;
-}
-.plugin-card-actions .danger {
-  color: #a53643;
-  background: #fff5f4;
-  border-color: #f4d2cd;
-}
-.plugin-center-empty {
-  grid-column: 1/-1;
-  padding: 52px 24px;
-  border: 1px dashed #bed5cf;
-  border-radius: 20px;
-  text-align: center;
-  background: #f8fbfa;
-  color: #59736e;
-}
-.plugin-center-empty h3 {
-  margin: 0 0 8px;
-  color: #245954;
-}
-.plugin-workspace {
-  margin-top: 22px;
-  padding: 28px;
-  border: 1px solid #dce9e6;
-  border-radius: 22px;
-  background: #fff;
-  box-shadow: 0 10px 30px #123f3b10;
-  animation: pluginCardEnter 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-.plugin-workspace h3 {
-  margin: 0 0 8px;
-}
-.plugin-workspace code {
-  padding: 3px 7px;
-  border-radius: 6px;
-  background: #edf5f2;
-}
-@keyframes pluginCardEnter {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@media (max-width: 1100px) {
-  .plugin-center-grid {
-    grid-template-columns: 1fr;
-  }
-  .plugin-center-header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .plugin-card,
-  .plugin-workspace {
-    animation: none;
-  }
-}
-</style>
-<style id="miyamoto-plugin-style">.miyamoto-plugin-workspace {
-  display: grid;
-  gap: 18px;
-  animation: ui-panel-enter 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-.miyamoto-plugin-workspace > h3 {
-  margin: -12px 0 -12px;
-  color: var(--ui-text, #173b38);
-  font-size: 28px;
-}
-.miyamoto-plugin-workspace > p,
-.miyamoto-encyclopedia header p {
-  margin: 0;
-  color: var(--ui-muted, #647875);
-  line-height: 1.65;
-}
-.miyamoto-encyclopedia {
-  padding: 20px 22px;
-  border: 1px solid var(--ui-border, #dce8e5);
-  border-radius: 18px;
-  background: var(--ui-panel, #fff);
-  box-shadow: 0 10px 28px rgb(23 59 56 / 5%);
-}
-.miyamoto-encyclopedia > h4,
-.miyamoto-section-title {
-  margin: 0 0 5px;
-  color: var(--ui-text, #173b38);
-  font-size: 17px;
-}
-.miyamoto-encyclopedia > p {
-  margin: 0 0 14px;
-}
-.miyamoto-encyclopedia #v2ItemEncyclopedia,
-.miyamoto-encyclopedia #itemFxSoundListV26 {
-  min-width: 0;
-}
-.miyamoto-item-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 16px;
-}
-.miyamoto-item-card {
-  min-width: 0;
-  padding: 14px;
-  border: 1px solid var(--ui-border, #e2e9e7);
-  border-radius: 14px;
-  background: var(--ui-soft-2, #f8fbfa);
-  transition:
-    transform 180ms ease,
-    box-shadow 180ms ease,
-    border-color 180ms ease;
-}
-.miyamoto-item-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--ui-border-strong, #b8d0ca);
-  box-shadow: 0 8px 20px rgb(23 59 56 / 8%);
-}
-.miyamoto-item-icon {
-  display: inline-flex;
-  width: 42px;
-  height: 42px;
-  align-items: center;
-  justify-content: center;
-}
-.miyamoto-item-icon img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-.miyamoto-item-card h5 {
-  margin: 9px 0 5px;
-  color: var(--ui-text, #173b38);
-  font-size: 14px;
-}
-.miyamoto-item-card p {
-  margin: 0;
-  color: var(--ui-muted, #647875);
-  font-size: 12px;
-  line-height: 1.55;
-}
-@media (max-width: 1050px) {
-  .miyamoto-item-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-@media (max-width: 720px) {
-  .miyamoto-item-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .miyamoto-plugin-workspace {
-    animation: none;
-  }
-  .miyamoto-toggle-track,
-  .miyamoto-toggle-track::after,
-  .miyamoto-item-card {
-    transition: none;
-  }
-}
-</style>
 </head>
 <body class="modern-flat-v217">
 <script>GodpowerTheme.boot();</script>
 
 <div class="header-banner app-topnav">
-  <div class="header-title"><span class="gp-brand-mount" id="gpBrandMount" aria-hidden="true"></span><span class="gp-brand-label">上帝的力量 <small>V3.0.53</small></span></div>
+  <div class="header-title"><span class="gp-brand-mount" id="gpBrandMount" aria-hidden="true"></span><span class="gp-brand-label">上帝的力量 <small>V3.0.57</small></span></div>
   <div class="nav-tabs" role="tablist">
     <button type="button" class="nav-tab active" data-view="welcome" onclick="switchView('welcome')">🏠 欢迎</button>
     <button type="button" class="nav-tab" data-view="battle" onclick="switchView('battle')">⚔️ 比赛</button>
     <button type="button" class="nav-tab" data-view="history" onclick="switchView('history')">📜 历史</button>
     <button type="button" class="nav-tab" data-view="archives" onclick="switchView('archives')">🗄️ 档案</button>
-    <button type="button" class="nav-tab" data-view="plugins" onclick="switchView('plugins')">🧩 插件</button>
     <button type="button" class="nav-tab" data-view="settings" onclick="switchView('settings')">⚙️ 设置</button>
   </div>
   <div class="header-stats" id="topHeaderStats">各组竞赛全景视图</div>
@@ -12384,8 +10387,8 @@ html[data-theme="marx"] {
       <div class="gp-hero-copy">
         <div class="gp-eyebrow">WELCOME TO YOUR ARENA · 课堂竞技系统</div>
         <h1>课堂竞技，<em>一目了然。</em></h1>
-        <p id="welcomeGreeting" class="gp-greeting" data-plugin-text-key="home.greeting">欢迎回到课堂</p>
-        <p class="gp-hero-description" data-plugin-text-key="home.description">实时掌握小组积分与赛场动态，让每一次参与都变成看得见的成长。</p>
+        <p id="welcomeGreeting" class="gp-greeting">欢迎回到课堂</p>
+        <p class="gp-hero-description">实时掌握小组积分与赛场动态，让每一次参与都变成看得见的成长。</p>
         <div class="gp-actions">
           <button class="gp-button-primary welcome-enter-btn" type="button" onclick="enterBattleFromWelcome()">进入比赛 <span aria-hidden="true">↗</span></button>
           <button class="gp-button-outline" type="button" id="gpReplayIntro">▷ &nbsp;重播入场动画</button>
@@ -12637,19 +10640,6 @@ html[data-theme="marx"] {
   </div>
 </div>
 
-<div id="view-plugins" class="view">
-  <section class="plugin-center-page">
-    <header class="plugin-center-header">
-      <div><span class="ui-settings-eyebrow">PLUGIN WORKSPACE · 离线扩展</span><h2>插件中心</h2><p>管理扩展、独立工作区与授权范围。</p></div>
-      <div class="plugin-center-actions"><button type="button" class="btn btn-primary" data-plugin-action="import">导入声明式插件</button><input id="pluginManifestFile" type="file" accept="application/json,.json" hidden></div>
-    </header>
-    <div class="plugin-safety-note"><strong>当前安全边界</strong><span>此版本仅接受受限 JSON 声明，不会运行插件 JavaScript；可执行插件代码的隔离沙箱尚未启用。</span></div>
-    <div id="pluginCenterStatus" class="plugin-center-status" role="status" aria-live="polite"></div>
-    <div id="pluginCenterContent" class="plugin-center-grid"></div>
-    <section id="pluginWorkspace" class="plugin-workspace" hidden></section>
-  </section>
-</div>
-
 <div id="pickerModal" class="modal-overlay">
   <div class="modal-box slot-modal ui-function-surface" style="width:min(1120px,96vw);max-width:none;padding:0;overflow:hidden;">
     <div class="picker-layout-v2">
@@ -12806,6 +10796,11 @@ html[data-theme="marx"] {
     <div class="setting-item" data-settings-category="sound" data-settings-group="volume">
       <span class="setting-label">主音量大小 (<span id="volLabel">85%</span>)</span>
       <input type="range" id="cfgMasterVolume" min="0" max="1" step="0.05" style="width: 160px;" oninput="updateMasterVolume(this.value)">
+    </div>
+
+    <div class="setting-item" data-settings-category="sound" data-settings-group="volume">
+      <span class="setting-label">背景音乐音量 (<span id="bgmVolLabel">100%</span>)<small class="ui-muted">独立控制菜单、思考、比赛及结算音乐，不改变音效音量。</small></span>
+      <input type="range" id="cfgBgmVolume" aria-label="背景音乐音量" min="0" max="1" step="0.01" style="width:160px" oninput="updateBgmVolume(this.value)">
     </div>
 
     <div class="setting-item" data-settings-category="sound" data-settings-group="music">
@@ -13069,7 +11064,7 @@ html[data-theme="marx"] {
       leader: ordered[0]?.name ?? "—",
     };
   }
-  // Badge-only shade: keep group colors in state intact and prefer white on saturated hues.
+  // Preserve the selected paint; only the foreground changes for pale fills.
   function badgeColors(color) {
     let raw = String(color || "").replace(/^#/, "");
     if (raw.length === 3)
@@ -13079,24 +11074,18 @@ html[data-theme="marx"] {
         .join("");
     if (!/^[a-f0-9]{6}$/i.test(raw))
       return { background: "#607773", foreground: "#FFFFFF" };
-    const rgb = raw.match(/../g).map((v) => parseInt(v, 16));
-    const luminance = (values) =>
-      values
-        .map((v) => v / 255)
-        .map((v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4))
-        .reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
-    const saturated = Math.max(...rgb) - Math.min(...rgb) >= 40;
-    let shade = [...rgb];
-    if (saturated || luminance(rgb) < 0.18) {
-      while (1.05 / (luminance(shade) + 0.05) < 4.5)
-        shade = shade.map((v) => Math.floor(v * 0.97));
-      return {
-        background:
-          "#" + shade.map((v) => v.toString(16).padStart(2, "0")).join(""),
-        foreground: "#FFFFFF",
-      };
-    }
-    return { background: "#" + raw, foreground: "#17302D" };
+    const linear = raw
+      .match(/../g)
+      .map((v) => parseInt(v, 16) / 255)
+      .map((v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+    const luminance = linear.reduce(
+      (sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i],
+      0,
+    );
+    return {
+      background: "#" + raw,
+      foreground: luminance > 0.45 ? "#000000" : "#FFFFFF",
+    };
   }
   root.GodpowerUIModel = {
     examples,
@@ -20727,6 +18716,10 @@ let historyStack = [];
 
 let audioCtx = null;
 let masterGainNode = null;
+let musicGainNode = null;
+let bgmVolume = Number(STORAGE.get('politics_bgm_volume', '1'));
+if(!Number.isFinite(bgmVolume)) bgmVolume=1;
+bgmVolume=Math.max(0,Math.min(1,bgmVolume));
 let db = null;
 let customFxBuffers = {};
 let customFxVariants = Object.create(null);
@@ -21180,10 +19173,13 @@ async function getAudioContext() {
     masterGainNode.gain.setValueAtTime(state.masterVolume, audioCtx.currentTime);
     masterGainNode.connect(audioCtx.destination);
 
+    musicGainNode = audioCtx.createGain();
+    musicGainNode.gain.setValueAtTime(bgmVolume, audioCtx.currentTime);
+    musicGainNode.connect(masterGainNode);
     bgmEngine.battleGain = audioCtx.createGain();
     bgmEngine.thinkingGain = audioCtx.createGain();
-    bgmEngine.battleGain.connect(masterGainNode);
-    bgmEngine.thinkingGain.connect(masterGainNode);
+    bgmEngine.battleGain.connect(musicGainNode);
+    bgmEngine.thinkingGain.connect(musicGainNode);
   }
   if (audioCtx.state === 'suspended') {
     try {
@@ -21655,7 +19651,7 @@ async function bgmStartNewRoundMusicWithProgress(onProgress) {
     if (introBuf) {
       const introSrc = audioCtx.createBufferSource();
       introSrc.buffer = introBuf;
-      introSrc.connect(masterGainNode);
+      introSrc.connect(musicGainNode);
       introSrc.start(now);
       bgmEngine.activeNodes.push(introSrc);
     }
@@ -21740,7 +19736,7 @@ function bgmTransitionThinkingToBattle() {
     if (transBuf) {
       const transSrc = audioCtx.createBufferSource();
       transSrc.buffer = transBuf;
-      transSrc.connect(masterGainNode);
+      transSrc.connect(musicGainNode);
       transSrc.start(triggerTime);
       bgmEngine.activeNodes.push(transSrc);
     }
@@ -21866,7 +19862,7 @@ function bgmTriggerVictory(callback) {
       const victorySrc = audioCtx.createBufferSource();
       victorySrc.buffer = victoryBuf;
       victorySrc.loop = false;
-      victorySrc.connect(masterGainNode);
+      victorySrc.connect(musicGainNode);
       victorySrc.start(triggerTime);
       bgmEngine.victoryNode = victorySrc;
       bgmEngine.state = 'VICTORY';
@@ -23339,6 +21335,8 @@ function syncSettingsControls() {
   document.getElementById('cfgResizerEnabled').checked = state.resizerEnabled;
   document.getElementById('cfgSaveAllIn').checked = state.saveAllIn;
   document.getElementById('cfgColumnMode').value = state.columnMode;
+  document.getElementById('cfgBgmVolume').value = bgmVolume;
+  document.getElementById('bgmVolLabel').textContent = `${Math.round(bgmVolume*100)}%`;
   document.getElementById('cfgMasterVolume').value = state.masterVolume;
   document.getElementById('volLabel').innerText = `${Math.round(state.masterVolume * 100)}%`;
   const summaryText = state.groups.map(g => `${g.name}: ${(g.members || []).join(', ')}`).join('\n');
@@ -23352,6 +21350,17 @@ function updateMasterVolume(vol) {
     masterGainNode.gain.setValueAtTime(state.masterVolume, audioCtx.currentTime);
   }
   saveState();
+}
+
+function updateBgmVolume(value) {
+  const parsed=Number(value);
+  if(!Number.isFinite(parsed))return false;
+  bgmVolume=Math.max(0,Math.min(1,parsed));
+  document.getElementById('cfgBgmVolume').value=bgmVolume;
+  document.getElementById('bgmVolLabel').textContent=`${Math.round(bgmVolume*100)}%`;
+  if(musicGainNode&&audioCtx)musicGainNode.gain.setTargetAtTime(bgmVolume,audioCtx.currentTime,.025);
+  if(!STORAGE.set('politics_bgm_volume',bgmVolume))showToast('音乐音量仅在本次生效，偏好保存失败');
+  return true;
 }
 
 let bgmSlotRenderGeneration = 0;
@@ -23441,7 +21450,7 @@ async function previewBgmTrack(slotId) {
           const decoded = await ctx.decodeAudioData(req.result.arrayBuffer.slice(0));
           const src = ctx.createBufferSource();
           src.buffer = decoded;
-          src.connect(masterGainNode);
+          src.connect(musicGainNode);
           src.start(0);
         } catch(e) {}
       }
@@ -23920,7 +21929,7 @@ function menuEnsureGraph() {
   if (!menuBgm.outGain) {
     menuBgm.outGain = audioCtx.createGain();
     menuBgm.outGain.gain.setValueAtTime(0.7, audioCtx.currentTime);
-    menuBgm.outGain.connect(masterGainNode);
+    menuBgm.outGain.connect(musicGainNode);
   }
   return true;
 }
@@ -30682,7 +28691,7 @@ if(typeof renderLockState==='function'){
 </script>
 
 
-<script id="v2186OpenFixMarker">window.__GOD_POWER_VERSION__='V3.0.53';
+<script id="v2186OpenFixMarker">window.__GOD_POWER_VERSION__='V3.0.57';
 </script>
 
 <style id="v2187CopyPolishStyle">
@@ -31341,7 +29350,7 @@ function renderBattleGridCards() {
     const scoreHtml =
       state.editingScoreId === g.id
         ? `<input type="number" class="score-input" id="input-score-${g.id}" value="${g.score}" onblur="finishDirectScoreEdit(${g.id})" onkeydown="handleScoreInputKey(event,${g.id})">`
-        : `<span class="row-score ${editCls}" id="score-val-${g.id}" style="color:${g.color}" onclick="startDirectScoreEdit(${g.id})">${rawScore}分</span>`;
+        : `<span class="row-score ${editCls} ${badge.foreground === "#000000" ? "row-score-light" : ""}" id="score-val-${g.id}" style="color:${badge.foreground === "#000000" ? "#fff" : g.color}" onclick="startDirectScoreEdit(${g.id})">${rawScore}分</span>`;
     const allInClass = g.allIn ? "allin-toggle-btn active" : "allin-toggle-btn";
     const allInText = g.allIn ? "🔥 ALL IN" : "ALL IN";
     const lockAttr = state.isLocked ? "locked-disabled" : "";
@@ -33219,7 +31228,7 @@ function buildClassroomBackup() {
     return clone(classroomCommands.baseline().backup);
   return {
     schemaVersion: Reliability.schemaVersion,
-    appVersion: "V3.0.53",
+    appVersion: "V3.0.57",
     timestamp: new Date().toISOString(),
     seasonId: state.seasonId,
     achievementLedger: AchievementLedger.normalize(state.achievementLedger),
@@ -35422,8 +33431,6 @@ const DesktopUI = (() => {
           history: ".ui-collection-header",
           archives:
             ".ui-collection-header,#archiveClassStats,.ui-archive-filter",
-          plugins:
-            ".plugin-center-header,.plugin-center-status,.plugin-center-grid > *,#pluginWorkspace > *",
         };
         const host = $(`#view-${name}`);
         const targets = [
@@ -35888,11 +33895,18 @@ const DesktopUI = (() => {
       "音效与音乐",
       "日常音量在上方，音乐、音效和迁移维护按需展开",
     ],
+    ["items", "gift", "道具与图标", "道具流程配置、百科与自定义图片"],
     [
       "students",
       "users",
       "学生与小组管理",
       "查看并维护整班小组名单，重建前会再次确认",
+    ],
+    [
+      "teaching",
+      "book",
+      "课程表与教学资源",
+      "本地课程安排、课堂上下文与离线资源管理",
     ],
     ["welcome", "book", "欢迎页内容管理", "完全离线、按自然日稳定轮换"],
     ["data", "shield", "数据与安全", "备份、恢复与防误操作管理口令"],
@@ -35917,7 +33931,7 @@ const DesktopUI = (() => {
     const classified = [...sc.querySelectorAll("[data-settings-category]")];
     for (const pane of sc.querySelectorAll(".settings-v26-pane")) {
       const id = pane.id.replace("settingsV26_", "");
-      if (id === "items") pane.hidden = true;
+
       (sections[id === "function" ? "rules" : id] || sections.rules).append(
         pane,
       );
@@ -36056,19 +34070,14 @@ const DesktopUI = (() => {
       $("#classroomRosterWorkspace"),
       $("#uiSettingsRoster"),
     );
-    TeachingWorkspace.mount(sections.students, { storage: localStorage });
-    sections.students.insertBefore(
-      $("#teachingScheduleWorkspace"),
-      $("#uiSettingsRoster"),
-    );
-    TeachingResourceWorkspace.mount(sections.students, {
+    TeachingWorkspace.mount(sections.teaching, { storage: localStorage });
+
+    TeachingResourceWorkspace.mount(sections.teaching, {
       storage: localStorage,
     });
-    sections.students.insertBefore(
-      $("#teachingResourceWorkspace"),
-      $("#uiSettingsRoster"),
-    );
+
     GodpowerTheme.mount(sections.appearance);
+    if (window.ItemModuleSettings) ItemModuleSettings.mount(sections.items);
     const bankBody = $("#uiSettingsBank .ui-settings-detail-body");
     const structured = document.createElement("div");
     structured.id = "uiStructuredBank";
@@ -36273,8 +34282,7 @@ const DesktopUI = (() => {
     );
     rosterTitle?.remove();
     const sound = $("#settingsV26_sound");
-    const itemSounds = $("#itemFxSoundListV26")?.parentElement;
-    if (itemSounds) itemSounds.hidden = true;
+
     group(
       sound,
       "uiSettingsVolume",
@@ -36298,9 +34306,27 @@ const DesktopUI = (() => {
       marked("basefx"),
       true,
     );
-    // Gameplay-specific item audio is owned by the Miyamoto plugin workspace.
+    const itemSounds = $("#itemFxSoundListV26")?.parentElement;
+    if (itemSounds)
+      group(
+        sound,
+        "uiSettingsItemFx",
+        "道具音效",
+        "4 个公共事件 + 26 种道具独立发动音效",
+        [itemSounds],
+        true,
+      );
     // Keep transfer at the end and never promote it into the global header.
     sound.append($("#uiAudioTransfer"));
+    const itemLibrary = $("#settingsV26_items");
+    group(
+      sections.items,
+      "uiSettingsItemLibrary",
+      "道具百科与自定义图片",
+      "26 种实际道具 · 图标包与单项图片维护",
+      [itemLibrary],
+      true,
+    );
     const editor = $("#uiBankEditor");
     const bankNodes = [
       editor.previousElementSibling.previousElementSibling,
@@ -36450,10 +34476,6 @@ const DesktopUI = (() => {
   }
   function selectSettings(id, entering = false) {
     if (!$("#uiSettingsShell")) return;
-    if (id === "items") {
-      switchView("plugins/official.miyamotos-power/items");
-      return;
-    }
     const aliases = { function: "rules" };
     activeSettings = aliases[id] || id;
     if (!categories.some((c) => c[0] === activeSettings))
@@ -36476,7 +34498,7 @@ const DesktopUI = (() => {
       renderFxSlotList();
       renderItemFxSoundListV26();
     }
-    if (activeSettings === "students") {
+    if (activeSettings === "teaching") {
       TeachingWorkspace.refresh();
       TeachingResourceWorkspace.refresh();
     }
@@ -36780,6 +34802,7 @@ const DesktopUI = (() => {
         if (!el) continue;
         const visible =
           !el.hasAttribute("data-native-detached") &&
+          !el.hasAttribute("data-external-picker") &&
           (el.open ||
             el.classList.contains("active") ||
             el.classList.contains("show") ||
@@ -36894,7 +34917,12 @@ const DesktopUI = (() => {
       subtree: true,
       childList: true,
       attributes: true,
-      attributeFilter: ["class", "style", "data-native-detached"],
+      attributeFilter: [
+        "class",
+        "style",
+        "data-native-detached",
+        "data-external-picker",
+      ],
     });
     document.addEventListener(
       "keydown",
@@ -37224,11 +35252,10 @@ const DesktopUI = (() => {
     });
     ready = true;
     document.querySelectorAll(".nav-tab").forEach((b, i) => {
-      const text = ["欢迎", "比赛", "历史", "档案", "插件", "设置"][i];
+      const text = ["欢迎", "比赛", "历史", "档案", "设置"][i];
       b.innerHTML =
-        icon(
-          ["home", "battle", "history", "archive", "plugin", "settings"][i],
-        ) + `<span>${text}</span>`;
+        icon(["home", "battle", "history", "archive", "settings"][i]) +
+        `<span>${text}</span>`;
       b.setAttribute("role", "tab");
     });
     setupDock();
@@ -38203,33 +36230,28 @@ window.addEventListener("DOMContentLoaded", MigrationPanel.init, {
     ["core.recent-activity", ".gp-feed-panel", 5, 7],
     ["core.group-showcase", ".gp-group-section", 12, 4],
     ["core.history-honor", ".gp-daily-honors", 6, 6],
+    ["core.daily-knowledge", ".gp-daily-knowledge", 6, 6],
+    ["core.daily-item-tip", ".gp-daily-item", 6, 6],
+    ["core.daily-challenge", ".gp-daily-challenge", 6, 6],
   ];
-  const PLUGIN_CARD_DEFS = [
-    {
-      pluginId: "official.marx-politics",
-      localId: "daily-knowledge",
-      selector: ".gp-daily-knowledge",
-      w: 6,
-      h: 6,
-      title: "政治知识点",
-    },
-    {
-      pluginId: "official.miyamotos-power",
-      localId: "daily-item-tip",
-      selector: ".gp-daily-item",
-      w: 6,
-      h: 6,
-      title: "道具小知识",
-    },
-    {
-      pluginId: "official.marx-politics",
-      localId: "daily-challenge",
-      selector: ".gp-daily-challenge",
-      w: 6,
-      h: 6,
-      title: "课堂挑战",
-    },
-  ];
+  const TITLES = Object.fromEntries(
+    TYPES.map(([id], index) => [
+      id,
+      [
+        "参赛小组",
+        "班级总积分",
+        "最高小组积分",
+        "当前领跑",
+        "小组实时排名",
+        "最近赛场动态",
+        "小组竞技场",
+        "历史荣誉",
+        "每日知识",
+        "道具小知识",
+        "课堂挑战",
+      ][index],
+    ]),
+  );
   const SIZE = (w, h) => ({
     minW: w === 3 ? 2 : 4,
     minH: 2,
@@ -38238,43 +36260,13 @@ window.addEventListener("DOMContentLoaded", MigrationPanel.init, {
     maxW: 12,
     maxH: 12,
   });
-  const typeForPluginCard = (card) =>
-    `plugin.${card.pluginId.replace(/[^a-z0-9]+/g, ".")}.${card.localId}`;
-  const catalog = [
-    ...TYPES.map(([typeId, , w, h]) => ({
-      typeId,
-      source: "core",
-      supportsMultipleInstances: false,
-      configSchemaVersion: 1,
-      size: SIZE(w, h),
-    })),
-    ...PLUGIN_CARD_DEFS.map((card) => ({
-      typeId: typeForPluginCard(card),
-      source: card.pluginId,
-      supportsMultipleInstances: false,
-      configSchemaVersion: 1,
-      size: SIZE(card.w, card.h),
-    })),
-  ];
-  function registeredPluginCards() {
-    const registry = root.GodPowerPageShell;
-    if (!registry?.listByPlugin) return [];
-    return PLUGIN_CARD_DEFS.filter((card) =>
-      registry
-        .listByPlugin(card.pluginId)
-        .some(
-          (entry) =>
-            entry.kind === "card" &&
-            entry.localId === card.localId &&
-            entry.descriptor.slot === "home.cards" &&
-            entry.descriptor.renderer === "builtin.dashboard-card" &&
-            entry.descriptor.dataSelector === card.selector,
-        ),
-    );
-  }
-  function activePluginCardTypes() {
-    return new Set(registeredPluginCards().map(typeForPluginCard));
-  }
+  const catalog = TYPES.map(([typeId, , w, h]) => ({
+    typeId,
+    source: "core",
+    supportsMultipleInstances: false,
+    configSchemaVersion: 1,
+    size: SIZE(w, h),
+  }));
   let initialized = false;
   let observer = null;
   let currentLayout = null;
@@ -38319,17 +36311,19 @@ window.addEventListener("DOMContentLoaded", MigrationPanel.init, {
   }
 
   function completeLegacyLayout(layout) {
-    const present = new Set(layout.instances.map((item) => item.typeId));
-    const service = root.HomeLayout.createLayoutService({
-      catalog,
-      initial: layout,
-      makeInstanceId: () => `home-migrated-${++instanceSequence}`,
-    });
-    for (const card of PLUGIN_CARD_DEFS) {
-      const typeId = typeForPluginCard(card);
-      if (!present.has(typeId)) service.add(typeId);
-    }
-    return service.getDraft();
+    const aliases = {
+      "plugin.official.marx.politics.daily-knowledge": "core.daily-knowledge",
+      "plugin.official.miyamotos.power.daily-item-tip": "core.daily-item-tip",
+      "plugin.official.marx.politics.daily-challenge": "core.daily-challenge",
+    };
+    layout = {
+      ...layout,
+      instances: layout.instances.map((item) => ({
+        ...item,
+        typeId: aliases[item.typeId] || item.typeId,
+      })),
+    };
+    return root.HomeLayout.validateLayout(layout);
   }
 
   function createToolbar(grid) {
@@ -38412,16 +36406,13 @@ window.addEventListener("DOMContentLoaded", MigrationPanel.init, {
     const draft = layoutService.getDraft();
     const current = new Set(draft.instances.map((item) => item.typeId));
     const availableCore = TYPES.filter(([typeId]) => !current.has(typeId));
-    const activePluginCards = registeredPluginCards().filter(
-      (card) => !current.has(typeForPluginCard(card)),
-    );
     const heading = document.createElement("strong");
-    heading.textContent = "可添加的主程序与插件卡片";
+    heading.textContent = "可添加的首页卡片";
     panel.append(heading);
     const hidden = draft.instances.filter((item) => !item.visible);
-    if (!availableCore.length && !activePluginCards.length && !hidden.length) {
+    if (!availableCore.length && !hidden.length) {
       const note = document.createElement("span");
-      note.textContent = "当前主程序卡片均已在布局中。插件卡片由对应插件提供。";
+      note.textContent = "所有卡片均已添加，可隐藏或重新排列。";
       panel.append(note);
       return;
     }
@@ -38429,22 +36420,14 @@ window.addEventListener("DOMContentLoaded", MigrationPanel.init, {
       const button = document.createElement("button");
       button.type = "button";
       button.dataset.restoreCardId = instance.instanceId;
-      button.textContent = `恢复 ${instance.typeId.replace("core.", "")}`;
+      button.textContent = `恢复 ${TITLES[instance.typeId] || "卡片"}`;
       panel.append(button);
     }
     for (const [typeId] of availableCore) {
       const button = document.createElement("button");
       button.type = "button";
       button.dataset.addCardType = typeId;
-      button.textContent = typeId.replace("core.", "");
-      panel.append(button);
-    }
-    for (const card of activePluginCards) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.dataset.addCardType = typeForPluginCard(card);
-      button.dataset.pluginId = card.pluginId;
-      button.textContent = `${card.title} · ${card.pluginId}`;
+      button.textContent = TITLES[typeId] || "首页卡片";
       panel.append(button);
     }
   }
@@ -38715,16 +36698,12 @@ window.addEventListener("DOMContentLoaded", MigrationPanel.init, {
     const daily = grid.querySelector("#uiDailyGrid");
     if (daily) {
       for (const node of [...daily.children]) {
-        const pluginCard = PLUGIN_CARD_DEFS.find((card) =>
-          node.matches(card.selector),
+        const match = TYPES.find(
+          ([, selector]) => !selector.startsWith("#") && node.matches(selector),
         );
-        if (pluginCard) {
-          node.dataset.homePluginOwner = pluginCard.pluginId;
-          node.dataset.homePluginCardType = typeForPluginCard(pluginCard);
+        if (match) {
+          node.dataset.homeCardType = match[0];
           node.classList.add("gp-reveal");
-          grid.append(node);
-        } else if (node.matches(".gp-daily-honors")) {
-          node.dataset.homeCardType = "core.history-honor";
           grid.append(node);
         }
       }
@@ -38737,41 +36716,11 @@ window.addEventListener("DOMContentLoaded", MigrationPanel.init, {
     const byType = new Map(
       validated.instances.map((instance) => [instance.typeId, instance]),
     );
-    const activePluginTypes = activePluginCardTypes();
-    grid
-      .querySelectorAll(".home-plugin-inactive-placeholder")
-      .forEach((node) => node.remove());
-    grid.querySelectorAll("[data-home-plugin-card-type]").forEach((node) => {
-      const typeId = node.dataset.homePluginCardType;
-      const instance = byType.get(typeId);
-      const active = activePluginTypes.has(typeId);
-      node.removeAttribute("data-home-card-type");
-      node.hidden = true;
-      delete node.dataset.homeCardInstance;
-      if (!instance) return;
-      if (active) {
-        node.dataset.homeCardType = typeId;
-        node.hidden = !instance.visible;
-        node.dataset.homeCardInstance = instance.instanceId;
-        return;
-      }
-      const def = PLUGIN_CARD_DEFS.find(
-        (card) => typeForPluginCard(card) === typeId,
-      );
-      if (!instance.visible || !def) return;
-      const placeholder = document.createElement("article");
-      placeholder.className = "ui-panel home-plugin-inactive-placeholder";
-      placeholder.dataset.homeCardType = typeId;
-      placeholder.dataset.homeCardInstance = instance.instanceId;
-      placeholder.setAttribute("aria-label", def.title);
-      const title = document.createElement("strong");
-      title.textContent = def.title;
-      const note = document.createElement("p");
-      note.textContent = `${def.pluginId} 已停用；此卡片与布局设置已保留。`;
-      placeholder.append(title, note);
-      grid.append(placeholder);
-    });
     grid.querySelectorAll("[data-home-card-type]").forEach((node) => {
+      node.setAttribute(
+        "aria-label",
+        TITLES[node.dataset.homeCardType] || "首页卡片",
+      );
       const instance = byType.get(node.dataset.homeCardType);
       if (!instance) {
         node.hidden = true;
@@ -38794,7 +36743,7 @@ window.addEventListener("DOMContentLoaded", MigrationPanel.init, {
     grid.dataset.layoutRevision = String(validated.revision);
   }
 
-  function refreshPluginContributions() {
+  function refreshCards() {
     if (!initialized || !gridElement || !currentLayout) return;
     bindLegacyNodes(gridElement);
     applyLayout(gridElement, currentLayout);
@@ -38850,10 +36799,6 @@ window.addEventListener("DOMContentLoaded", MigrationPanel.init, {
         subtree: true,
         childList: true,
       });
-    document.addEventListener(
-      "godpower:plugin-contributions-changed",
-      refreshPluginContributions,
-    );
   }
 
   root.HomeDashboard = Object.freeze({
@@ -38861,12 +36806,6 @@ window.addEventListener("DOMContentLoaded", MigrationPanel.init, {
     beginEdit,
     getCardOwnership: () => ({
       core: TYPES.map(([typeId]) => typeId),
-      plugin: registeredPluginCards().map((card) => ({
-        pluginId: card.pluginId,
-        localId: card.localId,
-        selector: card.selector,
-        typeId: typeForPluginCard(card),
-      })),
     }),
     getStatus: () => ({
       initialized,
@@ -38875,7 +36814,7 @@ window.addEventListener("DOMContentLoaded", MigrationPanel.init, {
         ? root.HomeLayout.validateLayout(currentLayout)
         : null,
     }),
-    refreshPluginContributions,
+    refreshCards,
   });
   if (document.readyState === "loading")
     document.addEventListener("DOMContentLoaded", init, { once: true });
@@ -39056,213 +36995,52 @@ window.GodpowerPicker = (() => {
   });
 })();
 </script>
-<script>/* Native window presentation adapter. All state and event handlers stay in the main classroom. */
+<script>/* Only the picker has an external window; functional dialogs keep their live DOM. */
 (() => {
   const desktop = window.godpowerDesktop;
-  if (!desktop || desktop.role !== "main" || !desktop.publishDialogs) return;
-  const ids = [
-    "welcomeModal",
-    "scoreModalBackdrop",
-    "pwdModal",
-    "memberSearchBackdrop",
-    "settlementNameModal",
-    "grandModalOverlay",
-    "itemModalBackdrop",
-    "handRaiseBackdrop",
-    "aboutBackdrop",
-    "batchImportModal",
-    "themeDialogV21727",
-    "quickPersonBackdropV218",
-    "programConfirmV28",
-  ];
-  const nodes = new Map(),
-    tokens = new WeakMap(),
-    acks = new Map(),
-    versions = new Map();
-  let nextToken = 0,
-    last = "",
-    timer;
-  function token(el) {
-    if (!tokens.has(el)) {
-      tokens.set(el, ++nextToken);
-      nodes.set(nextToken, el);
-    }
-    return tokens.get(el);
-  }
-  const visible = (el) =>
-    el.open ||
-    el.classList.contains("active") ||
-    el.classList.contains("show") ||
-    el.style.display === "flex" ||
-    (el.id === "programConfirmV28" && el.getClientRects().length > 0);
-  function close(root) {
-    const button = root.querySelector("[data-ui-window-close]");
-    if (button) {
-      button.click();
-      return;
-    }
-    const closers = {
-      welcomeModal: () => closeWelcomeModal(),
-      scoreModalBackdrop: () => closeScoreModal(),
-      pwdModal: () => closePwdModal(),
-      memberSearchBackdrop: () => closeMemberSearchModal(),
-      settlementNameModal: () => closeSettlementNameModal(),
-      grandModalOverlay: () => closeGrandSettlementModal(),
-      itemModalBackdrop: () => closeItemWindow(),
-      handRaiseBackdrop: () => closeHandRaise(),
-      aboutBackdrop: () => closeAbout(),
-      batchImportModal: () => closeBatchImportModal(),
-      themeDialogV21727: () => closeThemeDialogV21727(false),
-      quickPersonBackdropV218: () => closeQuickPersonScoreV218(),
-      programConfirmV28: () => document.getElementById("pcCancelV28")?.click(),
-    };
-    closers[root.id]?.();
-  }
-  function scan() {
-    const css = [...document.querySelectorAll("style:not([data-native-hide])")]
-      .map((el) => el.textContent)
-      .join("\n");
-    const list = [];
-    for (const id of ids) {
-      const root = document.getElementById(id);
-      if (!root) continue;
-      if (!visible(root)) {
-        root.removeAttribute("data-native-detached");
-        continue;
-      }
-      const copy = root.cloneNode(true),
-        original = [root, ...root.querySelectorAll("*")],
-        cloned = [copy, ...copy.querySelectorAll("*")];
-      original.forEach((el, i) => {
-        const target = cloned[i];
-        target.setAttribute("data-remote-token", token(el));
-        target.removeAttribute("data-native-detached");
-        if (el.matches("input,textarea,select")) {
-          if (el.tagName === "TEXTAREA") target.textContent = el.value;
-          else if (el.tagName === "SELECT")
-            [...target.options].forEach((o, j) =>
-              o.toggleAttribute("selected", el.options[j].selected),
-            );
-          else if (el.type === "checkbox" || el.type === "radio")
-            target.toggleAttribute("checked", el.checked);
-          else if (el.type !== "file" && el.type !== "password")
-            target.setAttribute("value", el.value);
-          else {
-            target.removeAttribute("value");
-            if (el.type === "password")
-              target.dataset.passwordFilled = String(!!el.value);
-          }
-        }
-        if (el.tagName === "DETAILS") target.toggleAttribute("open", el.open);
-      });
-      root.setAttribute("data-native-detached", "");
-      const title =
-        root
-          .querySelector('[class*="title"],h1,h2,h3')
-          ?.textContent?.trim()
-          .slice(0, 100) || "课堂工具";
-      const html = copy.outerHTML,
-        previous = versions.get(id);
-      const version =
-        previous && previous.html === html
-          ? previous.version
-          : (previous?.version || 0) + 1;
-      versions.set(id, { html, version });
-      list.push({
-        id,
-        bodyClass: document.body.className,
-        motion: document.body.dataset.motion || "full",
-        title,
-        html,
-        css,
-        version,
-        acks: Object.fromEntries(acks),
-      });
-    }
-    // The picker is already an independent authoritative client; redirect its original entry.
+  if (!desktop || desktop.role !== "main") return;
+  function install() {
     const picker = document.getElementById("pickerModal");
-    if (picker)
-      picker.toggleAttribute("data-native-detached", !!visible(picker));
-    const json = JSON.stringify(list);
-    if (json !== last) {
-      last = json;
-      desktop.publishDialogs(list);
-    }
-    for (const [key, node] of nodes)
-      if (!node.isConnected) {
-        nodes.delete(key);
-        acks.delete(key);
-      }
+    if (!picker) return;
+    const style = document.createElement("style");
+    style.textContent =
+      "#pickerModal[data-external-picker]{visibility:hidden!important;pointer-events:none!important}";
+    document.head.append(style);
+    let opened = false;
+    const sync = () => {
+      const visible =
+        picker.classList.contains("active") || picker.style.display === "flex";
+      picker.toggleAttribute("data-external-picker", visible);
+      if (visible && !opened) desktop.openPicker();
+      opened = visible;
+    };
+    // Repeated presses must reopen a collapsed picker even if the hidden
+    // legacy picker modal was already active and its class does not change.
+    const fromControl = (event) => {
+      if (event.target.closest('[onclick*="openPickerModal"]'))
+        void desktop.openPicker();
+    };
+    document.addEventListener("click", fromControl);
+    const observer = new MutationObserver(sync);
+    observer.observe(picker, {
+      attributes: true,
+      attributeFilter: ["class", "style"],
+    });
+    sync();
+    window.addEventListener(
+      "beforeunload",
+      () => {
+        observer.disconnect();
+        document.removeEventListener("click", fromControl);
+      },
+      {
+        once: true,
+      },
+    );
   }
-  desktop.onDialogEvent((message) => {
-    const root = document.getElementById(message.id);
-    if (!root || !visible(root)) return;
-    if (message.type === "close") {
-      close(root);
-      scan();
-      return;
-    }
-    if (
-      !["input", "change", "files"].includes(message.type) &&
-      message.version !== versions.get(message.id)?.version
-    )
-      return;
-    const el = nodes.get(message.token);
-    if (!el || !root.contains(el) || el.disabled) return;
-    if (message.type === "input" || message.type === "change") {
-      if (
-        !Number.isSafeInteger(message.inputSeq) ||
-        (acks.get(message.token)?.session === message.session &&
-          message.inputSeq <= acks.get(message.token).seq)
-      )
-        return;
-      el.value = message.value;
-      acks.set(message.token, {
-        seq: message.inputSeq,
-        session: message.session,
-      });
-      el.dispatchEvent(new Event(message.type, { bubbles: true }));
-    } else if (message.type === "click")
-      el.dispatchEvent(
-        new MouseEvent("click", { bubbles: true, cancelable: true }),
-      );
-    else if (message.type === "keydown")
-      el.dispatchEvent(
-        new KeyboardEvent("keydown", {
-          key: message.key,
-          bubbles: true,
-          cancelable: true,
-        }),
-      );
-    else if (message.type === "submit" && el.tagName === "FORM")
-      el.requestSubmit();
-    else if (message.type === "files" && el.matches("input[type=file]")) {
-      const transfer = new DataTransfer();
-      for (const file of message.files)
-        transfer.items.add(
-          new File([file.bytes], file.name, { type: file.type || "" }),
-        );
-      el.files = transfer.files;
-      el.dispatchEvent(new Event("change", { bubbles: true }));
-    }
-    scan();
-  });
-  window.addEventListener(
-    "DOMContentLoaded",
-    () => {
-      const style = document.createElement("style");
-      style.dataset.nativeHide = "";
-      style.textContent =
-        "[data-native-detached]{visibility:hidden!important;pointer-events:none!important}";
-      document.head.append(style);
-      timer = setInterval(scan, 120);
-      scan();
-    },
-    { once: true },
-  );
-  window.addEventListener("beforeunload", () => clearInterval(timer), {
-    once: true,
-  });
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", install, { once: true });
+  else install();
 })();
 </script>
 </body>

@@ -11,6 +11,7 @@ const { randomUUID } = require("node:crypto");
 const { URLS, authorize, sanitizeSnapshot } = require("./contracts.cjs");
 const { branding } = require("./theme.cjs");
 const { Broker } = require("./broker.cjs");
+const PickerDrag = require("./picker-drag.cjs");
 const { EscapeLease } = require("./escape-lease.cjs");
 const {
   WindowState,
@@ -36,10 +37,8 @@ class Windows {
       { onChange: () => this.broadcast() },
     );
     this.installIPC();
-    this.detached = new (require("./detached.cjs").DetachedWindows)(this);
     app.on("before-quit", () => {
       this.quitting = true;
-      this.detached.closeAll();
       this.savePicker();
       this.closeEffect();
     });
@@ -102,13 +101,11 @@ class Windows {
     this.secure(this.main, "main");
     this.main.webContents.on("did-start-loading", () => {
       this.lastReveal = null;
-      this.detached.closeAll();
       this.closeEffect();
       this.broker.reset();
     });
     this.main.webContents.on("render-process-gone", () => {
       this.crashed = true;
-      this.detached.closeAll();
       this.closeEffect();
       this.broker.reset();
     });
@@ -185,15 +182,22 @@ class Windows {
       if (!pickerHadFocus) return;
       pickerHadFocus = false;
       clearTimeout(blurTimer);
-      blurTimer = setTimeout(() => {
+      blurTimer = setTimeout(async () => {
         if (
           this.picker === win &&
           !win.isDestroyed() &&
           !this.quitting &&
           !this.pickerCollapsed &&
           !win.isFocused()
-        )
-          this.setPickerExpanded(false);
+        ) {
+          // Windows touch keyboards can take native focus while the text field
+          // remains the renderer's active control. Do not collapse its owner.
+          const editing = await win.webContents.executeJavaScript(
+            `!!document.activeElement?.matches('input:not([type=button]):not([type=checkbox]):not([type=range]),textarea,[contenteditable=true]')`,
+          ).catch(() => false);
+          if (!editing && this.picker === win && !win.isDestroyed() && !win.isFocused())
+            this.setPickerExpanded(false);
+        }
       }, 90);
     });
     win.webContents.on("render-process-gone", () => win.destroy());
@@ -221,9 +225,9 @@ class Windows {
       this.broadcast();
     });
     win.on("closed", () => {
+      this.iconDrag = null;
       clearTimeout(blurTimer);
       clearTimeout(this.boundsTimer);
-      clearInterval(this.iconDragTimer);
       this.iconDrag = null;
       this.broker.dropClient(client);
       if (this.picker === win) this.picker = null;
@@ -250,6 +254,7 @@ class Windows {
   }
   setPickerExpanded(expanded) {
     if (!this.picker || this.picker.isDestroyed()) return;
+    const anchor = this.picker.getBounds();
     this.savePicker();
     this.pickerCollapsed = !expanded;
     this.picker.setMinimumSize(expanded ? 360 : 72, expanded ? 520 : 72);
@@ -257,11 +262,7 @@ class Windows {
     this.picker.setBounds(
       expanded
         ? visibleBounds(
-            this.preferences.value.pickerBounds || {
-              ...this.picker.getBounds(),
-              width: 480,
-              height: 760,
-            },
+            {...(this.preferences.value.pickerBounds || {width:480,height:760}),x:anchor.x,y:anchor.y},
             screen.getAllDisplays(),
             null,
           )
@@ -301,7 +302,7 @@ class Windows {
     this.revision++;
     if (this.picker && !this.picker.isDestroyed())
       this.picker.webContents.send("gp:state", this.state());
-    if (this.main && !this.main.isDestroyed())
+    if (this.main && !this.main.isDestroyed() && !this.crashed && !this.main.webContents.isDestroyed())
       this.main.webContents.send("gp:shell", this.preferences.value);
   }
   updateBranding() {
@@ -460,6 +461,7 @@ class Windows {
     ipcMain.handle("gp:open-picker", (event) => {
       requireRole(event, "main");
       this.openPicker();
+      this.setPickerExpanded(true);
       return { ok: true };
     });
     ipcMain.handle("gp:get-state", (event) => {
@@ -483,55 +485,20 @@ class Windows {
         return { ok: true };
       }
       if (action === "dragStart" && this.pickerCollapsed) {
-        this.iconDrag = {
-          cursor: screen.getCursorScreenPoint(),
-          bounds: this.picker.getBounds(),
-          moved: false,
-        };
-        clearInterval(this.iconDragTimer);
-        this.iconDragTimer = setInterval(() => {
-          if (!this.iconDrag || !this.picker || this.picker.isDestroyed()) {
-            clearInterval(this.iconDragTimer);
-            return;
-          }
-          const p = screen.getCursorScreenPoint(),
-            d = this.iconDrag;
-          const dx = p.x - d.cursor.x,
-            dy = p.y - d.cursor.y;
-          if (Math.hypot(dx, dy) > 4) d.moved = true;
-          if (d.moved)
-            this.picker.setBounds(
-              iconBounds(
-                { x: d.bounds.x + dx, y: d.bounds.y + dy },
-                screen.getAllDisplays(),
-              ),
-            );
-        }, 16);
-        return { ok: true };
+        this.iconDrag = {cursor:PickerDrag.point(value),bounds:this.picker.getBounds(),moved:false};
+        return {ok:true};
       }
-      if (action === "dragEnd" || action === "dragCancel") {
-        clearInterval(this.iconDragTimer);
-        const drag = this.iconDrag;
-        if (drag) {
-          const cursor = screen.getCursorScreenPoint(),
-            dx = cursor.x - drag.cursor.x,
-            dy = cursor.y - drag.cursor.y;
-          if (Math.hypot(dx, dy) > 4) {
-            drag.moved = true;
-            this.picker.setBounds(
-              iconBounds(
-                { x: drag.bounds.x + dx, y: drag.bounds.y + dy },
-                screen.getAllDisplays(),
-              ),
-            );
-          }
+      if (action === "dragMove" || action === "dragEnd" || action === "dragCancel") {
+        const drag=this.iconDrag;
+        if(!drag)return {ok:false,error:"NO_DRAG"};
+        if(value){
+          const next=PickerDrag.move(drag,value);drag.moved=next.moved;
+          if(next.moved)this.picker.setBounds(iconBounds(next,screen.getAllDisplays()));
         }
-        const moved = !!drag?.moved;
-        this.iconDrag = null;
-        this.savePicker();
-        if (action === "dragEnd" && !moved && this.pickerCollapsed)
-          this.setPickerExpanded(true);
-        return { ok: true };
+        if(action === "dragMove")return {ok:true};
+        this.iconDrag=null;this.savePicker();
+        if(action === "dragEnd"&&!drag.moved&&this.pickerCollapsed)this.setPickerExpanded(true);
+        return {ok:true};
       }
       if (action === "close") {
         this.picker.close();

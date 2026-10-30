@@ -1,3 +1,7 @@
+# Electron 3.0.57 当前验收
+
+最新结果见 [3.0.57验收](validation/v3.0.57-internal-dialogs-picker.md)：25单测、16桌面场景PASS，Windows真机NOT TESTED。普通功能窗口现在使用内部弹窗，以下0.2.0历史矩阵保留追溯。
+
 # Electron 0.2.0 验收矩阵
 
 只将实际运行结果标为 PASS。环境：Debian 13，Electron 44.9.0 / Chromium 152，1920×1080、deviceScaleFactor 1；独立临时档案。未执行 CircleCI。

@@ -4,7 +4,7 @@ async function runSmokeProbe(window, resultPath) {
     `(async () => {
     const keys = [...document.querySelectorAll('[data-view]')]
       .map((element) => element.dataset.view);
-    const requiredViews = ['welcome', 'battle', 'history', 'archives', 'plugins', 'settings'];
+    const requiredViews = ['welcome', 'battle', 'history', 'archives', 'settings'];
     const visibleView = document.querySelector('#view-welcome');
     const errors = [];
     window.addEventListener('error', (event) => errors.push(event.message));
@@ -66,9 +66,9 @@ async function runSmokeProbe(window, resultPath) {
     JSON.stringify(
       {
         status:
-          firstLoad.views.length === 6 &&
+          firstLoad.views.length === 5 &&
           firstLoad.hasWelcome &&
-          firstLoad.hasPluginCenter &&
+          !firstLoad.hasPluginCenter &&
           firstLoad.indexedDB &&
           secondLoad.storage === "isolated-profile" &&
           secondLoad.indexedDB === "isolated-profile" &&
