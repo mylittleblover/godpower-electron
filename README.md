@@ -2,6 +2,8 @@
 
 离线课堂竞技程序。一个主窗口保留全部比赛、道具、历史和存档；独立点名悬浮窗和透明全屏揭晓窗共用主窗口的抽选结果。
 
+Windows测试包：[Google Drive 3.0.57](https://drive.google.com/drive/folders/1FCk8AGKSuN27EEaFnuPp4E9EMwYQAoG5)。下载两个分卷和Merge-and-extract-3.0.57.cmd到同一目录，双击脚本校验并解压，再运行exe。Windows实体触屏与系统屏幕键盘仍需真机复验。
+
 ## 使用
 
 - 菜单「课堂 → 打开点名悬浮窗」，或全局快捷键 **Ctrl+Shift+P**。
