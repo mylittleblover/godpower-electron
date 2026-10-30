@@ -1,0 +1,16 @@
+
+> godpower-electron@3.0.59 sync:html
+> node scripts/sync-html.mjs
+
+{"file":"dist/godpower.html","bytes":8226621,"sha256":"130080d925248178c64dbac5aee7c0ac9419393e2b2c836b4792816a6ad2caaf"}
+{
+  "sourceRepository": "mylittleblover/godpower-html",
+  "sourceFile": "dist/godpower.html",
+  "sourceCommit": "bc08107217b6b7a8b5ddde686e1ee8aa045961ab",
+  "htmlSha256": "130080d925248178c64dbac5aee7c0ac9419393e2b2c836b4792816a6ad2caaf",
+  "htmlBytes": 8226621,
+  "presentationAssets": {
+    "tooltips.js": "135a4f8960548e008f69bdb81d871333c621ef24d4730c0808ea0fa316577ecd",
+    "tooltips.css": "199af0df74b1d69a75c0e7d15157aa85623d02787c9f87dd4bcdbff8800e6eac"
+  }
+}

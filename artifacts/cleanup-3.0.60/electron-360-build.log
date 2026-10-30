@@ -1,0 +1,38 @@
+
+> godpower-electron@3.0.60 prebuild:win:cross
+> npm run verify:bundle
+
+
+> godpower-electron@3.0.60 verify:bundle
+> node scripts/verify-bundle.mjs
+
+{
+  "sourceRepository": "mylittleblover/godpower-html",
+  "sourceFile": "dist/godpower.html",
+  "sourceCommit": "bc08107217b6b7a8b5ddde686e1ee8aa045961ab",
+  "htmlSha256": "130080d925248178c64dbac5aee7c0ac9419393e2b2c836b4792816a6ad2caaf",
+  "htmlBytes": 8226621,
+  "presentationAssets": {
+    "tooltips.js": "135a4f8960548e008f69bdb81d871333c621ef24d4730c0808ea0fa316577ecd",
+    "tooltips.css": "199af0df74b1d69a75c0e7d15157aa85623d02787c9f87dd4bcdbff8800e6eac"
+  }
+}
+Visible, internal and Electron package version match: 3.0.60
+
+> godpower-electron@3.0.60 build:win:cross
+> electron-builder --win dir zip --x64 --config.win.signAndEditExecutable=false --publish never
+
+  • electron-builder  version=26.8.1 os=6.18.57
+  • loaded configuration  file=package.json ("build" field)
+  • executing @electron/rebuild  electronVersion=44.9.0 arch=x64 buildFromSource=false workspaceRoot=/workspace/godpower-electron-020 projectDir=./ appDir=./
+  • installing native dependencies  arch=x64
+  • completed installing native dependencies
+  • packaging       platform=win32 arch=x64 electron=44.9.0 appOutDir=release/win-unpacked
+  • searching for node modules  pm=npm searchDir=/workspace/godpower-electron-020
+(node:25504) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+  • searching for node modules  pm=traversal searchDir=/workspace/godpower-electron-020
+  • using manual traversal of node_modules to build dependency tree
+  • no node modules returned while searching directories  searchDirectories=[""]
+  • updating asar integrity executable resource  executablePath=release/win-unpacked/上帝的力量.exe
+  • building        target=zip arch=x64 file=release/上帝的力量-3.0.60-win.zip

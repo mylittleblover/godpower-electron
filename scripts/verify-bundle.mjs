@@ -19,7 +19,8 @@ console.log(
 const {version}=JSON.parse(await readFile('package.json','utf8'));
 const html=await readFile('resources/index.html','utf8');
 assert.ok(html.includes(`<small>V${version}</small>`),'Visible HTML must match Electron package version');
-assert.ok(html.includes(`window.__GOD_POWER_VERSION__='V${version}'`),'Internal HTML must match Electron package version');
+const internalVersions = [...html.matchAll(/window\.__GOD_POWER_VERSION__\s*=\s*(['"])(V[0-9]+\.[0-9]+\.[0-9]+)\1/g)].map(match => match[2]);
+assert.ok(internalVersions.includes('V'+version),'Internal HTML must match Electron package version');
 console.log(`Visible, internal and Electron package version match: ${version}`);
 
 const info=JSON.parse(await readFile('resources/BUILD_INFO.json','utf8'));

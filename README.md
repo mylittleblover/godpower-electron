@@ -1,3 +1,5 @@
+> V3.0.60：[下载目录](https://drive.google.com/drive/folders/1YqYLI0EaYQ-qUakIAMFHYQrsPXMHJ2Yv)。全部旧编号源码已拆分，保留现有功能与布局。Windows下载两个分卷及同版本cmd放在同一目录运行。验收见 docs/validation/v3.0.60-css-js-cleanup.md。
+
 > V3.0.59 无插件 UI 治理版：[下载目录](https://drive.google.com/drive/folders/192VLRXfMAoQqVJEHDj7_hoPOhgyjUpoB)。Windows下载两个分卷和同版本cmd放在同一目录合并解压；HTML可单独下载。本次同步保留点名悬浮窗和内部普通弹窗，验证范围见 docs/validation/v3.0.59-ui-governance.md。
 
 # 上帝的力量 Electron 3.0.57（无插件过渡版）

@@ -1,0 +1,15 @@
+
+> godpower-electron@3.0.60 prepare:drive
+> node scripts/prepare-drive-release.mjs
+
+{
+  "version": "3.0.60",
+  "source": "release/上帝的力量-3.0.60-win.zip",
+  "bytes": 147229311,
+  "sha256": "1390e0268b0be6e1494e79d8085fb6aa5d95040befb916f5c205424c74fdf6c8",
+  "out": "release/drive/3.0.60",
+  "parts": [
+    "godpower-3.0.60-win.zip.001",
+    "godpower-3.0.60-win.zip.002"
+  ]
+}

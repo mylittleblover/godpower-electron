@@ -1,0 +1,38 @@
+
+> godpower-electron@3.0.60 test
+> node --test tests/*.test.cjs
+
+✔ reject unknown commands, arbitrary IPC, invalid scores and modes (1.655361ms)
+✔ authorize exact webContents, main frame and URL (0.174482ms)
+✔ snapshot rejects malformed payload, oversized arrays and injected result data (0.246431ms)
+✔ concurrent replay dispatches once; changed payload cannot reuse id (1.034197ms)
+✔ reload rejects pending score without replay; stale epochs rejected (0.220061ms)
+Window preferences unavailable: Unexpected token 'b', "broken json" is not valid JSON
+✔ timeout fails once and ignores late acknowledgement (10.859976ms)
+✔ closed secondary window cleanup cancels receipts and cannot replay later (0.344728ms)
+✔ removed displays and oversized saved windows are clamped into visible work area (0.33207ms)
+✔ window preferences survive a new store instance and malformed files fall back safely (1.005313ms)
+✔ ordinary dialogs have no native window transport or cloned renderer (0.349706ms)
+✔ bundled HTML verifies SHA-256 and rejects any changed byte (1.602953ms)
+✔ valid snapshots strip private state and preserve display data without HTML interpretation (0.251949ms)
+✔ snapshot sanitizer accepts only bounded local WebP reveal thumbnails (0.244437ms)
+✔ Escape ownership survives duplicate readiness and is released exactly once (0.362816ms)
+✔ pointer deltas move icon directly without relying on mouse cursor (1.4283ms)
+✔ drag intent remains set after returning to initial position (0.305259ms)
+✔ malformed cross-window coordinates are rejected (0.413943ms)
+✔ icon stays 72px and is clamped to work area (1.289531ms)
+✔ icon restores saved position independently from expanded bounds (0.136656ms)
+✔ snapshot theme is strictly whitelisted and old snapshots default to classic (0.976269ms)
+✔ picker applies Marx branding from its snapshot and resets on legacy snapshots (1.848092ms)
+✔ effect theme leaves score colors semantic and uses gold for Marx picker reveal (2.739283ms)
+✔ full-screen reveal displays only bounded local WebP avatar data (1.516713ms)
+✔ native branding uses local icon and classic remains the fallback (0.408405ms)
+✔ native branding updates open main and picker windows and notifies tray once (5.756855ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 231.132085
