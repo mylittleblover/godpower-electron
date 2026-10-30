@@ -63,3 +63,9 @@
 - 依赖：EL-THEME-301；复杂度低；风险：禁止以Wine或Linux图像替代真机结论。
 - 验收：记录Windows版本、DPI、显示器和照片/截图；正确标记失败。
 - 推荐测试：GODPOWER_WINDOWS_EXE配合现有Windows smoke及人工任务栏检查。
+
+## V3.0.59 UI 治理同步
+
+DONE：同步HTML职责拆分与每日卡片修复，来源SHA/HTML摘要、25项单测、真实Electron存储启动、ZIP/ASAR校验见同版本验收报告。原生壳未改。
+
+NOT TESTED：Windows启动、屏幕键盘、实体触屏、多显示器；保留既有真机验收任务。HTML剩余整卡刷新/音轨局部刷新/跨文件CSS技术债继续在HTML维护列表追踪，不新增另一套业务实现。
