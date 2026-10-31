@@ -1,0 +1,23 @@
+Archive:  release/上帝的力量-3.0.61-win.zip
+    testing: LICENSE.electron.txt     OK
+    testing: LICENSES.chromium.html   OK
+    testing: chrome_100_percent.pak   OK
+    testing: chrome_200_percent.pak   OK
+    testing: d3dcompiler_47.dll       OK
+    testing: dxcompiler.dll           OK
+    testing: dxil.dll                 OK
+    testing: ffmpeg.dll               OK
+    testing: icudtl.dat               OK
+    testing: locales/                 OK
+    testing: locales/en-US.pak        OK
+    testing: locales/zh-CN.pak        OK
+    testing: resources/               OK
+    testing: resources.pak            OK
+    testing: resources/app.asar       OK
+    testing: snapshot_blob.bin        OK
+    testing: v8_context_snapshot.bin   OK
+    testing: vk_swiftshader.dll       OK
+    testing: vk_swiftshader_icd.json   OK
+    testing: vulkan-1.dll             OK
+    testing: 上帝的力量.exe      OK
+No errors detected in compressed data of release/上帝的力量-3.0.61-win.zip.
