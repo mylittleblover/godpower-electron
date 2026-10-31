@@ -1,0 +1,51 @@
+{
+  "status": "PASS",
+  "version": "3.0.61",
+  "source": {
+    "sourceRepository": "mylittleblover/godpower-html",
+    "sourceFile": "dist/godpower.html",
+    "sourceCommit": "9f5cf0611ed06a4ac0d7e5bbd5273bfecf03e519",
+    "htmlSha256": "6a7d50d37951fccda061cfeb26dcae3c6fa3d26b38837a094398caba1572fdaf",
+    "htmlBytes": 8407357,
+    "presentationAssets": {
+      "tooltips.js": "135a4f8960548e008f69bdb81d871333c621ef24d4730c0808ea0fa316577ecd",
+      "tooltips.css": "199af0df74b1d69a75c0e7d15157aa85623d02787c9f87dd4bcdbff8800e6eac"
+    }
+  },
+  "zip": {
+    "name": "上帝的力量-3.0.61-win.zip",
+    "bytes": 147248791,
+    "sha256": "5337ce15dfebe18918d48c50ba07ee00ad6df702508151d0cbf8a8ccfeae2f93"
+  },
+  "bundledFiles": [
+    "/build",
+    "/build/classic-icon.png",
+    "/build/icon.ico",
+    "/build/marx-icon.png",
+    "/desktop",
+    "/desktop/broker.cjs",
+    "/desktop/contracts.cjs",
+    "/desktop/escape-lease.cjs",
+    "/desktop/picker-drag.cjs",
+    "/desktop/protocol.cjs",
+    "/desktop/theme.cjs",
+    "/desktop/window-state.cjs",
+    "/desktop/windows.cjs",
+    "/main.cjs",
+    "/package.json",
+    "/preload",
+    "/preload/desktop.cjs",
+    "/renderer",
+    "/renderer/effect.css",
+    "/renderer/effect.html",
+    "/renderer/effect.js",
+    "/renderer/picker.css",
+    "/renderer/picker.html",
+    "/renderer/picker.js",
+    "/renderer/tooltips.css",
+    "/renderer/tooltips.js",
+    "/resources",
+    "/resources/BUILD_INFO.json",
+    "/resources/index.html"
+  ]
+}
