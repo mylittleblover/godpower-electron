@@ -4,6 +4,7 @@ const {
   validateCommand,
   authorize,
   sanitizeSnapshot,
+  sanitizeItemFx,
 } = require("../desktop/contracts.cjs");
 const { Broker } = require("../desktop/broker.cjs");
 const { visibleBounds } = require("../desktop/window-state.cjs");
@@ -297,6 +298,8 @@ test("snapshots carry a bounded hand DTO and drop unknown group selections", () 
     busy: false,
     inventoryCount: 0,
     canDraw: false,
+    canUse: false,
+    mainItemName: "",
     itemName: "",
   });
   const hand = sanitizeSnapshot({
@@ -309,6 +312,8 @@ test("snapshots carry a bounded hand DTO and drop unknown group selections", () 
       busy: true,
       inventoryCount: 2,
       canDraw: true,
+      canUse: true,
+      mainItemName: "蘑菇",
       itemName: "金币",
       secret: "x",
     },
@@ -321,6 +326,8 @@ test("snapshots carry a bounded hand DTO and drop unknown group selections", () 
     busy: true,
     inventoryCount: 2,
     canDraw: true,
+    canUse: true,
+    mainItemName: "蘑菇",
     itemName: "金币",
   });
   assert.equal(
@@ -381,4 +388,65 @@ test("the launcher menu stays inside the monitor work area", () => {
   // The expanded panel keeps its own larger minimum.
   const panel = visibleBounds({ width: 480, height: 760 }, displays, null);
   assert.deepEqual([panel.width, panel.height], [480, 760]);
+});
+test("item cinematics accept only bounded local data and drop injected fields", () => {
+  const png = "data:image/png;base64," + Buffer.alloc(64, 1).toString("base64");
+  const base = {
+    key: "green",
+    caster: "第一组",
+    itemName: "绿龟壳",
+    icon: png,
+    targets: [
+      { name: "第二组", delta: -3, blocked: false, status: "中毒", evil: 1 },
+      { name: "第三组", delta: 0, blocked: true },
+    ],
+    extra: "dropped",
+  };
+  const clean = sanitizeItemFx(base);
+  assert.equal(clean.key, "green");
+  assert.equal(clean.extra, undefined, "unknown top-level fields are dropped");
+  assert.deepEqual(clean.targets, [
+    { name: "第二组", delta: -3, blocked: false, effectChanged: false, status: "中毒" },
+    { name: "第三组", delta: 0, blocked: true, effectChanged: false, status: "" },
+  ]);
+  for (const icon of [
+    "https://example.com/a.png",
+    "javascript:alert(1)",
+    "data:text/html;base64,PHNjcmlwdD4=",
+    "data:image/png;base64," + "A".repeat(400_001),
+  ])
+    assert.equal(sanitizeItemFx({ ...base, icon }).icon, "");
+  assert.equal(sanitizeItemFx(null), null);
+  assert.equal(sanitizeItemFx([]), null);
+  assert.equal(sanitizeItemFx({ ...base, targets: [] }), null);
+  assert.equal(
+    sanitizeItemFx({ ...base, targets: Array(40).fill({ name: "g" }) }).targets
+      .length,
+    16,
+    "targets stay bounded",
+  );
+  assert.equal(
+    sanitizeItemFx({ ...base, targets: [{ name: "x", delta: 1.5 }] }).targets[0]
+      .delta,
+    0,
+    "non-integer deltas fall back to zero",
+  );
+});
+test("the item cinematic reuses the full-screen reveal window", () => {
+  const fs = require("node:fs");
+  const windows = fs.readFileSync("desktop/windows.cjs", "utf8");
+  assert.match(windows, /ipcMain\.on\("gp:item-effect"/);
+  assert.match(windows, /presentItemFx\(safe, effects\)/);
+  assert.match(windows, /kind: "item"/);
+  assert.match(
+    windows,
+    /presentItemFx\(payload, effects\)[\s\S]*?setAlwaysOnTop\(true, "screen-saver"\)/,
+    "the cinematic inherits the topmost level",
+  );
+  assert.match(fs.readFileSync("preload/desktop.cjs", "utf8"), /showItemFx/);
+  assert.match(fs.readFileSync("renderer/effect.js", "utf8"), /presentItem/);
+  assert.match(
+    fs.readFileSync("renderer/effect.html", "utf8"),
+    /id="itemTargets"/,
+  );
 });

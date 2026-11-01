@@ -41,6 +41,7 @@ function validateCommand(action, p = {}) {
     handJudge: ["groupId", "selectionId", "correct"],
     handScore: ["groupId", "selectionId", "delta"],
     handDraw: ["groupId", "selectionId"],
+    handUse: ["groupId", "selectionId"],
   }[action];
   if (
     !fields ||
@@ -56,7 +57,8 @@ function validateCommand(action, p = {}) {
   if (
     action === "handJudge" ||
     action === "handScore" ||
-    action === "handDraw"
+    action === "handDraw" ||
+    action === "handUse"
   ) {
     integer(p.groupId);
     text(p.selectionId, 120);
@@ -153,6 +155,9 @@ function sanitizeSnapshot(s) {
           ? 0
           : Math.min(3, Math.max(0, integer(hand.inventoryCount || 0))),
       canDraw: handGroupId !== null && hand.canDraw === true,
+      canUse: handGroupId !== null && hand.canUse === true,
+      mainItemName:
+        handGroupId !== null ? text(hand.mainItemName || "", 120) : "",
       itemName: handGroupId !== null ? text(hand.itemName || "", 120) : "",
     },
     slots: s.slots.map((n) => {
@@ -175,4 +180,33 @@ function sanitizeSnapshot(s) {
     },
   };
 }
-module.exports = { URLS, authorize, validateCommand, sanitizeSnapshot };
+/* Item cinematics cross the IPC boundary as bounded plain data. Anything not
+   matched here is dropped, so a renderer cannot inject markup or remote URLs. */
+function sanitizeItemFx(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const name = (v, max = 80) =>
+    typeof v === "string" && v.length <= max ? v : "";
+  const targets = Array.isArray(value.targets) ? value.targets.slice(0, 16) : [];
+  if (!targets.length) return null;
+  return {
+    key: name(value.key, 40),
+    caster: name(value.caster),
+    itemName: name(value.itemName),
+    icon:
+      typeof value.icon === "string" &&
+      value.icon.length <= 400_000 &&
+      /^data:image\/(?:png|webp|jpeg|gif|svg\+xml);base64,[A-Za-z0-9+/=]+$/.test(
+        value.icon,
+      )
+        ? value.icon
+        : "",
+    targets: targets.map((target) => ({
+      name: name(target?.name),
+      delta: Number.isSafeInteger(target?.delta) ? target.delta : 0,
+      blocked: target?.blocked === true,
+      effectChanged: target?.effectChanged === true,
+      status: name(target?.status, 200),
+    })),
+  };
+}
+module.exports = { URLS, authorize, validateCommand, sanitizeSnapshot, sanitizeItemFx };

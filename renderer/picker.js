@@ -318,6 +318,11 @@ function renderHand(s, busy, state) {
     : hand.canDraw
       ? "🎁 抽取道具"
       : `🎁 抽取道具（${hand.inventoryCount || 0}/3）`;
+  $("handUse").hidden = active == null;
+  $("handUse").disabled = busy || locked || hand.canUse !== true;
+  $("handUse").textContent = hand.mainItemName
+    ? `🎒 使用：${hand.mainItemName}`
+    : "🎒 没有主要道具";
   $("handInventory").textContent = `道具栏 ${hand.inventoryCount || 0}/3`;
   void state;
 }
@@ -374,6 +379,12 @@ $("handWrong").addEventListener("click", () =>
 );
 $("handDraw").addEventListener("click", () =>
   run("handDraw", {
+    groupId: current?.snapshot?.hand?.groupId,
+    selectionId: current?.snapshot?.hand?.selectionId,
+  }),
+);
+$("handUse").addEventListener("click", () =>
+  run("handUse", {
     groupId: current?.snapshot?.hand?.groupId,
     selectionId: current?.snapshot?.hand?.selectionId,
   }),

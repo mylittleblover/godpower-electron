@@ -119,6 +119,68 @@ h1 {
   color: #a4bbb5;
   margin-top: 45px;
 }
+/* Item cinematic: attacker on the left, target beats on the right. */
+#stage[data-mode="item"] .reveal {
+  inset: 12% 8%;
+}
+#stage[data-mode="item"] h1 {
+  font-size: clamp(46px, 6vw, 110px);
+}
+.item-icon {
+  width: min(20vw, 240px);
+  height: min(24vh, 240px);
+  object-fit: contain;
+  margin-top: 18px;
+  filter: drop-shadow(0 0 28px #ffffff55);
+}
+.item-icon[hidden],
+.item-targets[hidden] {
+  display: none;
+}
+.item-targets {
+  margin-top: 26px;
+  padding: 18px 40px;
+  border-radius: 18px;
+  background: #ffffff10;
+  border: 1px solid #ffffff26;
+  min-width: min(46vw, 620px);
+}
+.item-targets strong {
+  display: block;
+  font-size: clamp(30px, 4vw, 72px);
+  color: #fff3ad;
+}
+.item-targets p {
+  margin: 6px 0 0;
+  font-size: clamp(18px, 2.2vw, 30px);
+}
+.item-targets small {
+  display: block;
+  margin-top: 6px;
+  letter-spacing: 0.06em;
+  color: #a4bbb5;
+}
+.item-targets em {
+  display: block;
+  margin-top: 10px;
+  font-style: normal;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  color: #7e9a94;
+}
+.item-targets.beat {
+  animation: item-beat 0.35s ease-out;
+}
+@keyframes item-beat {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
 .halo {
   position: absolute;
   left: 50%;

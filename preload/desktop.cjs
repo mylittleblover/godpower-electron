@@ -17,6 +17,7 @@ if (role === "main")
     reply: (value) => ipcRenderer.send("gp:reply", value),
     ready: () => ipcRenderer.send("gp:ready"),
     showScore: (value) => ipcRenderer.send("gp:score-effect", value),
+    showItemFx: (value) => ipcRenderer.send("gp:item-effect", value),
     openPicker: () => ipcRenderer.invoke("gp:open-picker"),
   });
 if (role === "picker") {

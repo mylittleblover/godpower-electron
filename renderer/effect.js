@@ -17,9 +17,76 @@ for (let n = 0; n < 24; n++) {
   dot.style.setProperty("--i", n);
   document.getElementById("particles").append(dot);
 }
+/* Item cinematics reuse the picker reveal surface: attacker on the left,
+   defender on the right, one target per beat. The data is already sanitized. */
+let itemTimer = null;
+function presentItem(payload) {
+  const item = payload.item,
+    marx = payload.theme === "marx";
+  document.body.classList.toggle("theme-marx", marx);
+  document.body.dataset.theme = marx ? "marx" : "classic";
+  stage.dataset.mode = "item";
+  document.title = `${marx ? "马克思的力量" : "上帝的力量"} · 道具特效`;
+  document.getElementById("mode").textContent = "ITEM CINEMATIC · 道具结算";
+  document.getElementById("group").textContent = "发动方";
+  document.getElementById("avatarFrame").hidden = true;
+  document.getElementById("name").textContent = item.caster || "小组";
+  document.getElementById("number").textContent = item.itemName;
+
+  const iconWrap = document.getElementById("itemIcon");
+  if (item.icon) {
+    iconWrap.src = item.icon;
+    iconWrap.hidden = false;
+  } else iconWrap.hidden = true;
+
+  const box = document.getElementById("itemTargets");
+  box.hidden = false;
+  const targets = item.targets,
+    total = targets.length;
+  const label = (target) =>
+    target.blocked
+      ? "防御成功"
+      : target.delta
+        ? `${target.delta > 0 ? "+" : ""}${target.delta} 分`
+        : target.effectChanged
+          ? "状态已施加"
+          : item.key === "item_box"
+            ? "获得道具"
+            : "效果已结算";
+  let index = 0;
+  const beat = () => {
+    if (!stage.classList.contains("active")) return;
+    const target = targets[index++];
+    box.innerHTML = `<strong>${escapeHtml(target.name)}</strong><p>${escapeHtml(label(target))}</p><small>${escapeHtml(target.status || "")}</small><em>${index} / ${total}</em>`;
+    box.classList.remove("beat");
+    void box.offsetWidth;
+    box.classList.add("beat");
+    itemTimer = setTimeout(
+      index < total ? beat : exit,
+      1500,
+    );
+  };
+  stage.style.setProperty("--group", marx ? "#d6ad58" : "#71dbc1");
+  stage.classList.add("active", payload.effects.style);
+  exitTimer = setTimeout(exit, payload.effects.duration + 9000);
+  beat();
+}
+function escapeHtml(value) {
+  return String(value).replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ],
+  );
+}
 api.onReveal((payload) => {
   if (id) return;
   id = payload.id;
+  if (payload.kind === "item") {
+    presentItem(payload);
+    return;
+  }
   const r = payload.result;
   const marx = payload.theme === "marx";
   document.body.classList.toggle("theme-marx", marx);

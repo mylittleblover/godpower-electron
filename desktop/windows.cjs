@@ -8,7 +8,12 @@ const {
 } = require("electron");
 const path = require("node:path");
 const { randomUUID } = require("node:crypto");
-const { URLS, authorize, sanitizeSnapshot } = require("./contracts.cjs");
+const {
+  URLS,
+  authorize,
+  sanitizeSnapshot,
+  sanitizeItemFx,
+} = require("./contracts.cjs");
 const { branding } = require("./theme.cjs");
 const { Broker } = require("./broker.cjs");
 const PickerDrag = require("./picker-drag.cjs");
@@ -477,6 +482,62 @@ class Windows {
     if (win && !win.isDestroyed()) win.destroy();
     this.broadcast();
   }
+  /* The item cinematic is a second payload shape of the same full-screen
+     window, so it inherits the verified topmost/escape/mouse behaviour. */
+  presentItemFx(payload, effects) {
+    if (this.quitting) return;
+    if (!this.preferences.value.effectsEnabled) return;
+    this.closeEffect();
+    const display = this.targetDisplay();
+    const win = new BrowserWindow({
+      ...display.bounds,
+      transparent: true,
+      frame: false,
+      show: false,
+      focusable: false,
+      skipTaskbar: true,
+      resizable: false,
+      hasShadow: false,
+      backgroundColor: "#00000000",
+      enableLargerThanScreen: true,
+      webPreferences: this.preferencesFor("effect"),
+    });
+    this.effect = win;
+    win.webContents.on("render-process-gone", () => {
+      if (this.effect === win) this.closeEffect();
+    });
+    this.effectPayload = {
+      id: randomUUID(),
+      theme: this.broker.snapshot?.theme === "marx" ? "marx" : "classic",
+      kind: "item",
+      item: payload,
+      effects,
+    };
+    this.secure(win, "effect");
+    win.setAlwaysOnTop(true, "screen-saver");
+    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+    win.setIgnoreMouseEvents(true, { forward: true });
+    win.on("closed", () => {
+      if (this.effect === win) {
+        this.effect = null;
+        this.effectPayload = null;
+        clearTimeout(this.effectTimeout);
+        this.escape.release();
+        this.broadcast();
+      }
+    });
+    this.effectTimeout = setTimeout(
+      () => this.closeEffect(),
+      effects.duration + 6500,
+    );
+    win.loadURL(URLS.effect).catch((error) => {
+      if (!win.isDestroyed()) {
+        console.error("Item cinematic load failed:", error.message);
+        if (this.effect === win) this.closeEffect();
+      }
+    });
+    this.broadcast();
+  }
   authorized(event, role) {
     return authorize(
       event,
@@ -634,6 +695,19 @@ class Windows {
         return { ok };
       }
       throw Error("INVALID_WINDOW_ACTION");
+    });
+    ipcMain.on("gp:item-effect", (event, value) => {
+      if (!this.authorized(event, "main")) return;
+      const safe = sanitizeItemFx(value);
+      if (!safe) return;
+      const effects = {
+        enabled: true,
+        style: value.effects?.style === "burst" ? "burst" : "aurora",
+        duration: [1200, 1800, 2600, 3600].includes(value.effects?.duration)
+          ? value.effects.duration
+          : 2600,
+      };
+      this.presentItemFx(safe, effects);
     });
     ipcMain.on("gp:effect-ready", (event) => {
       if (!this.authorized(event, "effect") || !this.effectPayload) return;

@@ -566,6 +566,14 @@ body[data-collapsed="true"][data-view="launcher"] #pickerIcon {
   border-color: #c7dcf2;
   color: #1d5f9e;
 }
+#handPane .draw-button.use-button {
+  background: #fdf6e8;
+  border-color: #ecd9ab;
+  color: #8a6212;
+}
+#handPane .draw-button[hidden] {
+  display: none;
+}
 #handInventory {
   margin: 8px 0 0;
   color: var(--muted);

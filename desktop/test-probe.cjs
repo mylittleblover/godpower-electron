@@ -576,9 +576,33 @@ async function run(w, resultPath) {
       await settledShot(w.picker, "floating-hand-panel");
       const second = await picker(`godpowerDesktop.command('handDraw',{groupId:${groups[0].id},selectionId:'${token}'})`);
       assert.equal(second.ok, false, "one hand session rewards once");
+      // Using the item from this panel must reach the native cinematic window.
+      await until(() => picker(`current.snapshot.hand.canUse===true`), "hand item usable");
+      const useButton = await picker(
+        `(()=>{const b=document.getElementById('handUse');return {hidden:b.hidden,disabled:b.disabled,text:b.textContent}})()`,
+      );
+      assert.equal(useButton.hidden, false, "the hand panel offers the item button");
+      assert.equal(useButton.disabled, false);
+      assert.match(useButton.text, /使用/);
+      w.closeEffect();
+      await picker(`document.getElementById('handUse').click()`);
+      await until(() => w.effect && !w.effect.webContents.isLoading(), "item cinematic opens");
+      await until(
+        () => js(w.effect, `document.getElementById('mode').textContent.includes('道具')`),
+        "item cinematic presented",
+      );
+      const cinematic = await js(
+        w.effect,
+        `({name:document.getElementById('name').textContent, targets:document.getElementById('itemTargets').textContent, icon:!document.getElementById('itemIcon').hidden})`,
+      );
+      assert.ok(cinematic.name.length > 0, "the caster is named");
+      assert.ok(cinematic.targets.length > 0, "targets are listed");
+      assert.equal(cinematic.icon, true, "the item icon is shown");
+      await settledShot(w.effect, "floating-item-cinematic");
+      w.closeEffect();
       await picker(`godpowerDesktop.windowAction('expand','picker')`);
       await until(() => picker(`!document.getElementById('pickerPane').hidden`), "picker pane back");
-      return { token, scored: after.score, item: drawn.itemName };
+      return { token, scored: after.score, item: drawn.itemName, cinematic: cinematic.name };
     });
     await test("close/reopen while spinning keeps one engine and retained window bounds", async () => {
       const b = { x: 100, y: 80, width: 480, height: 760 };
