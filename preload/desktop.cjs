@@ -18,6 +18,12 @@ if (role === "main")
     ready: () => ipcRenderer.send("gp:ready"),
     showScore: (value) => ipcRenderer.send("gp:score-effect", value),
     showItemFx: (value) => ipcRenderer.send("gp:item-effect", value),
+    saveFileInfo: () => ipcRenderer.invoke("gp:save-file-info"),
+    saveFileRead: () => ipcRenderer.invoke("gp:save-file-read"),
+    saveFileWrite: (payload) => ipcRenderer.invoke("gp:save-file-write", payload),
+    saveFileChoose: () => ipcRenderer.invoke("gp:save-file-choose"),
+    saveFileSet: (value) => ipcRenderer.invoke("gp:save-file-set", value),
+    saveFileReset: () => ipcRenderer.invoke("gp:save-file-reset"),
     openPicker: () => ipcRenderer.invoke("gp:open-picker"),
   });
 if (role === "picker") {

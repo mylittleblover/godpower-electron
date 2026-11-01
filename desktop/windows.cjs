@@ -13,6 +13,7 @@ const {
   authorize,
   sanitizeSnapshot,
   sanitizeItemFx,
+  pickEffectStyle,
 } = require("./contracts.cjs");
 const { branding } = require("./theme.cjs");
 const { Broker } = require("./broker.cjs");
@@ -24,6 +25,7 @@ const {
   iconBounds,
   menuBounds,
 } = require("./window-state.cjs");
+const { SaveFile, normalizeTarget } = require("./save-file.cjs");
 class Windows {
   constructor(root) {
     this.root = root;
@@ -38,6 +40,15 @@ class Windows {
     this.preferences = new WindowState(
       path.join(app.getPath("userData"), "desktop-windows-v1.json"),
     );
+    this.saveFile = new SaveFile({
+      root: path.join(app.getPath("documents"), "GodPower"),
+    });
+    if (this.preferences.value.saveFile)
+      try {
+        this.saveFile.choose(this.preferences.value.saveFile);
+      } catch (error) {
+        console.warn("Ignoring unusable saved path:", error.message);
+      }
     this.broker = new Broker(
       (message) => this.main.webContents.send("gp:execute", message),
       { onChange: () => this.broadcast() },
@@ -446,7 +457,8 @@ class Windows {
       id,
       theme: snapshot.theme === "marx" ? "marx" : "classic",
       result: snapshot.result,
-      effects: snapshot.effects,
+      // Each reveal picks one of the ten presentations; an explicit choice wins.
+      effects: { ...snapshot.effects, style: pickEffectStyle(snapshot.effects?.style) },
     };
     this.secure(win, "effect");
     win.setAlwaysOnTop(true, "screen-saver");
@@ -560,7 +572,7 @@ class Windows {
         return;
       const effects = {
         enabled: true,
-        style: value.effects?.style === "burst" ? "burst" : "aurora",
+        style: pickEffectStyle(value.effects?.style),
         duration: [1200, 1800, 2600, 3600].includes(value.effects?.duration)
           ? value.effects.duration
           : 1800,
@@ -597,6 +609,62 @@ class Windows {
     });
     ipcMain.on("gp:reply", (event, message) => {
       if (this.authorized(event, "main")) this.broker.reply(message);
+    });
+    ipcMain.handle("gp:save-file-info", (event) => {
+      requireRole(event, "main");
+      return this.saveFile.info;
+    });
+    ipcMain.handle("gp:save-file-read", (event) => {
+      requireRole(event, "main");
+      return this.saveFile.read();
+    });
+    ipcMain.handle("gp:save-file-write", (event, payload) => {
+      requireRole(event, "main");
+      if (payload == null || typeof payload !== "object" || Array.isArray(payload))
+        return { ok: false, error: "INVALID_PAYLOAD" };
+      return this.saveFile.write(payload);
+    });
+    ipcMain.handle("gp:save-file-choose", async (event) => {
+      requireRole(event, "main");
+      const win = this.main;
+      if (!win || win.isDestroyed()) return { ok: false, error: "MAIN_UNAVAILABLE" };
+      const { dialog } = require("electron");
+      const current = this.saveFile.info;
+      const picked = await dialog.showSaveDialog(win, {
+        title: "选择课堂存档位置",
+        defaultPath: current.path,
+        buttonLabel: "使用此位置",
+        filters: [{ name: "课堂存档", extensions: ["json"] }],
+        properties: ["createDirectory", "showOverwriteConfirmation"],
+      });
+      if (picked.canceled || !picked.filePath) return { ok: false, canceled: true };
+      try {
+        const info = this.saveFile.choose(picked.filePath);
+        this.preferences.update({ saveFile: info.path });
+        this.broadcast();
+        return { ok: true, info };
+      } catch (error) {
+        return { ok: false, error: String(error.message || error) };
+      }
+    });
+    ipcMain.handle("gp:save-file-set", (event, value) => {
+      requireRole(event, "main");
+      if (typeof value !== "string") return { ok: false, error: "INVALID_PATH" };
+      try {
+        const info = this.saveFile.choose(value);
+        this.preferences.update({ saveFile: info.path });
+        this.broadcast();
+        return { ok: true, info };
+      } catch (error) {
+        return { ok: false, error: String(error.message || error) };
+      }
+    });
+    ipcMain.handle("gp:save-file-reset", (event) => {
+      requireRole(event, "main");
+      const info = this.saveFile.reset();
+      this.preferences.update({ saveFile: null });
+      this.broadcast();
+      return { ok: true, info };
     });
     ipcMain.handle("gp:open-picker", (event) => {
       requireRole(event, "main");
@@ -702,7 +770,7 @@ class Windows {
       if (!safe) return;
       const effects = {
         enabled: true,
-        style: value.effects?.style === "burst" ? "burst" : "aurora",
+        style: pickEffectStyle(value.effects?.style),
         duration: [1200, 1800, 2600, 3600].includes(value.effects?.duration)
           ? value.effects.duration
           : 2600,

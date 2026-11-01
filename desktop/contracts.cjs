@@ -4,6 +4,24 @@ const URLS = Object.freeze({
   picker: "classroom://picker/index.html",
   effect: "classroom://effect/index.html",
 });
+/* Ten distinct reveal presentations. The host picks one per reveal at random;
+   the renderer maps each to a pure-CSS layer. */
+const EFFECT_STYLES = Object.freeze([
+  "aurora",
+  "burst",
+  "ripple",
+  "starlight",
+  "spotlight",
+  "confetti",
+  "vortex",
+  "prism",
+  "bloom",
+  "comet",
+]);
+function pickEffectStyle(requested, random = Math.random) {
+  if (EFFECT_STYLES.includes(requested)) return requested;
+  return EFFECT_STYLES[Math.floor(random() * EFFECT_STYLES.length)];
+}
 const modes = ["individual", "group", "two_tier"],
   phases = ["idle", "preparing", "rolling", "settling", "revealed"];
 const text = (v, max = 500) => {
@@ -173,7 +191,7 @@ function sanitizeSnapshot(s) {
     unsaved: !!s.unsaved,
     effects: {
       enabled: effects.enabled === true,
-      style: effects.style === "burst" ? "burst" : "aurora",
+      style: pickEffectStyle(effects.style),
       duration: [1200, 1800, 2600, 3600].includes(effects.duration)
         ? effects.duration
         : 1800,
@@ -209,4 +227,12 @@ function sanitizeItemFx(value) {
     })),
   };
 }
-module.exports = { URLS, authorize, validateCommand, sanitizeSnapshot, sanitizeItemFx };
+module.exports = {
+  URLS,
+  authorize,
+  validateCommand,
+  sanitizeSnapshot,
+  sanitizeItemFx,
+  EFFECT_STYLES,
+  pickEffectStyle,
+};

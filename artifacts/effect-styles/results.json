@@ -1,0 +1,176 @@
+{
+  "styles": 10,
+  "distinct": 10,
+  "results": [
+    {
+      "style": "aurora",
+      "particle": [
+        "4px",
+        "4px",
+        "50%",
+        "none",
+        "spark"
+      ],
+      "halo": [
+        "solid",
+        "1px",
+        "halo",
+        "none"
+      ],
+      "shade": "none"
+    },
+    {
+      "style": "burst",
+      "particle": [
+        "6px",
+        "6px",
+        "50%",
+        "none",
+        "spark"
+      ],
+      "halo": [
+        "solid",
+        "1px",
+        "halo",
+        "none"
+      ],
+      "shade": "none"
+    },
+    {
+      "style": "ripple",
+      "particle": [
+        "4px",
+        "4px",
+        "50%",
+        "none",
+        "spark"
+      ],
+      "halo": [
+        "solid",
+        "3px",
+        "ripple-ring",
+        "none"
+      ],
+      "shade": "none"
+    },
+    {
+      "style": "starlight",
+      "particle": [
+        "3px",
+        "3px",
+        "50%",
+        "none",
+        "spark"
+      ],
+      "halo": [
+        "dashed",
+        "1px",
+        "halo",
+        "none"
+      ],
+      "shade": "none"
+    },
+    {
+      "style": "spotlight",
+      "particle": [
+        "4px",
+        "4px",
+        "50%",
+        "none",
+        "spark"
+      ],
+      "halo": [
+        "solid",
+        "1px",
+        "halo",
+        "none"
+      ],
+      "shade": "radial-gradient(circle at 50% 42%, rgba(6, 24, 24, 0.25) 0px"
+    },
+    {
+      "style": "confetti",
+      "particle": [
+        "7px",
+        "12px",
+        "2px",
+        "linear-gradient(rgb(255, 209",
+        "confetti-fall"
+      ],
+      "halo": [
+        "solid",
+        "1px",
+        "halo",
+        "none"
+      ],
+      "shade": "none"
+    },
+    {
+      "style": "vortex",
+      "particle": [
+        "4px",
+        "4px",
+        "50%",
+        "none",
+        "vortex-spin"
+      ],
+      "halo": [
+        "solid",
+        "1px",
+        "halo",
+        "none"
+      ],
+      "shade": "none"
+    },
+    {
+      "style": "prism",
+      "particle": [
+        "4px",
+        "4px",
+        "50%",
+        "none",
+        "spark"
+      ],
+      "halo": [
+        "solid",
+        "1px",
+        "halo, prism-hue",
+        "hue-rotate(71.1049deg)"
+      ],
+      "shade": "linear-gradient(135deg, rgba(9, 30, 48, 0.9), rgba(18, 52, 4"
+    },
+    {
+      "style": "bloom",
+      "particle": [
+        "4px",
+        "4px",
+        "50%",
+        "none",
+        "spark"
+      ],
+      "halo": [
+        "solid",
+        "14px",
+        "bloom-grow",
+        "none"
+      ],
+      "shade": "none"
+    },
+    {
+      "style": "comet",
+      "particle": [
+        "2px",
+        "46px",
+        "2px",
+        "linear-gradient(rgba(0, 0, 0",
+        "comet-streak"
+      ],
+      "halo": [
+        "solid",
+        "1px",
+        "halo",
+        "none"
+      ],
+      "shade": "none"
+    }
+  ]
+}

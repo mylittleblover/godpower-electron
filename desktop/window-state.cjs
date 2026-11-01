@@ -42,6 +42,7 @@ class WindowState {
       displayId: null,
       pickerBounds: null,
       iconPosition: null,
+      saveFile: null,
     };
     try {
       const v = JSON.parse(fs.readFileSync(file, "utf8"));
@@ -62,6 +63,12 @@ class WindowState {
         )
       )
         this.value.pickerBounds = v.pickerBounds;
+      if (
+        typeof v.saveFile === "string" &&
+        v.saveFile.length <= 4096 &&
+        path.isAbsolute(v.saveFile)
+      )
+        this.value.saveFile = v.saveFile;
     } catch (e) {
       if (e.code !== "ENOENT")
         console.warn("Window preferences unavailable:", e.message);

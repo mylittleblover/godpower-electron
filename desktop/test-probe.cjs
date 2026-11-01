@@ -678,6 +678,104 @@ async function run(w, resultPath) {
       assert.equal(globalShortcut.isRegistered("Escape"), false);
       return { registeredBeforeClose: registered };
     });
+    await test("reveals randomise across the ten presentation styles", async () => {
+      const { EFFECT_STYLES } = require("./contracts.cjs");
+      // The snapshot carries the style the classroom picked; present() must keep
+      // it, and an absent style must still land inside the pool.
+      const seen = new Set();
+      for (let i = 0; i < EFFECT_STYLES.length; i++) {
+        const snapshot = structuredClone(w.broker.snapshot);
+        snapshot.phase = "revealed";
+        snapshot.effects = {
+          ...snapshot.effects,
+          enabled: true,
+          duration: 1200,
+          style: EFFECT_STYLES[i],
+        };
+        snapshot.result = {
+          id: `style-probe-${i}`,
+          mode: "group",
+          groupId: 1,
+          groupName: "第 1 小组",
+          groupNo: 1,
+          color: "#123456",
+          score: 0,
+          name: "第 1 小组",
+          number: null,
+        };
+        w.lastReveal = null;
+        w.present(snapshot);
+        if (!w.effectPayload) continue;
+        seen.add(w.effectPayload.effects.style);
+        w.closeEffect();
+      }
+      assert.equal(w.effect, null, "the probe cleans up its windows");
+      assert.equal(
+        seen.size,
+        EFFECT_STYLES.length,
+        "every requested style survives, saw " + [...seen].join(","),
+      );
+      // With no style in the snapshot the host still chooses a valid one.
+      const blank = structuredClone(w.broker.snapshot);
+      blank.phase = "revealed";
+      blank.effects = { enabled: true, duration: 1200 };
+      blank.result = {
+        id: "style-blank",
+        mode: "group",
+        groupId: 1,
+        groupName: "第 1 小组",
+        groupNo: 1,
+        color: "#123456",
+        score: 0,
+        name: "第 1 小组",
+        number: null,
+      };
+      w.lastReveal = null;
+      w.present(blank);
+      assert.ok(
+        EFFECT_STYLES.includes(w.effectPayload.effects.style),
+        "a missing style falls back into the ten",
+      );
+      w.closeEffect();
+      // The HTML side is what rotates: its pool must cover all ten.
+      const pool = await main(`EFFECT_STYLES`);
+      assert.deepEqual([...pool].sort(), [...EFFECT_STYLES].sort());
+      const drawn = await main(
+        `(()=>{const s=new Set();for(let i=0;i<200;i++)s.add(randomEffectStyle());return [...s].sort()})()`,
+      );
+      assert.equal(drawn.length, 10, "the classroom reaches all ten styles");
+      // A chosen style is applied as a class the renderer has a layer for.
+      const snapshot = structuredClone(w.broker.snapshot);
+      snapshot.phase = "revealed";
+      snapshot.effects = { ...snapshot.effects, style: "comet", duration: 1200 };
+      snapshot.result = {
+        id: "style-explicit",
+        mode: "group",
+        groupId: 1,
+        groupName: "第 1 小组",
+        groupNo: 1,
+        color: "#123456",
+        score: 0,
+        name: "第 1 小组",
+        number: null,
+      };
+      w.lastReveal = null;
+      w.present(snapshot);
+      assert.equal(w.effectPayload.effects.style, "comet", "an explicit style sticks");
+      await until(() => !w.effect.webContents.isLoading(), "comet effect loaded");
+      await until(
+        () => js(w.effect, `document.getElementById('stage').classList.contains('comet')`),
+        "comet class applied",
+      );
+      const layer = await js(
+        w.effect,
+        `(()=>{const s=getComputedStyle(document.querySelector('.particles i'));return [s.animationName,s.width,s.height]})()`,
+      );
+      assert.equal(layer[0], "comet-streak", "the comet layer actually runs");
+      await settledShot(w.effect, "effect-comet");
+      w.closeEffect();
+      return { requested: [...seen], classroom: drawn };
+    });
     await test("effect interrupts and stale finish cannot close a newer result", async () => {
       const snapshot = structuredClone(w.broker.snapshot);
       snapshot.phase = "revealed";
