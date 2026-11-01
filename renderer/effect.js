@@ -30,8 +30,12 @@ function presentItem(payload) {
   document.getElementById("mode").textContent = "ITEM CINEMATIC · 道具结算";
   document.getElementById("group").textContent = "发动方";
   document.getElementById("avatarFrame").hidden = true;
-  document.getElementById("name").textContent = item.caster || "小组";
-  document.getElementById("number").textContent = item.itemName;
+  // The caster arrives as a {id,name} DTO from the classroom.
+  const caster = item.caster;
+  document.getElementById("name").textContent =
+    (caster && typeof caster === "object" ? caster.name : caster) || "小组";
+  document.getElementById("number").textContent =
+    item.itemName || item.name || "";
 
   const iconWrap = document.getElementById("itemIcon");
   if (item.icon) {
@@ -41,6 +45,8 @@ function presentItem(payload) {
 
   const box = document.getElementById("itemTargets");
   box.hidden = false;
+  // Every affected group is listed at once, so a wide effect reads as one wave
+  // instead of a queue the teacher has to sit through.
   const targets = item.targets,
     total = targets.length;
   const label = (target) =>
@@ -53,23 +59,25 @@ function presentItem(payload) {
           : item.key === "item_box"
             ? "获得道具"
             : "效果已结算";
-  let index = 0;
-  const beat = () => {
-    if (!stage.classList.contains("active")) return;
-    const target = targets[index++];
-    box.innerHTML = `<strong>${escapeHtml(target.name)}</strong><p>${escapeHtml(label(target))}</p><small>${escapeHtml(target.status || "")}</small><em>${index} / ${total}</em>`;
-    box.classList.remove("beat");
-    void box.offsetWidth;
-    box.classList.add("beat");
-    itemTimer = setTimeout(
-      index < total ? beat : exit,
-      1500,
-    );
-  };
+  const listClass = total > 6 ? "item-targets wide" : "item-targets";
+  box.className = listClass;
+  box.innerHTML =
+    `<div class="item-targets-head">影响 ${total} 个小组</div>` +
+    `<ul class="item-target-list">${targets
+      .map(
+        (target, i) =>
+          `<li style="--i:${i}"><strong>${escapeHtml(target.name)}</strong>` +
+          `<span>${escapeHtml(label(target))}</span>` +
+          (target.status
+            ? `<small>${escapeHtml(target.status)}</small>`
+            : "") +
+          `</li>`,
+      )
+      .join("")}</ul>`;
   stage.style.setProperty("--group", marx ? "#d6ad58" : "#71dbc1");
+  stage.style.setProperty("--target-count", total);
   stage.classList.add("active", payload.effects.style);
   exitTimer = setTimeout(exit, payload.effects.duration + 9000);
-  beat();
 }
 function escapeHtml(value) {
   return String(value).replace(

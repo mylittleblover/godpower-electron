@@ -552,7 +552,7 @@ async function run(w, resultPath) {
       const pickerHidden = await picker(`document.getElementById('pickerPane').hidden`);
       assert.equal(pickerHidden, true, "the hand view replaces the machine panel");
       const groups = await main(`state.groups.slice(0,2).map(g=>({id:g.id,groupUid:g.groupUid,score:g.score}))`);
-      const before = await main(`({score:state.groups[0].score,correct:state.groups[0].itemStats.correct,inventory:state.groups[0].inventory.length})`);
+      const before = await main(`({score:state.groups[0].score,correct:state.groups[0].itemStats.correct,inventory:state.groups[0].inventory.length,history:state.itemGlobal.handRaiseHistory.length})`);
       const select = await picker(`godpowerDesktop.command('handSelect',{groupId:${groups[0].id}})`);
       assert.equal(select.ok, true, JSON.stringify(select));
       await until(() => picker(`current?.snapshot?.hand?.groupId===${groups[0].id}`), "hand snapshot");
@@ -568,7 +568,7 @@ async function run(w, resultPath) {
       const after = await main(`({score:state.groups[0].score,correct:state.groups[0].itemStats.correct,inventory:state.groups[0].inventory.length,history:state.itemGlobal.handRaiseHistory.length})`);
       assert.equal(after.score, before.score + 3, "the main classroom applies the reward");
       assert.equal(after.correct, before.correct + 1);
-      assert.equal(after.history, 1);
+      assert.equal(after.history, before.history + 1, "exactly one raise recorded");
       await picker(`godpowerDesktop.command('handDraw',{groupId:${groups[0].id},selectionId:'${token}'})`);
       await until(() => main(`state.groups[0].inventory.length===${before.inventory + 1}`), "item awarded");
       const drawn = await picker(`current.snapshot.hand`);
