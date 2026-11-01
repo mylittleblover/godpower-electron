@@ -1,0 +1,4 @@
+# These files have byte-level SHA-256 provenance; never translate their newlines.
+resources/index.html -text
+renderer/tooltips.js -text
+renderer/tooltips.css -text

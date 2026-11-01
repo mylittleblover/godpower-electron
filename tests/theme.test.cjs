@@ -72,7 +72,7 @@ test('native branding updates open main and picker windows and notifies tray onc
   Windows.prototype.updateBranding.call(owner);
   assert.ok(changes.some(v=>v[0]==='main'&&v[2]==='马克思的力量'));
   assert.ok(changes.some(v=>v[0]==='picker'&&v[2]==='课堂点名 · 马克思的力量'));
-  assert.ok(changes.some(v=>v[0]==='main'&&v[2]==='/app/build/marx-icon.png'));
+  assert.ok(changes.some(v=>v[0]==='main'&&v[2]===path.join(owner.root,'build/marx-icon.png')));
   const count = changes.length;
   Windows.prototype.updateBranding.call(owner);
   assert.equal(changes.length,count);
