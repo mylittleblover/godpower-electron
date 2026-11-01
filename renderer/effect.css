@@ -139,56 +139,28 @@ h1 {
 }
 .item-targets {
   margin-top: 26px;
-  padding: 18px 32px 22px;
+  padding: 16px 26px 20px;
   border-radius: 18px;
   background: #ffffff10;
   border: 1px solid #ffffff26;
-  min-width: min(46vw, 620px);
-  max-width: min(92vw, 1500px);
-  /* A wide item can name a dozen groups; the list scales down and scrolls
-     rather than disappearing below the fold. */
-  max-height: min(52vh, 420px);
-  overflow: auto;
-}
-.item-target-list li {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  min-width: 108px;
-  padding: 9px 14px;
-  border-radius: 14px;
-  background: #ffffff0f;
-  border: 1px solid #ffffff1f;
-  animation: item-target-in 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: calc(var(--i) * 45ms);
-}
-/* Beyond eight targets the tiles compact so they stay on screen together. */
-.item-targets.wide .item-target-list li {
-  min-width: 86px;
-  padding: 7px 10px;
-}
-.item-targets.wide .item-target-list strong {
-  font-size: clamp(17px, 1.5vw, 26px);
-}
-.item-targets.wide .item-target-list span {
-  font-size: clamp(12px, 1vw, 16px);
-}
-.item-targets.wide .item-target-list {
-  gap: 8px 10px;
+  width: min(88vw, 1320px);
+  /* Flat spread: tiles wrap into rows. No fixed height and no scrollbar, so a
+     single target reads as one card and a dozen still stay on screen. */
+  max-height: none;
+  overflow: visible;
 }
 .item-targets-head {
-  margin-bottom: 14px;
-  font-size: clamp(14px, 1.3vw, 19px);
-  letter-spacing: 0.22em;
+  margin-bottom: 12px;
+  font-size: clamp(14px, 1.2vw, 18px);
+  letter-spacing: 0.2em;
   color: #9fd8c9;
-  text-transform: none;
 }
 .item-target-list {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(var(--columns, 1), minmax(0, 220px));
   justify-content: center;
-  gap: 12px 16px;
+  align-content: center;
+  gap: 12px 14px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -197,68 +169,49 @@ h1 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  min-width: 132px;
-  padding: 12px 18px;
+  gap: 3px;
+  min-width: 0;
+  padding: 10px 14px;
   border-radius: 14px;
   background: #ffffff0f;
   border: 1px solid #ffffff1f;
   animation: item-target-in 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: calc(var(--i) * 55ms);
+  animation-delay: calc(var(--i) * 45ms);
+}
+.item-target-list strong {
+  font-size: clamp(22px, 2.1vw, 36px);
+  color: #fff3ad;
+  line-height: 1.15;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.item-target-list span {
+  font-size: clamp(15px, 1.3vw, 21px);
+  color: #eaf7f2;
+}
+.item-target-list small {
+  font-size: clamp(12px, 0.95vw, 15px);
+  letter-spacing: 0.06em;
+  color: #a4bbb5;
+}
+/* Beyond six targets the tiles compact so the whole spread still fits. */
+.item-targets.wide .item-target-list {
+  grid-template-columns: repeat(var(--columns, 4), minmax(0, 190px));
+  gap: 9px 10px;
+}
+.item-targets.wide .item-target-list li {
+  padding: 8px 10px;
+}
+.item-targets.wide .item-target-list strong {
+  font-size: clamp(16px, 1.4vw, 25px);
+}
+.item-targets.wide .item-target-list span {
+  font-size: clamp(12px, 0.95vw, 16px);
 }
 @keyframes item-target-in {
   from {
     opacity: 0;
     transform: translateY(14px) scale(0.94);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-.item-target-list strong {
-  font-size: clamp(22px, 2.4vw, 40px);
-  color: #fff3ad;
-  line-height: 1.1;
-}
-.item-target-list span {
-  font-size: clamp(15px, 1.6vw, 24px);
-  color: #eaf7f2;
-}
-.item-target-list small {
-  font-size: clamp(12px, 1.1vw, 16px);
-  color: #a4bbb5;
-}
-.item-targets strong {
-  display: block;
-  font-size: clamp(30px, 4vw, 72px);
-  color: #fff3ad;
-}
-.item-targets p {
-  margin: 6px 0 0;
-  font-size: clamp(18px, 2.2vw, 30px);
-}
-.item-targets small {
-  display: block;
-  margin-top: 6px;
-  letter-spacing: 0.06em;
-  color: #a4bbb5;
-}
-.item-targets em {
-  display: block;
-  margin-top: 10px;
-  font-style: normal;
-  font-size: 13px;
-  letter-spacing: 0.2em;
-  color: #7e9a94;
-}
-.item-targets.beat {
-  animation: item-beat 0.35s ease-out;
-}
-@keyframes item-beat {
-  from {
-    opacity: 0;
-    transform: translateX(28px);
   }
   to {
     opacity: 1;

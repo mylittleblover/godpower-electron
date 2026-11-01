@@ -61,6 +61,10 @@ function presentItem(payload) {
             : "效果已结算";
   const listClass = total > 6 ? "item-targets wide" : "item-targets";
   box.className = listClass;
+  // Tiles spread flat; the column count is chosen so the whole spread stays on
+  // one screen instead of scrolling.
+  const columns = total <= 1 ? 1 : total <= 4 ? 2 : total <= 9 ? 3 : 4;
+  box.style.setProperty("--columns", columns);
   box.innerHTML =
     `<div class="item-targets-head">影响 ${total} 个小组</div>` +
     `<ul class="item-target-list">${targets
