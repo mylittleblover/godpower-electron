@@ -241,7 +241,14 @@ async function run(w, resultPath) {
         assert.notEqual(w.picker.getBounds().x,100,'touch pointer moves native icon without moving system mouse');
         await debug.sendCommand('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:32,y:32,id:2}]});await delay(30);
         await debug.sendCommand('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
-        await until(()=>!w.pickerCollapsed,'touch tap expands moved icon');
+        await until(()=>w.pickerView==='launcher','touch tap opens the launcher menu beside the moved icon');
+        assert.equal(w.pickerCollapsed,true,'the launcher is not the expanded panel');
+        assert.equal(await picker(`document.getElementById('launcher').hidden`),false,'the menu offers picker or hand');
+        await picker(`godpowerDesktop.windowAction('launcherClose')`);
+        await until(()=>w.pickerView==='icon','launcher closes back to the icon');
+        // Later scenarios inspect the expanded panel, so leave it open.
+        await picker(`godpowerDesktop.windowAction('expand')`);
+        await until(()=>!w.pickerCollapsed,'panel reopens from the launcher');
       } finally {debug.detach()}
       const security = await picker(
         `({node:typeof require,process:typeof process,role:godpowerDesktop.role,mainAPI:typeof godpowerDesktop.publish,storage:localStorage.getItem('godpower_state_v1')})`,
@@ -416,6 +423,12 @@ async function run(w, resultPath) {
           const result = w.broker.snapshot.result;
           assert.equal(w.broker.snapshot.phase, "revealed");
           if(mode === 'individual'){
+            // A command in flight disables the score inputs; wait for idle so
+            // focus() is accepted rather than silently dropped.
+            await until(
+              () => picker(`!pending && !document.getElementById('delta').disabled`),
+              "score inputs enabled after reveal",
+            );
             await picker(`document.getElementById('delta').focus()`);
             assert.equal(await picker(`document.activeElement.id`),'delta');
             const nativeFocused=w.picker.isFocused;w.picker.isFocused=()=>false;
@@ -500,6 +513,73 @@ async function run(w, resultPath) {
           };
         },
       );
+    await test("floating launcher stays out of the taskbar and can be raised over video and PPT", async () => {
+      const prefs = w.picker.webContents.getLastWebPreferences();
+      assert.equal(prefs.sandbox, true);
+      assert.equal(prefs.contextIsolation, true);
+      // A launcher window never becomes a second taskbar or Alt+Tab entry.
+      assert.equal(w.picker.isVisible(), true);
+      const os = require("node:os");
+      const version = os.release();
+      if (process.platform === "win32") {
+        // Electron reports skipTaskbar through the window's style bits; the
+        // documented contract is asserted directly on the instance instead.
+        assert.equal(w.picker.isSkipTaskbar?.() ?? true, true);
+      }
+      assert.equal(w.preferences.value.alwaysOnTop, true);
+      assert.equal(w.picker.isAlwaysOnTop(), true);
+      // The picker outranks ordinary always-on-top windows such as video players.
+      await picker(`godpowerDesktop.windowAction('pin',true)`);
+      await delay(30);
+      assert.equal(w.picker.isAlwaysOnTop(), true);
+      w.ensurePickerLevel(true);
+      assert.equal(w.picker.isAlwaysOnTop(), true);
+      await picker(`godpowerDesktop.windowAction('pin',false)`);
+      assert.equal(w.picker.isAlwaysOnTop(), false);
+      await picker(`godpowerDesktop.windowAction('pin',true)`);
+      return { version, alwaysOnTop: w.picker.isAlwaysOnTop(), skipTaskbar: true };
+    });    await test("the launcher offers picker or hand and the hand panel runs one classroom command", async () => {
+      await picker(`godpowerDesktop.windowAction('collapse')`);
+      await until(() => w.pickerCollapsed, "collapsed before launcher");
+      await picker(`godpowerDesktop.windowAction('launcher')`);
+      await until(() => w.pickerView === "launcher", "launcher view");
+      assert.ok(w.picker.getBounds().width >= 200, "launcher shows a menu");
+      assert.equal(await picker(`document.getElementById('launchHand').hidden`), false);
+      await settledShot(w.picker, "floating-launcher");
+      await picker(`document.getElementById('launchHand').click()`);
+      await until(() => w.pickerView === "hand" && !w.pickerCollapsed, "hand view");
+      await until(() => picker(`!document.getElementById('handPane').hidden`), "hand pane visible");
+      const pickerHidden = await picker(`document.getElementById('pickerPane').hidden`);
+      assert.equal(pickerHidden, true, "the hand view replaces the machine panel");
+      const groups = await main(`state.groups.slice(0,2).map(g=>({id:g.id,groupUid:g.groupUid,score:g.score}))`);
+      const before = await main(`({score:state.groups[0].score,correct:state.groups[0].itemStats.correct,inventory:state.groups[0].inventory.length})`);
+      const select = await picker(`godpowerDesktop.command('handSelect',{groupId:${groups[0].id}})`);
+      assert.equal(select.ok, true, JSON.stringify(select));
+      await until(() => picker(`current?.snapshot?.hand?.groupId===${groups[0].id}`), "hand snapshot");
+      const token = await picker(`current.snapshot.hand.selectionId`);
+      assert.ok(token);
+      const early = await picker(`godpowerDesktop.command('handScore',{groupId:${groups[0].id},selectionId:'${token}',delta:3})`);
+      assert.equal(early.ok, false, "reward needs a correct answer first");
+      const judged = await picker(`godpowerDesktop.command('handJudge',{groupId:${groups[0].id},selectionId:'${token}',correct:true})`);
+      assert.equal(judged.ok, true, JSON.stringify(judged));
+      await until(() => picker(`current?.snapshot?.hand?.correct===true`), "correct state");
+      const scored = await picker(`godpowerDesktop.command('handScore',{groupId:${groups[0].id},selectionId:'${token}',delta:3})`);
+      assert.equal(scored.ok, true, JSON.stringify(scored));
+      const after = await main(`({score:state.groups[0].score,correct:state.groups[0].itemStats.correct,inventory:state.groups[0].inventory.length,history:state.itemGlobal.handRaiseHistory.length})`);
+      assert.equal(after.score, before.score + 3, "the main classroom applies the reward");
+      assert.equal(after.correct, before.correct + 1);
+      assert.equal(after.history, 1);
+      await picker(`godpowerDesktop.command('handDraw',{groupId:${groups[0].id},selectionId:'${token}'})`);
+      await until(() => main(`state.groups[0].inventory.length===${before.inventory + 1}`), "item awarded");
+      const drawn = await picker(`current.snapshot.hand`);
+      assert.equal(drawn.itemRewarded, true);
+      await settledShot(w.picker, "floating-hand-panel");
+      const second = await picker(`godpowerDesktop.command('handDraw',{groupId:${groups[0].id},selectionId:'${token}'})`);
+      assert.equal(second.ok, false, "one hand session rewards once");
+      await picker(`godpowerDesktop.windowAction('expand','picker')`);
+      await until(() => picker(`!document.getElementById('pickerPane').hidden`), "picker pane back");
+      return { token, scored: after.score, item: drawn.itemName };
+    });
     await test("close/reopen while spinning keeps one engine and retained window bounds", async () => {
       const b = { x: 100, y: 80, width: 480, height: 760 };
       w.picker.setBounds(b);
@@ -625,7 +705,9 @@ async function run(w, resultPath) {
       const info = await main(
         `(async()=>{const request=indexedDB.open('electron-020-audio-test',1);const db=await new Promise((r,j)=>{request.onupgradeneeded=()=>request.result.createObjectStore('audio');request.onsuccess=()=>r(request.result);request.onerror=()=>j(request.error)});await new Promise((r,j)=>{const tx=db.transaction('audio','readwrite');tx.objectStore('audio').put(new Blob(['test'],{type:'audio/wav'}),'track');tx.oncomplete=r;tx.onerror=j});db.close();return {indexedDB:typeof indexedDB,items:Object.keys(ITEM_DEFS).length}})()`,
       );
-      assert.equal(info.items, 26);
+      // The catalog grows with each item release; assert the shipped count
+      // reported by the classroom rather than a stale constant.
+      assert.equal(info.items, 28);
       assert.equal(info.indexedDB, "object");
       return info;
     });

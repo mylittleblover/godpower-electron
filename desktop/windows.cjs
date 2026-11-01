@@ -17,6 +17,7 @@ const {
   WindowState,
   visibleBounds,
   iconBounds,
+  menuBounds,
 } = require("./window-state.cjs");
 class Windows {
   constructor(root) {
@@ -36,6 +37,7 @@ class Windows {
       (message) => this.main.webContents.send("gp:execute", message),
       { onChange: () => this.broadcast() },
     );
+    this.pickerView = "icon";
     this.installIPC();
     app.on("before-quit", () => {
       this.quitting = true;
@@ -140,7 +142,7 @@ class Windows {
     this.main.show();
     this.main.focus();
   }
-  openPicker() {
+  openPicker({ expanded = false } = {}) {
     if (this.quitting) return;
     if (this.pickerClosing) {
       this.reopenPicker = true;
@@ -148,10 +150,13 @@ class Windows {
     }
     if (this.picker && !this.picker.isDestroyed()) {
       this.picker.show();
+      this.ensurePickerLevel(true);
+      if (expanded) this.setPickerExpanded(true);
       this.picker.focus();
       return;
     }
     this.pickerCollapsed = true;
+    this.pickerView = expanded ? "picker" : "icon";
     const bounds = iconBounds(
       this.preferences.value.iconPosition,
       screen.getAllDisplays(),
@@ -167,6 +172,8 @@ class Windows {
       show: false,
       backgroundColor: "#00000000",
       alwaysOnTop: this.preferences.value.alwaysOnTop,
+      // The launcher belongs to the classroom, not to the taskbar or Alt+Tab.
+      skipTaskbar: true,
       title: `课堂点名 · ${branding(this.broker.snapshot?.theme).title}`,
       icon: path.join(this.root, branding(this.broker.snapshot?.theme).icon),
       webPreferences: this.preferencesFor("picker"),
@@ -188,6 +195,7 @@ class Windows {
           !win.isDestroyed() &&
           !this.quitting &&
           !this.pickerCollapsed &&
+          !this.choosing &&
           !win.isFocused()
         ) {
           // Windows touch keyboards can take native focus while the text field
@@ -201,7 +209,7 @@ class Windows {
       }, 90);
     });
     win.webContents.on("render-process-gone", () => win.destroy());
-    win.setAlwaysOnTop(this.preferences.value.alwaysOnTop, "floating");
+    this.ensurePickerLevel();
     win.once("ready-to-show", () => {
       win.show();
       this.broadcast();
@@ -228,6 +236,7 @@ class Windows {
       this.iconDrag = null;
       clearTimeout(blurTimer);
       clearTimeout(this.boundsTimer);
+      clearTimeout(this.levelTimer);
       this.iconDrag = null;
       this.broker.dropClient(client);
       if (this.picker === win) this.picker = null;
@@ -252,11 +261,42 @@ class Windows {
           : { pickerBounds: this.picker.getBounds() },
       );
   }
+  /* Outrank ordinary always-on-top players (video, PPT) without stealing focus. */
+  ensurePickerLevel(reassert = false) {
+    const win = this.picker;
+    if (!win || win.isDestroyed()) return;
+    if (!this.preferences.value.alwaysOnTop) {
+      win.setAlwaysOnTop(false);
+      return;
+    }
+    win.setAlwaysOnTop(true, "screen-saver", 1);
+    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+    win.setSkipTaskbar(true);
+    if (reassert && this.pickerCollapsed) {
+      win.setAlwaysOnTop(false);
+      win.setAlwaysOnTop(true, "screen-saver", 1);
+      win.moveTop();
+    }
+  }
+  /* Exclusive fullscreen video and PPT rebuild the topmost band when they enter
+     or leave their mode, so the launcher re-asserts its level around that. */
+  reassertPickerLevel() {
+    this.ensurePickerLevel(true);
+    clearTimeout(this.levelTimer);
+    for (const delay of [1200, 4200])
+      this.levelTimer = setTimeout(() => this.ensurePickerLevel(true), delay);
+  }
   setPickerExpanded(expanded) {
     if (!this.picker || this.picker.isDestroyed()) return;
     const anchor = this.picker.getBounds();
     this.savePicker();
     this.pickerCollapsed = !expanded;
+    this.pickerView = expanded
+      ? this.pickerView === "hand"
+        ? "hand"
+        : "picker"
+      : "icon";
+    this.choosing = false;
     this.picker.setMinimumSize(expanded ? 360 : 72, expanded ? 520 : 72);
     this.picker.setResizable(expanded);
     this.picker.setBounds(
@@ -271,6 +311,43 @@ class Windows {
             screen.getAllDisplays(),
           ),
     );
+    this.ensurePickerLevel(true);
+    this.broadcast();
+  }
+  /* The collapsed icon is a launcher menu: picker or hand, no second taskbar window. */
+  showLauncher() {
+    if (!this.picker || this.picker.isDestroyed()) return;
+    this.pickerView = "launcher";
+    this.choosing = true;
+    this.pickerCollapsed = true;
+    this.savePicker();
+    this.picker.setMinimumSize(280, 180);
+    this.picker.setResizable(false);
+    // The menu opens in the icon's own place and stays inside the work area.
+    const anchor = this.iconBoundsNow();
+    this.picker.setBounds(
+      menuBounds(
+        { x: anchor.x, y: anchor.y },
+        screen.getAllDisplays(),
+      ),
+    );
+    this.ensurePickerLevel(true);
+    this.broadcast();
+  }
+  iconBoundsNow() {
+    return iconBounds(
+      this.preferences.value.iconPosition,
+      screen.getAllDisplays(),
+    );
+  }
+  hideLauncher() {
+    if (!this.picker || this.picker.isDestroyed()) return;
+    this.choosing = false;
+    this.pickerView = "icon";
+    this.pickerCollapsed = true;
+    this.picker.setMinimumSize(72, 72);
+    this.picker.setBounds(this.iconBoundsNow());
+    this.ensurePickerLevel();
     this.broadcast();
   }
   state() {
@@ -290,6 +367,8 @@ class Windows {
       shell: {
         ...this.preferences.value,
         collapsed: !!this.pickerCollapsed,
+        view: this.pickerView || "icon",
+        handGroupId: this.handGroupId ?? null,
         displayId: this.targetDisplay().id,
         displays,
         effectActive: !!this.effect,
@@ -460,7 +539,7 @@ class Windows {
     });
     ipcMain.handle("gp:open-picker", (event) => {
       requireRole(event, "main");
-      this.openPicker();
+      this.openPicker({ expanded: true });
       this.setPickerExpanded(true);
       return { ok: true };
     });
@@ -481,7 +560,17 @@ class Windows {
       requireRole(event, "picker");
       const { action, value } = message || {};
       if (action === "expand" || action === "collapse") {
+        if (action === "expand" && value === "hand") this.pickerView = "hand";
+        if (action === "expand" && value === "picker") this.pickerView = "picker";
         this.setPickerExpanded(action === "expand");
+        return { ok: true };
+      }
+      if (action === "launcher") {
+        this.showLauncher();
+        return { ok: true };
+      }
+      if (action === "launcherClose") {
+        this.hideLauncher();
         return { ok: true };
       }
       if (action === "dragStart" && this.pickerCollapsed) {
@@ -497,7 +586,7 @@ class Windows {
         }
         if(action === "dragMove")return {ok:true};
         this.iconDrag=null;this.savePicker();
-        if(action === "dragEnd"&&!drag.moved&&this.pickerCollapsed)this.setPickerExpanded(true);
+        if(action === "dragEnd"&&!drag.moved&&this.pickerCollapsed)this.showLauncher();
         return {ok:true};
       }
       if (action === "close") {
@@ -524,8 +613,8 @@ class Windows {
         return { ok: true };
       }
       if (action === "pin" && typeof value === "boolean") {
-        this.picker.setAlwaysOnTop(value, "floating");
         const ok = this.preferences.update({ alwaysOnTop: value });
+        this.ensurePickerLevel(true);
         this.broadcast();
         return { ok };
       }

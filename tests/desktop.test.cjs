@@ -241,3 +241,144 @@ test("Escape ownership survives duplicate readiness and is released exactly once
   assert.equal(registered, false);
   assert.equal(released, 1);
 });
+test("floating launcher is validated as its own command family", () => {
+  assert.deepEqual(validateCommand("handSelect", { groupId: 3 }), {
+    groupId: 3,
+  });
+  assert.deepEqual(
+    validateCommand("handJudge", {
+      groupId: 3,
+      selectionId: "hand-1",
+      correct: true,
+    }),
+    { groupId: 3, selectionId: "hand-1", correct: true },
+  );
+  assert.deepEqual(
+    validateCommand("handScore", {
+      groupId: 3,
+      selectionId: "hand-1",
+      delta: -2,
+    }),
+    { groupId: 3, selectionId: "hand-1", delta: -2 },
+  );
+  assert.deepEqual(
+    validateCommand("handDraw", { groupId: 3, selectionId: "hand-1" }),
+    { groupId: 3, selectionId: "hand-1" },
+  );
+  assert.throws(() =>
+    validateCommand("handJudge", { groupId: 3, selectionId: "hand-1" }),
+  );
+  assert.throws(() =>
+    validateCommand("handScore", {
+      groupId: 3,
+      selectionId: "hand-1",
+      delta: 0,
+    }),
+  );
+  assert.throws(() =>
+    validateCommand("handDraw", { groupId: 3, selectionId: "hand-1", extra: 1 }),
+  );
+  assert.throws(() => validateCommand("handSelect", { groupId: 1.5 }));
+});
+test("snapshots carry a bounded hand DTO and drop unknown group selections", () => {
+  const base = {
+    protocolVersion: 1,
+    phase: "idle",
+    mode: "group",
+    groups: [{ id: 1, name: "第一组", color: "#123456", members: 2, score: 4 }],
+    slots: [1, 2, 5, -1, -2, -5],
+    history: [],
+  };
+  assert.deepEqual(sanitizeSnapshot(base).hand, {
+    selectionId: null,
+    groupId: null,
+    correct: null,
+    itemRewarded: false,
+    busy: false,
+    inventoryCount: 0,
+    canDraw: false,
+    itemName: "",
+  });
+  const hand = sanitizeSnapshot({
+    ...base,
+    hand: {
+      selectionId: "hand-9",
+      groupId: 1,
+      correct: true,
+      itemRewarded: false,
+      busy: true,
+      inventoryCount: 2,
+      canDraw: true,
+      itemName: "金币",
+      secret: "x",
+    },
+  }).hand;
+  assert.deepEqual(hand, {
+    selectionId: "hand-9",
+    groupId: 1,
+    correct: true,
+    itemRewarded: false,
+    busy: true,
+    inventoryCount: 2,
+    canDraw: true,
+    itemName: "金币",
+  });
+  assert.equal(
+    sanitizeSnapshot({
+      ...base,
+      hand: { selectionId: "hand-9", groupId: 99, canDraw: true },
+    }).hand.groupId,
+    null,
+  );
+  assert.equal(
+    sanitizeSnapshot({ ...base, hand: { groupId: 1, inventoryCount: 99 } }).hand
+      .inventoryCount,
+    3,
+  );
+});
+test("the picker is hidden from the taskbar, the launcher menu and hand view are native actions", () => {
+  const fs = require("node:fs");
+  const source = fs.readFileSync("desktop/windows.cjs", "utf8");
+  assert.match(source, /skipTaskbar: true/);
+  assert.match(source, /setAlwaysOnTop\(true, "screen-saver", 1\)/);
+  assert.match(source, /action === "launcher"/);
+  assert.match(source, /setSkipTaskbar\(true\)/);
+  assert.match(source, /ensurePickerLevel/);
+  assert.match(fs.readFileSync("renderer/picker.html", "utf8"), /id="launchHand"/);
+  assert.match(
+    fs.readFileSync("renderer/picker.js", "utf8"),
+    /handJudge|handDraw/,
+  );
+});
+test("the dock picker button opens the floating picker instead of the in-page dialog", () => {
+  const path = require("node:path");
+  const source = require("node:fs").readFileSync(
+    path.join(__dirname, "../../html/src/runtime/picker/selection-engine.js"),
+    "utf8",
+  );
+  assert.match(
+    source,
+    /if \(!internal && window\.godpowerDesktop\?\.role === "main"\) \{[\s\S]*openPicker\(\);/,
+  );
+});
+test("the launcher menu stays inside the monitor work area", () => {
+  const { visibleBounds, menuBounds } = require("../desktop/window-state.cjs");
+  const displays = [
+    { id: 1, workArea: { x: 0, y: 0, width: 1920, height: 1040 } },
+  ];
+  const right = menuBounds({ x: 1848, y: 960 }, displays);
+  assert.ok(right.x >= 0 && right.x + right.width <= 1920);
+  assert.ok(right.y >= 0 && right.y + right.height <= 1040);
+  assert.ok(
+    right.height < 520,
+    "the launcher menu is smaller than the reading panel",
+  );
+  const left = menuBounds({ x: 0, y: 0 }, displays);
+  assert.ok(left.x >= 0);
+  assert.ok(left.y >= 0);
+  assert.equal(left.width, 360);
+  assert.equal(left.height, 200);
+  // The expanded panel keeps its own larger minimum.
+  const panel = visibleBounds({ width: 480, height: 760 }, displays, null);
+  assert.deepEqual([panel.width, panel.height], [480, 760]);
+});

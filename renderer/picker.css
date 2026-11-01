@@ -462,7 +462,7 @@ body[data-collapsed="true"] {
   background: transparent;
   overflow: hidden;
 }
-body[data-collapsed="true"] > :not(#pickerIcon) {
+body[data-collapsed="true"] > :not(#pickerIcon):not(#launcher) {
   display: none;
 }
 body[data-collapsed="true"] #pickerIcon {
@@ -482,6 +482,94 @@ body[data-collapsed="true"] #pickerIcon {
   user-select: none;
   touch-action: none;
   cursor: grab;
+}
+/* The launcher is a menu beside the icon, not a second taskbar entry. */
+body[data-collapsed="true"][data-view="launcher"] {
+  background: transparent;
+  overflow: visible;
+}
+body[data-collapsed="true"][data-view="launcher"] #pickerIcon {
+  background: #0b5f59;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.35);
+}
+.launcher {
+  position: fixed;
+  left: 84px;
+  top: 4px;
+  width: 264px;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 18px 40px rgba(12, 52, 46, 0.28);
+  -webkit-app-region: no-drag;
+}
+.launcher[hidden] {
+  display: none;
+}
+.launcher button {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+  padding: 9px 11px;
+}
+.launcher b {
+  font-size: 14px;
+}
+.launcher small {
+  color: var(--muted);
+  font-size: 11px;
+}
+.theme-marx .launcher {
+  background: #fffbed;
+  border-color: #d6ad58;
+}
+.hand-chips {
+  max-height: 168px;
+  overflow-y: auto;
+}
+.hand-chips .hand-group[aria-pressed="true"] {
+  background: #0f766e;
+  border-color: #0f766e;
+  color: #fff;
+}
+.hand-judge {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0;
+}
+.hand-judge .positive {
+  background: #e8f6ef;
+  color: #14795a;
+  border-color: #b9e2d1;
+  font-weight: 700;
+}
+.hand-judge .negative {
+  background: #fdeeeb;
+  color: #ad4536;
+  border-color: #f3cec5;
+  font-weight: 700;
+}
+.hand-judge[hidden],
+#handRewards[hidden] {
+  display: none;
+}
+#handPane .draw-button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  font-weight: 700;
+  background: #eef6ff;
+  border-color: #c7dcf2;
+  color: #1d5f9e;
+}
+#handInventory {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
 }
 #pickerIcon span {
   font-size: 11px;

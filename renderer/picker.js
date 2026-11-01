@@ -5,11 +5,22 @@ let current = null,
   revision = -1,
   pending = false,
   lastSignature = "",
-  lastGroups = "";
+  lastGroups = "",
+  lastHandGroups = "",
+  view = "icon",
+  pane = "picker",
+  handGroupId = null;
 const errors = {
   BUSY: "抽选尚未完成，请稍候。",
-  LOCKED: "课堂已锁定，请在主窗口解锁后赋分。",
+  LOCKED: "课堂已锁定，请在主窗口解锁后操作。",
   STALE_RESULT: "结果已变化，请重新确认目标。",
+  STALE_HAND_SESSION: "举手小组已变化，请重新选择。",
+  ALREADY_JUDGED: "本次举手已经判定，请重新选择小组。",
+  ANSWER_NOT_CORRECT: "回答正确后才能加分或抽道具。",
+  REWARD_ALREADY_GIVEN: "本次举手已经发放过道具。",
+  NO_DRAW: "该组当前不能抽取道具（负分或三个道具槽已满）。",
+  INVALID_SCORE: "请输入非零安全整数。",
+  COMMAND_REJECTED: "课堂拒绝了本次操作，请检查主窗口状态。",
   MAIN_UNAVAILABLE: "主窗口未就绪，请打开或恢复主窗口。",
   COMMAND_TIMEOUT:
     "操作确认超时，请先检查主窗口。为避免重复赋分，不会自动重试。",
@@ -25,13 +36,15 @@ async function run(action, payload = {}) {
   render(current);
   try {
     const r = await api.command(action, payload);
-    message(
-      r.ok
-        ? r.persisted === false
-          ? "更改尚未保存，请在主窗口导出备份。"
-          : ""
-        : errors[r.error] || r.error,
-    );
+    if (r.ok && action === "handSelect" && r.session?.selectionId)
+      handGroupId = r.session.groupId;
+    if (r.ok) {
+      if (action === "handJudge") message(payload.correct ? "已记正确。" : "已记错误。");
+      else if (action === "handDraw")
+        message(r.itemName ? `抽到「${r.itemName}」。` : "道具已发放。");
+      else if (action === "handScore") message("积分已更新。");
+      else message(r.persisted === false ? "更改尚未保存，请在主窗口导出备份。" : "");
+    } else message(errors[r.error] || r.error);
     return r;
   } catch (e) {
     message(e.message);
@@ -40,7 +53,15 @@ async function run(action, payload = {}) {
     render(current);
   }
 }
-function render(state) {
+function setView(next) {
+  view = next;
+  document.body.dataset.view = next;
+  $("launcher").hidden = next !== "launcher";
+}
+function selectPane(next) {
+  pane = next === "hand" ? "hand" : "picker";
+  render(current);
+}function render(state) {
   if (!state || state.revision < revision) return;
   document.body.dataset.collapsed = String(state.shell.collapsed);
   current = state;
@@ -74,6 +95,25 @@ function render(state) {
     $("display").dataset.signature = displaySignature;
   }
   $("display").value = state.shell.displayId;
+  // The native window owns the current view; the renderer mirrors it so a
+  // collapsed icon, the launcher menu and the panel never disagree.
+  const shellView = state.shell.view || "icon";
+  if (shellView === "hand") pane = "hand";
+  else if (shellView === "picker") pane = "picker";
+  view = shellView;
+  document.body.dataset.view = view;
+  $("launcher").hidden = view !== "launcher";
+  // The collapsed icon still renders the live panel: the drawing engine feeds
+  // the roulette from the same DOM, and hiding it must not freeze updates.
+  const handView = pane === "hand";
+  $("panelTitle").textContent = handView ? "课堂举手" : "课堂点名";
+  $("modes").hidden = handView;
+  $("pickerPane").hidden = handView;
+  $("handPane").hidden = !handView;
+  if (handView) {
+    renderHand(s, busy, state);
+    return;
+  }
   for (const b of document.querySelectorAll("[data-mode]")) {
     b.disabled =
       busy || ["rolling", "settling", "preparing"].includes(s?.phase);
@@ -199,6 +239,88 @@ function render(state) {
   }
   if (s.unsaved) message("课堂有尚未保存的更改，请在主窗口导出备份。");
 }
+/* Hand controls reuse the main classroom rules; this window never owns scores. */
+function renderHand(s, busy, state) {
+  const hand = s?.hand || {},
+    locked = !!s?.locked;
+  const active = hand.groupId != null ? hand.groupId : handGroupId;
+  if (hand.groupId != null) handGroupId = hand.groupId;
+  $("handStatus").textContent = !s
+    ? "主课堂未就绪"
+    : locked
+      ? "课堂已锁定"
+      : active == null
+        ? "选择举手小组"
+        : hand.correct === true
+          ? hand.itemRewarded
+            ? "已发放道具"
+            : "回答正确 · 可选择奖励"
+          : hand.correct === false
+            ? "回答错误 · 本次不发放奖励"
+            : "请判定回答";
+  $("unlockHand").hidden = !(locked && s);
+  const groupSignature = JSON.stringify([s?.groups, active, busy, locked]);
+  if (groupSignature !== lastHandGroups) {
+    lastHandGroups = groupSignature;
+    $("handGroups").replaceChildren(
+      ...(s?.groups || []).map((g) => {
+        const b = document.createElement("button");
+        b.textContent = g.name;
+        b.className = "hand-group";
+        b.setAttribute("aria-pressed", String(g.id === active));
+        b.disabled = busy || locked;
+        b.addEventListener("click", async () => {
+          handGroupId = g.id;
+          await run("handSelect", { groupId: g.id });
+        });
+        return b;
+      }),
+    );
+  }
+  const judged = hand.correct === true || hand.correct === false;
+  $("handJudge").hidden = !s || active == null || judged;
+  $("handCorrect").disabled = busy || locked || !s || active == null || judged;
+  $("handWrong").disabled = busy || locked || !s || active == null || judged;
+  const canReward = !!s && hand.correct === true && !locked;
+  $("handRewards").hidden = !canReward;
+  if (!canReward) return;
+  const group = s.groups.find((g) => g.id === active);
+  $("handRewardTarget").textContent = group
+    ? `${group.name}${hand.itemName ? " · 已获得 " + hand.itemName : ""}`
+    : "";
+  if ($("handSlots").dataset.values !== JSON.stringify(s.slots)) {
+    $("handSlots").replaceChildren(
+      ...s.slots.map((delta) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = (delta > 0 ? "+" : "−") + Math.abs(delta);
+        b.className = delta > 0 ? "positive" : "negative";
+        b.addEventListener("click", () =>
+          run("handScore", {
+            groupId: active,
+            selectionId: hand.selectionId,
+            delta,
+          }),
+        );
+        return b;
+      }),
+    );
+    $("handSlots").dataset.values = JSON.stringify(s.slots);
+  }
+  $("handSlots")
+    .querySelectorAll("button")
+    .forEach((b) => (b.disabled = busy || locked));
+  $("handCustomScore").querySelector("button").disabled = busy || locked;
+  $("handDelta").disabled = busy || locked;
+  $("handDraw").disabled = busy || locked || !hand.canDraw;
+  $("handDraw").textContent = hand.itemRewarded
+    ? `已获得 ${hand.itemName || "道具"}`
+    : hand.canDraw
+      ? "🎁 抽取道具"
+      : `🎁 抽取道具（${hand.inventoryCount || 0}/3）`;
+  $("handInventory").textContent = `道具栏 ${hand.inventoryCount || 0}/3`;
+  void state;
+}
 document
   .querySelectorAll("[data-mode]")
   .forEach((b) =>
@@ -223,6 +345,39 @@ $("customScore").addEventListener("submit", (e) => {
   }
   run("score", { delta, resultId: current.snapshot.result.id });
 });
+$("handCustomScore").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const delta = Number($("handDelta").value);
+  if (!Number.isSafeInteger(delta) || !delta) {
+    message("请输入非零安全整数。");
+    return;
+  }
+  run("handScore", {
+    groupId: current?.snapshot?.hand?.groupId,
+    selectionId: current?.snapshot?.hand?.selectionId,
+    delta,
+  });
+});
+$("handCorrect").addEventListener("click", () =>
+  run("handJudge", {
+    groupId: current?.snapshot?.hand?.groupId,
+    selectionId: current?.snapshot?.hand?.selectionId,
+    correct: true,
+  }),
+);
+$("handWrong").addEventListener("click", () =>
+  run("handJudge", {
+    groupId: current?.snapshot?.hand?.groupId,
+    selectionId: current?.snapshot?.hand?.selectionId,
+    correct: false,
+  }),
+);
+$("handDraw").addEventListener("click", () =>
+  run("handDraw", {
+    groupId: current?.snapshot?.hand?.groupId,
+    selectionId: current?.snapshot?.hand?.selectionId,
+  }),
+);
 for (const [id, action] of [
   ["showMain", "showMain"],
   ["skip", "skip"],
@@ -248,37 +403,61 @@ api
   .then(render)
   .catch((e) => message(e.message));
 
-$("collapse").addEventListener("click", () => api.windowAction("collapse"));
+$("launchPicker").addEventListener("click", async () => {
+  selectPane("picker");
+  await api.windowAction("expand", "picker");
+});
+$("launchHand").addEventListener("click", async () => {
+  selectPane("hand");
+  await api.windowAction("expand", "hand");
+});
+$("collapse").addEventListener("click", async () => {
+  await api.windowAction("collapse");
+});
 $("unlockClassroom").addEventListener("click", async () => {
   const r = await api.windowAction("unlock");
   if (!r.ok) message("无法打开课堂解锁窗口，请检查主课堂状态。");
 });
-let iconPointer=null, iconMoveFrame=null, iconMovePoint=null;
-const pointerPoint=e=>({x:e.screenX,y:e.screenY});
-$("pickerIcon").addEventListener("pointerdown",e=>{
-  if(e.button!==0||e.isPrimary===false)return;
-  e.preventDefault();iconPointer=e.pointerId;
+$("unlockHand").addEventListener("click", async () => {
+  const r = await api.windowAction("unlock");
+  if (!r.ok) message("无法打开课堂解锁窗口，请检查主课堂状态。");
+});
+let iconPointer = null,
+  iconMoveFrame = null,
+  iconMovePoint = null;
+const pointerPoint = (e) => ({ x: e.screenX, y: e.screenY });
+$("pickerIcon").addEventListener("pointerdown", (e) => {
+  if (e.button !== 0 || e.isPrimary === false) return;
+  e.preventDefault();
+  iconPointer = e.pointerId;
   e.currentTarget.setPointerCapture(e.pointerId);
-  void api.windowAction("dragStart",pointerPoint(e));
+  void api.windowAction("dragStart", pointerPoint(e));
 });
-$("pickerIcon").addEventListener("pointermove",e=>{
-  if(e.pointerId!==iconPointer)return;
-  e.preventDefault();iconMovePoint=pointerPoint(e);
-  if(iconMoveFrame!==null)return;
-  iconMoveFrame=requestAnimationFrame(()=>{iconMoveFrame=null;void api.windowAction("dragMove",iconMovePoint)});
+$("pickerIcon").addEventListener("pointermove", (e) => {
+  if (e.pointerId !== iconPointer) return;
+  e.preventDefault();
+  iconMovePoint = pointerPoint(e);
+  if (iconMoveFrame !== null) return;
+  iconMoveFrame = requestAnimationFrame(() => {
+    iconMoveFrame = null;
+    void api.windowAction("dragMove", iconMovePoint);
+  });
 });
-function endIconPointer(e,cancelled=false){
-  if(e.pointerId!==iconPointer)return;
-  if(iconMoveFrame!==null)cancelAnimationFrame(iconMoveFrame);
-  iconMoveFrame=null;iconPointer=null;
-  void api.windowAction(cancelled?"dragCancel":"dragEnd",pointerPoint(e));
+function endIconPointer(e, cancelled = false) {
+  if (e.pointerId !== iconPointer) return;
+  if (iconMoveFrame !== null) cancelAnimationFrame(iconMoveFrame);
+  iconMoveFrame = null;
+  iconPointer = null;
+  void api.windowAction(cancelled ? "dragCancel" : "dragEnd", pointerPoint(e));
 }
-$("pickerIcon").addEventListener("pointerup",e=>endIconPointer(e));
-$("pickerIcon").addEventListener("pointercancel",e=>endIconPointer(e,true));
-$("pickerIcon").addEventListener("lostpointercapture",e=>endIconPointer(e,true));
-$("pickerIcon").addEventListener("keydown", (e) => {
+$("pickerIcon").addEventListener("pointerup", (e) => endIconPointer(e));
+$("pickerIcon").addEventListener("pointercancel", (e) => endIconPointer(e, true));
+$("pickerIcon").addEventListener("lostpointercapture", (e) =>
+  endIconPointer(e, true),
+);
+$("pickerIcon").addEventListener("keydown", async (e) => {
   if (e.key === "Enter" || e.key === " ") {
     e.preventDefault();
-    api.windowAction("expand");
-  }
-});
+    const r = await api.windowAction("launcher");
+    if (r.ok) setView("launcher");
+  }});

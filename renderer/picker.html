@@ -7,92 +7,129 @@
     <link rel="stylesheet" href="picker.css" />
     <link rel="stylesheet" href="tooltips.css" />
   </head>
-  <body data-collapsed="true">
+  <body data-collapsed="true" data-view="icon">
     <button
       id="pickerIcon"
-      aria-label="展开点名悬浮窗"
-      title="点击展开 · 拖动移动"
+      aria-label="展开点名与举手菜单"
+      title="点击打开点名或举手 · 拖动移动"
     >
       <i id="pickerGlyph" aria-hidden="true">✦</i><span>点名</span>
     </button>
+    <nav id="launcher" class="launcher" aria-label="选择点名或举手" hidden>
+      <button id="launchPicker" type="button">
+        <b>🎰 点名抽选</b><small>抽学生或小组并赋分</small>
+      </button>
+      <button id="launchHand" type="button">
+        <b>✋ 举手</b><small>判对错、加分、抽道具</small>
+      </button>
+    </nav>
     <header class="titlebar">
       <span class="brand" id="brandGlyph" aria-hidden="true">✦</span>
       <div>
-        <strong>课堂点名</strong><small id="connection">正在连接主课堂…</small>
+        <strong id="panelTitle">课堂点名</strong><small id="connection">正在连接主课堂…</small>
       </div>
       <div class="window-actions">
         <button id="collapse" aria-label="收起浮窗" title="收起浮窗">↙</button>
       </div>
     </header>
     <main>
-      <nav aria-label="抽选模式" class="modes">
+      <nav aria-label="抽选模式" class="modes" id="modes">
         <button data-mode="individual">全班学生</button
         ><button data-mode="group">小组抽选</button
         ><button data-mode="two_tier">先组后人</button>
       </nav>
-      <section class="machine" id="machine" data-phase="idle">
-        <svg class="machine-top" viewBox="0 0 360 28" aria-hidden="true">
-          <path
-            d="M14 27V16Q14 2 28 2H332Q346 2 346 16V27"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="3"
-          />
-          <circle cx="38" cy="15" r="3" />
-          <circle cx="322" cy="15" r="3" />
-        </svg>
-        <div class="machine-window">
-          <div class="reel-strip" id="reel">
-            <div>准备好了吗</div>
-            <div>下一位课堂之星</div>
-            <div>准备好了吗</div>
-            <div>下一位课堂之星</div>
-            <div id="finalName">准备好了吗</div>
+      <section id="pickerPane">
+        <section class="machine" id="machine" data-phase="idle">
+          <svg class="machine-top" viewBox="0 0 360 28" aria-hidden="true">
+            <path
+              d="M14 27V16Q14 2 28 2H332Q346 2 346 16V27"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+            />
+            <circle cx="38" cy="15" r="3" />
+            <circle cx="322" cy="15" r="3" />
+          </svg>
+          <div class="machine-window">
+            <div class="reel-strip" id="reel">
+              <div>准备好了吗</div>
+              <div>下一位课堂之星</div>
+              <div>准备好了吗</div>
+              <div>下一位课堂之星</div>
+              <div id="finalName">准备好了吗</div>
+            </div>
           </div>
+          <button
+            id="lever"
+            class="lever"
+            title="拉动开始或停止抽选"
+            aria-label="开始抽选"
+          >
+            <span></span><i></i>
+          </button>
+          <p id="resultGroup">让每一次回答都有闪光时刻</p>
+          <span id="phase" class="phase">准备就绪</span>
+        </section>
+        <div class="pool-row">
+          <label><input id="antiRepeat" type="checkbox" />防重复</label
+          ><span id="remaining"></span
+          ><button id="resetPool" class="text-button">重置奖池</button
+          ><button id="cancel" class="text-button">取消抽选</button>
         </div>
-        <button
-          id="lever"
-          class="lever"
-          title="拉动开始或停止抽选"
-          aria-label="开始抽选"
-        >
-          <span></span><i></i>
-        </button>
-        <p id="resultGroup">让每一次回答都有闪光时刻</p>
-        <span id="phase" class="phase">准备就绪</span>
+        <section id="preselection" hidden>
+          <h2>限定候选小组 <small>未选表示全部</small></h2>
+          <div id="groupChips" class="chips"></div>
+        </section>
+        <section class="score-panel">
+          <div class="section-heading">
+            <h2>即时赋分</h2>
+            <span id="target">抽中后可用</span>
+            <button id="unlockClassroom" class="text-button" hidden>前往解锁</button>
+          </div>
+          <div id="slots" class="slots"></div>
+          <form id="customScore">
+            <input
+              id="delta"
+              type="number"
+              step="1"
+              placeholder="自定义正分 / 负分"
+              aria-label="自定义积分"
+            /><button type="submit">确认赋分</button>
+          </form>
+        </section>
+        <details>
+          <summary>最近点名记录 <span id="historyCount"></span></summary>
+          <ol id="history"></ol>
+        </details>
       </section>
-      <div class="pool-row">
-        <label><input id="antiRepeat" type="checkbox" />防重复</label
-        ><span id="remaining"></span
-        ><button id="resetPool" class="text-button">重置奖池</button
-        ><button id="cancel" class="text-button">取消抽选</button>
-      </div>
-      <section id="preselection" hidden>
-        <h2>限定候选小组 <small>未选表示全部</small></h2>
-        <div id="groupChips" class="chips"></div>
-      </section>
-      <section class="score-panel">
+      <section id="handPane" hidden>
         <div class="section-heading">
-          <h2>即时赋分</h2>
-          <span id="target">抽中后可用</span>
-          <button id="unlockClassroom" class="text-button" hidden>前往解锁</button>
+          <h2>举手</h2>
+          <span id="handStatus">选择举手小组</span>
+          <button id="unlockHand" class="text-button" hidden>前往解锁</button>
         </div>
-        <div id="slots" class="slots"></div>
-        <form id="customScore">
-          <input
-            id="delta"
-            type="number"
-            step="1"
-            placeholder="自定义正分 / 负分"
-            aria-label="自定义积分"
-          /><button type="submit">确认赋分</button>
-        </form>
+        <div id="handGroups" class="chips hand-chips"></div>
+        <div class="hand-judge" id="handJudge" hidden>
+          <button id="handCorrect" class="positive">✓ 回答正确</button>
+          <button id="handWrong" class="negative">✕ 回答错误</button>
+        </div>
+        <section id="handRewards" hidden>
+          <p id="handRewardTarget"></p>
+          <div id="handSlots" class="slots"></div>
+          <form id="handCustomScore">
+            <input
+              id="handDelta"
+              type="number"
+              step="1"
+              placeholder="自定义正分 / 负分"
+              aria-label="举手自定义积分"
+            /><button type="submit">确认赋分</button>
+          </form>
+          <button id="handDraw" class="draw-button">🎁 抽取道具</button>
+          <p id="handInventory"></p>
+        </section>
       </section>
-      <details>
-        <summary>最近点名记录 <span id="historyCount"></span></summary>
-        <ol id="history"></ol>
-      </details>
-      <details>
+      <details id="windowOptions">
         <summary>悬浮窗与全屏演出</summary>
         <div class="options">
           <button id="showMain">打开主课堂</button>

@@ -41,7 +41,7 @@ try {
   const report = JSON.parse(await readFile(result, "utf8"));
   console.log(JSON.stringify(report, null, 2));
   assert.equal(report.status, "PASS");
-  assert.equal(report.results.length, 16, "all planned scenarios must execute");
+  assert.equal(report.results.length, 18, "all planned scenarios must execute");
 } finally {
   clearTimeout(timer);
   if (child.exitCode === null) child.kill();

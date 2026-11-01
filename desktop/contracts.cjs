@@ -37,6 +37,10 @@ function validateCommand(action, p = {}) {
     preselect: ["groupId"],
     resetPool: [],
     score: ["delta", "resultId"],
+    handSelect: ["groupId"],
+    handJudge: ["groupId", "selectionId", "correct"],
+    handScore: ["groupId", "selectionId", "delta"],
+    handDraw: ["groupId", "selectionId"],
   }[action];
   if (
     !fields ||
@@ -48,6 +52,21 @@ function validateCommand(action, p = {}) {
   if (action === "antiRepeat" && typeof p.enabled !== "boolean")
     throw Error("INVALID_BOOLEAN");
   if (action === "preselect") integer(p.groupId);
+  if (action === "handSelect") integer(p.groupId);
+  if (
+    action === "handJudge" ||
+    action === "handScore" ||
+    action === "handDraw"
+  ) {
+    integer(p.groupId);
+    text(p.selectionId, 120);
+    if (action === "handJudge" && typeof p.correct !== "boolean")
+      throw Error("INVALID_BOOLEAN");
+    if (action === "handScore") {
+      integer(p.delta);
+      if (!p.delta) throw Error("INVALID_SCORE");
+    }
+  }
   if (action === "score") {
     integer(p.delta);
     if (!p.delta) throw Error("INVALID_SCORE");
@@ -101,6 +120,11 @@ function sanitizeSnapshot(s) {
     };
   }
   const effects = s.effects || {};
+  const hand = s.hand || {};
+  const handGroupId =
+    Number.isSafeInteger(hand.groupId) && groups.some((g) => g.id === hand.groupId)
+      ? hand.groupId
+      : null;
   return {
     protocolVersion: 1,
     theme: s.theme === "marx" ? "marx" : "classic",
@@ -118,6 +142,19 @@ function sanitizeSnapshot(s) {
     },
     groups,
     result,
+    hand: {
+      selectionId: handGroupId !== null ? text(hand.selectionId || "", 120) : null,
+      groupId: handGroupId,
+      correct: typeof hand.correct === "boolean" ? hand.correct : null,
+      itemRewarded: handGroupId !== null && hand.itemRewarded === true,
+      busy: hand.busy === true,
+      inventoryCount:
+        handGroupId === null
+          ? 0
+          : Math.min(3, Math.max(0, integer(hand.inventoryCount || 0))),
+      canDraw: handGroupId !== null && hand.canDraw === true,
+      itemName: handGroupId !== null ? text(hand.itemName || "", 120) : "",
+    },
     slots: s.slots.map((n) => {
       integer(n);
       if (!n) throw Error("INVALID_SLOT");

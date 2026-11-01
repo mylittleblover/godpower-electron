@@ -110,4 +110,31 @@ function iconBounds(saved, displays) {
     height: 72,
   };
 }
-module.exports = { visibleBounds, iconBounds, WindowState };
+/* The launcher menu is smaller than the reading panel, so it clamps separately. */
+function menuBounds(saved, displays, width = 360, height = 200) {
+  const display =
+    displays.find(
+      (d) =>
+        saved &&
+        saved.x >= d.workArea.x &&
+        saved.x < d.workArea.x + d.workArea.width &&
+        saved.y >= d.workArea.y &&
+        saved.y < d.workArea.y + d.workArea.height,
+    ) || displays[0];
+  const a = display.workArea;
+  const w = Math.min(a.width, width),
+    h = Math.min(a.height, height);
+  return {
+    x: Math.max(
+      a.x,
+      Math.min(a.x + a.width - w, Number.isFinite(saved?.x) ? Math.round(saved.x) : a.x + a.width - w - 24),
+    ),
+    y: Math.max(
+      a.y,
+      Math.min(a.y + a.height - h, Number.isFinite(saved?.y) ? Math.round(saved.y) : a.y + 30),
+    ),
+    width: w,
+    height: h,
+  };
+}
+module.exports = { visibleBounds, iconBounds, menuBounds, WindowState };
