@@ -121,9 +121,13 @@ async function run(w, resultPath) {
         const saved=await api.commit(id,doc.revision,doc,{expectedGeneration:list.index.generation});
         const stale=await api.commit(id,doc.revision,doc,{expectedGeneration:list.index.generation});
         const source=await api.getSource(preview.sourceDigest);
-        return {groups:doc.roster.groups.length,students:doc.roster.students.length,saved:saved.ok,revision:saved.document?.revision,stale:stale.code,sourceExact:source.sourceText===preview.sourceText};
+        const removed=await api.setTrashed(id,true,{expectedGeneration:list.index.generation,expectedRevision:2});
+        const hidden=await api.load(id);
+        const restored=await api.setTrashed(id,false,{expectedGeneration:list.index.generation,expectedRevision:2});
+        const reopened=await api.load(id);
+        return {groups:doc.roster.groups.length,students:doc.roster.students.length,saved:saved.ok,revision:saved.document?.revision,stale:stale.code,sourceExact:source.sourceText===preview.sourceText,trash:removed.ok&&hidden.code==='SAVE_NOT_FOUND',restore:restored.ok&&reopened.document.revision===2};
       })()`);
-      assert.deepEqual(result,{groups:14,students:28,saved:true,revision:2,stale:'REVISION_CONFLICT',sourceExact:true});
+      assert.deepEqual(result,{groups:14,students:28,saved:true,revision:2,stale:'REVISION_CONFLICT',sourceExact:true,trash:true,restore:true});
       assert.ok(w.saveVault.root.startsWith(app.getPath("userData") + path.sep));
       const modeBefore=await main(`state.picker.mode`);
       w.main.webContents.send("gp:execute",{id:"stale-save-probe",action:"mode",payload:{mode:modeBefore==="group"?"individual":"group"},saveContext:{saveId:"save-obsolete",generation:0}});

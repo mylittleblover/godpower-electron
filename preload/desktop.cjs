@@ -27,6 +27,7 @@ if (role === "main")
       importPreview: (preview, options = {}) => ipcRenderer.invoke("gp:save-vault", "importPreview", [preview, options]),
       commit: (id, revision, save, options = {}) => ipcRenderer.invoke("gp:save-vault", "commit", [id, revision, save, options]),
       switchActive: (id, options = {}) => ipcRenderer.invoke("gp:save-vault", "switchActive", [id, options]),
+      setTrashed: (id, value, options = {}) => ipcRenderer.invoke("gp:save-vault", "setTrashed", [id, value, options]),
       getSource: (digest) => ipcRenderer.invoke("gp:save-vault", "getSource", [digest]),
       getAsset: (id) => ipcRenderer.invoke("gp:save-vault", "getAsset", [id]),
       loadPreferences: () => ipcRenderer.invoke("gp:save-vault", "loadPreferences", []),

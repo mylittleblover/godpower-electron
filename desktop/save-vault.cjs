@@ -66,7 +66,7 @@ class SaveVault {
     if (!bytes) return emptyIndex();
     const index = this.schema.validateIndex(JSON.parse(bytes.toString("utf8")));
     // Paths are always reconstructed; never trust a path from a renderer or index.
-    for (const e of index.entries)
+    for (const e of [...index.entries, ...(index.trashedEntries || [])])
       if (!validSaveId(e.saveId) || !digestId(e.contentHash))
         fail("INVALID_INDEX_ENTRY");
     if (
@@ -239,7 +239,7 @@ class SaveVault {
           saveIds: index.imports[input.sourceDigest].saveIds,
         };
       for (const doc of docs)
-        if (index.entries.some((e) => e.saveId === doc.saveId))
+        if ([...index.entries, ...(index.trashedEntries || [])].some((e) => e.saveId === doc.saveId))
           fail("SAVE_ALREADY_EXISTS");
       await this.stageAssets(input.assets || []);
       for (const doc of docs) {
@@ -330,6 +330,23 @@ class SaveVault {
         await this.publish(index);
       }
       return { ok: true, index, document: doc };
+    });
+  }
+  setTrashed(saveId, trashed, {expectedGeneration, expectedRevision} = {}) {
+    return this.enqueue(async () => {
+      if (typeof trashed !== "boolean") fail("INVALID_TRASH_ACTION");
+      const index = await this.readIndex();
+      if (index.generation !== expectedGeneration) fail("GENERATION_CONFLICT");
+      if (index.activeSaveId === saveId) fail("ACTIVE_SAVE");
+      const from = trashed ? index.entries : (index.trashedEntries || []), target = from.find(e => e.saveId === saveId);
+      if (!target) fail("SAVE_NOT_FOUND");
+      if (target.revision !== expectedRevision) fail("REVISION_CONFLICT");
+      const document = await this.readDocument({...index,entries:from},saveId);
+      await this.requireAssets(document);
+      index.trashedEntries ||= [];
+      if (trashed) { index.entries = index.entries.filter(e => e.saveId !== saveId); index.trashedEntries.push({...target,trashedAt:new Date().toISOString()}); }
+      else { index.trashedEntries = index.trashedEntries.filter(e => e.saveId !== saveId); const restored={...target};delete restored.trashedAt;index.entries.push(restored); }
+      index.revision++;await this.publish(index);return {ok:true,index};
     });
   }
   getSource(digest) {

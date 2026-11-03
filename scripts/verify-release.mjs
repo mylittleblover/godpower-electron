@@ -14,6 +14,12 @@ const info = JSON.parse(
 const local = JSON.parse(await readFile("resources/BUILD_INFO.json", "utf8"));
 assert.deepEqual(info, local);
 assert.equal(createHash("sha256").update(html).digest("hex"), info.htmlSha256);
+for (const [name, digest] of Object.entries(info.sharedAssets || {})) {
+  assert.equal(createHash("sha256").update(asar.extractFile(archive, "resources/" + name)).digest("hex"), digest, "Shared schema must match pinned HTML source: " + name);
+}
+for (const [name, digest] of Object.entries(info.presentationAssets || {})) {
+  assert.equal(createHash("sha256").update(asar.extractFile(archive, "renderer/" + name)).digest("hex"), digest, "Shared presentation asset mismatch: " + name);
+}
 assert.equal(
   JSON.parse(asar.extractFile(archive, "package.json")).version,
   version,

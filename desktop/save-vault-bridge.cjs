@@ -25,6 +25,7 @@ const arities = Object.freeze({
   importPreview: 2,
   commit: 4,
   switchActive: 2,
+  setTrashed: 3,
   getSource: 1,
   getAsset: 1,
   loadPreferences: 0,

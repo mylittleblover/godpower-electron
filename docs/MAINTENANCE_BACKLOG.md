@@ -85,3 +85,6 @@ NOT TESTED：Windows真机/系统键盘/实体触屏/多显示器；仍有效的
 - 同一头像JSON属性顺序不同不再产生immutable冲突，仍校验真实SHA-256。
 - 验证：75/75单元；artifacts/save-library-active-fixed/results.json 的21/21真实Electron场景PASS。运行Linux Xvfb+xfwm4、1920×1080/1x，不能当作Windows实测。
 - 剩余风险：Windows物理触屏、屏幕键盘、PPT覆盖、多显示器、真实声音听感 NOT TESTED；后续Windows发行物仍需交叉构建。
+
+
+SAVE-NATIVE-003（P1，DONE）：回收站仅处理非当前存档，文件/资源/原文不删；边界API加入setTrashed并限制参数个数，CAS及代次检查。76项单元、最终21项桌面联调和包内源码/共享schema校验PASS。后续永久删除/损坏资源诊断OPEN，不能静默恢复缺失数据。

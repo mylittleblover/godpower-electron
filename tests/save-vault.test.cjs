@@ -304,3 +304,15 @@ test("equal avatar bytes are shared across imported saves regardless of metadata
     await cleanup(w);
   }
 });
+
+test("trash is reversible, preserves bytes and sources, and cannot remove the active save", async()=>{
+ const w=setup();try{
+  const a=preview(21),b=preview(22);await w.vault.importPreview(a,{activate:true});await w.vault.importPreview(b,{activate:false});
+  const before=await w.vault.list(), gen=before.index.generation;
+  const denied=await w.vault.setTrashed(a.documents[0].saveId,true,{expectedGeneration:gen,expectedRevision:1});assert.equal(denied.code,"ACTIVE_SAVE");
+  const trashed=await w.vault.setTrashed(b.documents[0].saveId,true,{expectedGeneration:gen,expectedRevision:1});assert.equal(trashed.ok,true);assert.equal(trashed.index.entries.length,1);assert.equal(trashed.index.trashedEntries.length,1);
+  assert.equal((await w.vault.load(b.documents[0].saveId)).code,"SAVE_NOT_FOUND");assert.equal((await w.vault.getSource(b.sourceDigest)).sourceText,b.sourceText);
+  const reopened=new SaveVault({root:w.root,schema:w.schema});const restored=await reopened.setTrashed(b.documents[0].saveId,false,{expectedGeneration:gen,expectedRevision:1});assert.equal(restored.ok,true);assert.equal(restored.index.entries.length,2);assert.equal(restored.index.trashedEntries.length,0);assert.equal((await reopened.load(b.documents[0].saveId)).document.match.groups[0].score,22);
+  assert.equal((await reopened.setTrashed(b.documents[0].saveId,true,{expectedGeneration:gen-1,expectedRevision:1})).code,"GENERATION_CONFLICT");
+ }finally{await cleanup(w);}
+});
