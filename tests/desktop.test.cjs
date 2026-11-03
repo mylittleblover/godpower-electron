@@ -360,7 +360,7 @@ test("the picker is hidden from the taskbar, the launcher menu and hand view are
 test("the dock picker button opens the floating picker instead of the in-page dialog", () => {
   const path = require("node:path");
   const source = require("node:fs").readFileSync(
-    path.join(__dirname, "../../html/src/runtime/picker/selection-engine.js"),
+    path.join(process.env.GODPOWER_HTML_REPO || path.join(__dirname, "../../godpower-html"), "src/runtime/picker/selection-engine.js"),
     "utf8",
   );
   assert.match(

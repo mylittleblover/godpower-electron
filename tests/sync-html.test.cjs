@@ -86,7 +86,8 @@ function fixture(options, run) {
     );
     if (!options.missingTooltip)
       for (const ext of ["js", "css"])
-        write(sourceRoot, `src/ui/tooltips.${ext}`, `tooltip ${ext}\n`);
+        write(sourceRoot, ext === "css" && options.canonicalStyles ? "src/styles/components/tooltips.css" : `src/ui/tooltips.${ext}`, `tooltip ${ext}\n`);
+    if (options.canonicalStyles) write(sourceRoot,"src/ui/tooltips.css","stale legacy tooltip css\n");
     execFileSync("git", ["init", "-q", sourceRoot]);
     execFileSync("git", [
       "-C",
@@ -290,3 +291,13 @@ test("rollback removes newly created output when no previous artifact existed", 
       );
     assert.equal(fs.existsSync(path.join(host, ".sync-html.lock")), false);
   }));
+
+
+test("canonical CSS under styles is selected and tracked even when a stale ui CSS exists", () =>
+ fixture({canonicalStyles:true},({cli,host})=>{
+  const result=cli();
+  assert.equal(result.status,0,result.stderr);
+  assert.equal(fs.readFileSync(path.join(host,"renderer/tooltips.css"),"utf8"),"tooltip css\n");
+  const info=JSON.parse(fs.readFileSync(path.join(host,"resources/BUILD_INFO.json")));
+  assert.equal(info.presentationAssetSources["tooltips.css"],"src/styles/components/tooltips.css");
+ }));

@@ -76,7 +76,7 @@ test("oversized payloads are refused in both directions", () => {
 test("only absolute .json paths are accepted as a custom location", () => {
   assert.throws(() => normalizeTarget("relative/save.json"), /INVALID_PATH|absolute/);
   assert.throws(() => normalizeTarget(""), /INVALID_PATH/);
-  assert.throws(() => normalizeTarget("C:/tmp/notes.txt"), /INVALID_EXTENSION/);
+  assert.throws(() => normalizeTarget(path.join(os.tmpdir(), "notes.txt")), /INVALID_EXTENSION/);
   const { dir, file } = workspace();
   try {
     const custom = path.join(dir, "custom", "my-save.json");

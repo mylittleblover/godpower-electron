@@ -51,12 +51,17 @@ export async function prepareSync({ root, source }) {
     throw Error(
       "HTML build differs from committed artifact. Commit rebuilt source/artifacts first.",
     );
+  const canonicalTooltipCss = "src/styles/components/tooltips.css";
+  // Select from the pinned tree, never from an uncommitted file or a failed read.
+  const cssSource = execFileSync("git", ["-C", sourceRoot, "ls-tree", "--name-only", sourceCommit, canonicalTooltipCss], {encoding:"utf8"}).trim()
+    ? canonicalTooltipCss : "src/ui/tooltips.css";
+  const assetSources = { js: "src/ui/tooltips.js", css: cssSource };
   const assets = Object.fromEntries(
     ["js", "css"].map((ext) => [
       ext,
       execFileSync(
         "git",
-        ["-C", sourceRoot, "show", `${sourceCommit}:src/ui/tooltips.${ext}`],
+        ["-C", sourceRoot, "show", `${sourceCommit}:${assetSources[ext]}`],
         { maxBuffer: 2e6 },
       ),
     ]),
@@ -71,6 +76,7 @@ export async function prepareSync({ root, source }) {
     sourceCommit,
     htmlSha256: hash(html),
     htmlBytes: html.length,
+    presentationAssetSources: Object.fromEntries(Object.entries(assetSources).map(([ext, source]) => [`tooltips.${ext}`, source])),
     presentationAssets: Object.fromEntries(
       Object.entries(assets).map(([ext, content]) => [
         `tooltips.${ext}`,
