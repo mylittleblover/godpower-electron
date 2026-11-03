@@ -38,6 +38,14 @@ else {
         { urls: ["http://*/*", "https://*/*", "ws://*/*", "wss://*/*"] },
         (_details, callback) => callback({ cancel: true }),
       );
+      // Development probes must never hydrate or overwrite the user's real
+      // Documents/GodPower classroom file, even with an isolated userData dir.
+      if (!app.isPackaged && process.argv.some((arg) =>
+        arg.startsWith("--smoke-test=") || arg.startsWith("--desktop-test="))) {
+        const testDocuments = require("node:path").join(app.getPath("userData"), "test-documents");
+        require("node:fs").mkdirSync(testDocuments, { recursive: true });
+        app.setPath("documents", testDocuments);
+      }
       windows = new Windows(__dirname);
       Menu.setApplicationMenu(
         Menu.buildFromTemplate([

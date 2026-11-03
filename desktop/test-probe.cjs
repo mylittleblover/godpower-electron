@@ -77,11 +77,37 @@ async function run(w, resultPath) {
     w.main.setMenuBarVisibility(false);
     w.main.setContentSize(1920, 1080);
     w.main.webContents.setZoomFactor(1);
+    // On a 1920x1080 virtual desktop, native decorations would shrink the
+    // content viewport. Test the application's supported fullscreen mode.
+    const primaryBounds = screen.getPrimaryDisplay().bounds;
+    if (process.platform === "linux" && process.env.DISPLAY &&
+        primaryBounds.width === 1920 && primaryBounds.height === 1080)
+      w.main.setFullScreen(true);
+    await until(() => main(`innerWidth===1920 && innerHeight===1080`), "1920x1080 content resize");
+    await until(() => main(`window.classroomReady && !ClassroomSaveFile.isHydrating()`), "classroom hydration");
     await main(`document.getElementById('gpIntroSkip')?.click();closeWelcomeModal();state.isLocked=false;state.soundEnabled=false;ClassroomFeedback.setOptions({pickEffects:true,scoreEffects:false,duration:1200});
    state.groups=normalizeAllGroups(Array.from({length:14},(_,i)=>({id:i+1,groupNo:i+1,name:'第 '+(i+1)+' 小组',color:['#0f766e','#e76f51','#3d6eaa'][i%3],score:100+i*20,members:['0'+(i+1)+' 同学','学生 '+(i+1)]})));
    state.picker={mode:'individual',antiRepeat:true,pickedStudentKeys:[],pickedGroupIds:[],preselectedGroupIds:[]};
    state.itemGlobal.pickerHistory=[];state.columnMode='double';state.resizerEnabled=true;state.resizerHeight=120;state.zoomLevel=1;document.body.style.zoom=1;switchView('battle');renderAll();saveState();
    window.testSoundCalls=[];window.originalPlaySound=playSound;playSound=function(key,...args){testSoundCalls.push(key);return originalPlaySound(key,...args)};GodpowerPicker.notify('idle');`);
+    await test("disk IPC writes remain ordered and reads await verified bytes in isolated storage", async () => {
+      assert.ok(w.saveFile.info.path.startsWith(app.getPath("userData") + path.sep));
+      const result = await main(`(async()=>{
+        const backup=buildClassroomBackup();
+        const timestamps=Array.from({length:5},(_,i)=>new Date(Date.now()+i).toISOString());
+        const writes=timestamps.map(timestamp=>godpowerDesktop.saveFileWrite({...backup,timestamp}));
+        const latest=await godpowerDesktop.saveFileRead();
+        return {writes:await Promise.all(writes),latest,expected:timestamps.at(-1)};
+      })()`);
+      assert.ok(result.writes.every(r=>r.ok));
+      assert.equal(result.latest.ok,true);
+      assert.equal(result.latest.data.timestamp,result.expected);
+      assert.equal(result.latest.data.groups.length,14);
+      await w.saveFile.whenIdle();
+      assert.equal(w.saveFile.pendingWrites,0);
+      assert.equal(fs.existsSync(w.saveFile.file+".tmp"),false);
+      return {writes:result.writes.length,groups:result.latest.data.groups.length};
+    });
     await test("1920×1080 1x, 14 group fit and unchanged main layout", async () => {
       await delay(1100);
       const m = await main(

@@ -1,0 +1,72 @@
+
+> godpower-electron@3.0.68 test
+> node --test tests/*.test.cjs
+
+✔ reject unknown commands, arbitrary IPC, invalid scores and modes (1.93853ms)
+✔ authorize exact webContents, main frame and URL (0.236177ms)
+✔ snapshot rejects malformed payload, oversized arrays and injected result data (0.32416ms)
+✔ concurrent replay dispatches once; changed payload cannot reuse id (1.166342ms)
+✔ reload rejects pending score without replay; stale epochs rejected (0.341766ms)
+Window preferences unavailable: Unexpected token 'b', "broken json" is not valid JSON
+✔ timeout fails once and ignores late acknowledgement (10.128493ms)
+✔ closed secondary window cleanup cancels receipts and cannot replay later (0.358672ms)
+✔ removed displays and oversized saved windows are clamped into visible work area (0.38392ms)
+✔ window preferences survive a new store instance and malformed files fall back safely (1.307226ms)
+✔ ordinary dialogs have no native window transport or cloned renderer (0.598595ms)
+✔ bundled HTML verifies SHA-256 and rejects any changed byte (1.63396ms)
+✔ valid snapshots strip private state and preserve display data without HTML interpretation (0.268035ms)
+✔ snapshot sanitizer accepts only bounded local WebP reveal thumbnails (0.534027ms)
+✔ Escape ownership survives duplicate readiness and is released exactly once (0.368858ms)
+✔ floating launcher is validated as its own command family (0.266643ms)
+✔ snapshots carry a bounded hand DTO and drop unknown group selections (0.220093ms)
+✔ the picker is hidden from the taskbar, the launcher menu and hand view are native actions (0.411853ms)
+✔ the dock picker button opens the floating picker instead of the in-page dialog (0.2045ms)
+✔ the launcher menu stays inside the monitor work area (0.279813ms)
+✔ item cinematics accept only bounded local data and drop injected fields (0.521868ms)
+✔ the item cinematic reuses the full-screen reveal window (0.323649ms)
+✔ exactly ten reveal styles exist and are stable identifiers (0.833309ms)
+✔ every style is reachable by the random picker and keeps a requested one (0.859188ms)
+✔ an unknown or injected style falls back into the pool (0.152039ms)
+✔ the snapshot keeps a valid style and never leaks an unknown one (0.789053ms)
+✔ the renderer defines a layer for all ten styles (1.3562ms)
+✔ pointer deltas move icon directly without relying on mouse cursor (1.308567ms)
+✔ drag intent remains set after returning to initial position (0.166172ms)
+✔ malformed cross-window coordinates are rejected (0.374406ms)
+✔ icon stays 72px and is clamped to work area (1.147194ms)
+✔ icon restores saved position independently from expanded bounds (0.134454ms)
+✔ the default save file lives under the app data root and is reported (1.489551ms)
+✔ writing creates the directory and verifies the bytes it stored (10.359246ms)
+✔ a missing file reads as absent, a corrupt one as an error, never as data (0.654119ms)
+✔ oversized payloads are refused in both directions (82.141367ms)
+✔ only absolute .json paths are accepted as a custom location (3.492068ms)
+✔ sandboxed renderers cannot reach the save file directly (0.545985ms)
+✔ writes yield the host event loop before disk verification completes (10.961638ms)
+✔ rapid writes remain ordered, drainable and atomic (5.321403ms)
+✔ an accepted write keeps its original target when the selected path changes (1.955936ms)
+✔ failed replacement preserves the last good file and the queue recovers (2.363351ms)
+✔ quitting waits for accepted disk writes before closing windows (24.494741ms)
+✔ fresh Windows-style Git checkout preserves all hashed release bytes (149.125527ms)
+✔ source rebuild mismatch leaves every host artifact and version byte unchanged (118.56632ms)
+✔ missing tooltip leaves every host artifact and version byte unchanged (113.340873ms)
+✔ dirty source leaves every host artifact and version byte unchanged (60.708949ms)
+✔ missing committed source artifact leaves host version and files unchanged (63.446332ms)
+✔ successful sync keeps package, lock, HTML and tooltip provenance consistent (114.430373ms)
+✔ installation failure restores host files at package.json (82.663737ms)
+✔ installation failure restores host files at resources/BUILD_INFO.json (66.046306ms)
+✔ installation failure restores host files at renderer/tooltips.css (85.094737ms)
+✔ rollback removes newly created output when no previous artifact existed (73.849354ms)
+✔ canonical CSS under styles is selected and tracked even when a stale ui CSS exists (119.82902ms)
+✔ snapshot theme is strictly whitelisted and old snapshots default to classic (1.029594ms)
+✔ picker applies Marx branding from its snapshot and resets on legacy snapshots (6.556388ms)
+✔ effect theme leaves score colors semantic and uses gold for Marx picker reveal (2.156976ms)
+✔ full-screen reveal displays only bounded local WebP avatar data (1.23187ms)
+✔ native branding uses local icon and classic remains the fallback (0.460475ms)
+✔ native branding updates open main and picker windows and notifies tray once (6.725414ms)
+ℹ tests 59
+ℹ suites 0
+ℹ pass 59
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1702.987247

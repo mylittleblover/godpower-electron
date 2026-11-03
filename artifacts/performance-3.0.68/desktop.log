@@ -1,0 +1,214 @@
+
+> godpower-electron@3.0.68 test:desktop
+> node scripts/desktop-test.mjs
+
+[15985:1103/153049.825595:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[15985:1103/153049.826258:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[15985:1103/153049.896958:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[15985:1103/153049.897000:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[15985:1103/153049.978664:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+[15985:1103/153049.981240:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[15985:1103/153049.985317:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+PASS disk IPC writes remain ordered and reads await verified bytes in isolated storage
+PASS 1920×1080 1x, 14 group fit and unchanged main layout
+PASS internal functional dialogs retain live input, settings state and one score owner
+PASS fullscreen sound slots are configurable and score reveal is a native overlay
+PASS secure preload and isolated origin in independent picker
+PASS Marx theme crosses HTML, native branding, picker reload, internal dialogs and effects
+[16012:1103/153118.239227:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.239396:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.239481:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.239566:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.239605:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.239643:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.239696:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.239758:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.239799:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.239847:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.239887:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.239934:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.239992:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.240167:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.240415:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.240463:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.240524:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.240584:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.240634:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.240680:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.240719:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.240758:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.240922:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.240969:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.241010:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.241049:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.241086:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.241124:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.241193:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.241231:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.241269:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.241307:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.241498:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.241588:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.241636:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.241674:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.241713:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.241751:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.241802:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.241848:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.241893:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+[16012:1103/153118.242114:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:395] SharedImageManager::ProduceMemory: Trying to Produce a Memory representation from a non-existent mailbox.
+PASS closing main keeps authoritative renderer alive and can restore it
+PASS individual authoritative draw, continuous reel, overlay and score
+PASS group authoritative draw, continuous reel, overlay and score
+PASS two_tier authoritative draw, continuous reel, overlay and score
+Integration probe failed: AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+false !== true
+
+    at /workspace/godpower-electron-latest/desktop/test-probe.cjs:547:14
+    at test (/workspace/godpower-electron-latest/desktop/test-probe.cjs:50:28)
+    at Object.run (/workspace/godpower-electron-latest/desktop/test-probe.cjs:533:11)
+    at async /workspace/godpower-electron-latest/main.cjs:130:13
+{
+  "status": "FAIL",
+  "results": [
+    {
+      "name": "disk IPC writes remain ordered and reads await verified bytes in isolated storage",
+      "status": "PASS",
+      "detail": {
+        "writes": 5,
+        "groups": 14
+      }
+    },
+    {
+      "name": "1920×1080 1x, 14 group fit and unchanged main layout",
+      "status": "PASS",
+      "detail": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "name": "internal functional dialogs retain live input, settings state and one score owner",
+      "status": "PASS",
+      "detail": {
+        "internalDialogs": 12,
+        "loads": 0,
+        "inputStable": true,
+        "scoreDelta": 123
+      }
+    },
+    {
+      "name": "fullscreen sound slots are configurable and score reveal is a native overlay",
+      "status": "PASS",
+      "detail": [
+        "fullscreen_pick",
+        "fullscreen_score_add",
+        "fullscreen_score_sub"
+      ]
+    },
+    {
+      "name": "secure preload and isolated origin in independent picker",
+      "status": "PASS",
+      "detail": {
+        "node": "undefined",
+        "process": "undefined",
+        "role": "picker",
+        "mainAPI": "undefined",
+        "storage": null
+      }
+    },
+    {
+      "name": "Marx theme crosses HTML, native branding, picker reload, internal dialogs and effects",
+      "status": "PASS",
+      "detail": {
+        "themes": [
+          "classic",
+          "marx",
+          "classic"
+        ],
+        "nativeIconCalls": 4,
+        "pickerReload": true,
+        "internalDialogTheme": true,
+        "semanticScores": true
+      }
+    },
+    {
+      "name": "closing main keeps authoritative renderer alive and can restore it",
+      "status": "PASS",
+      "detail": "same renderer and data after close; picker commands remain available"
+    },
+    {
+      "name": "individual authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1793719878403-1",
+        "groupId": 10,
+        "historyEntries": 1,
+        "scoreDelta": 5
+      }
+    },
+    {
+      "name": "group authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1793719881198-2",
+        "groupId": 12,
+        "historyEntries": 1,
+        "scoreDelta": 5
+      }
+    },
+    {
+      "name": "two_tier authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1793719884409-3",
+        "groupId": 9,
+        "historyEntries": 1,
+        "scoreDelta": 5
+      }
+    },
+    {
+      "name": "floating launcher stays out of the taskbar and can be raised over video and PPT",
+      "status": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at /workspace/godpower-electron-latest/desktop/test-probe.cjs:547:14\n    at test (/workspace/godpower-electron-latest/desktop/test-probe.cjs:50:28)\n    at Object.run (/workspace/godpower-electron-latest/desktop/test-probe.cjs:533:11)\n    at async /workspace/godpower-electron-latest/main.cjs:130:13"
+    }
+  ],
+  "errors": [
+    "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at /workspace/godpower-electron-latest/desktop/test-probe.cjs:547:14\n    at test (/workspace/godpower-electron-latest/desktop/test-probe.cjs:50:28)\n    at Object.run (/workspace/godpower-electron-latest/desktop/test-probe.cjs:533:11)\n    at async /workspace/godpower-electron-latest/main.cjs:130:13"
+  ],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+'FAIL' !== 'PASS'
+
+    at file:///workspace/godpower-electron-latest/scripts/desktop-test.mjs:43:10 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'FAIL',
+  expected: 'PASS',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

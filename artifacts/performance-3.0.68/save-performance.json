@@ -1,0 +1,34 @@
+[
+  {
+    "variant": "baseline",
+    "writes": 8,
+    "payloadMiB": 1,
+    "durationMs": 43.046443000000004,
+    "heartbeatTicksDuringWrites": 0,
+    "maxEventLoopGapMs": 43.147453999999996
+  },
+  {
+    "variant": "after",
+    "writes": 8,
+    "payloadMiB": 1,
+    "durationMs": 50.240656,
+    "heartbeatTicksDuringWrites": 32,
+    "maxEventLoopGapMs": 4.8829219999999935
+  },
+  {
+    "variant": "after",
+    "writes": 8,
+    "payloadMiB": 1,
+    "durationMs": 55.423202,
+    "heartbeatTicksDuringWrites": 37,
+    "maxEventLoopGapMs": 5.1348389999999995
+  },
+  {
+    "variant": "baseline",
+    "writes": 8,
+    "payloadMiB": 1,
+    "durationMs": 32.30249300000003,
+    "heartbeatTicksDuringWrites": 0,
+    "maxEventLoopGapMs": 32.31170700000001
+  }
+]

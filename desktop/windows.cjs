@@ -55,8 +55,23 @@ class Windows {
     );
     this.pickerView = "icon";
     this.installIPC();
-    app.on("before-quit", () => {
+    app.on("before-quit", (event) => {
       this.quitting = true;
+      if (this.saveFile.pendingWrites > 0) {
+        event.preventDefault();
+        if (!this.saveQuitPending) {
+          this.saveQuitPending = true;
+          this.saveFile.whenIdle().then(() => {
+            this.saveQuitPending = false;
+            app.quit();
+          }).catch((error) => {
+            this.saveQuitPending = false;
+            this.quitting = false;
+            console.error("等待课堂存档完成失败", error);
+          });
+        }
+        return;
+      }
       this.savePicker();
       this.closeEffect();
     });
@@ -610,12 +625,14 @@ class Windows {
     ipcMain.on("gp:reply", (event, message) => {
       if (this.authorized(event, "main")) this.broker.reply(message);
     });
-    ipcMain.handle("gp:save-file-info", (event) => {
+    ipcMain.handle("gp:save-file-info", async (event) => {
       requireRole(event, "main");
+      await this.saveFile.whenIdle();
       return this.saveFile.info;
     });
-    ipcMain.handle("gp:save-file-read", (event) => {
+    ipcMain.handle("gp:save-file-read", async (event) => {
       requireRole(event, "main");
+      await this.saveFile.whenIdle();
       return this.saveFile.read();
     });
     ipcMain.handle("gp:save-file-write", (event, payload) => {
@@ -639,6 +656,7 @@ class Windows {
       });
       if (picked.canceled || !picked.filePath) return { ok: false, canceled: true };
       try {
+        await this.saveFile.whenIdle();
         const info = this.saveFile.choose(picked.filePath);
         this.preferences.update({ saveFile: info.path });
         this.broadcast();
@@ -647,8 +665,9 @@ class Windows {
         return { ok: false, error: String(error.message || error) };
       }
     });
-    ipcMain.handle("gp:save-file-set", (event, value) => {
+    ipcMain.handle("gp:save-file-set", async (event, value) => {
       requireRole(event, "main");
+      await this.saveFile.whenIdle();
       if (typeof value !== "string") return { ok: false, error: "INVALID_PATH" };
       try {
         const info = this.saveFile.choose(value);
@@ -659,8 +678,9 @@ class Windows {
         return { ok: false, error: String(error.message || error) };
       }
     });
-    ipcMain.handle("gp:save-file-reset", (event) => {
+    ipcMain.handle("gp:save-file-reset", async (event) => {
       requireRole(event, "main");
+      await this.saveFile.whenIdle();
       const info = this.saveFile.reset();
       this.preferences.update({ saveFile: null });
       this.broadcast();

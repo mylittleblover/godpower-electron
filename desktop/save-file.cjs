@@ -25,6 +25,8 @@ class SaveFile {
     this.defaultDir = path.join(root, "saves");
     this.defaultPath = path.join(this.defaultDir, fileName);
     this.file = this.defaultPath;
+    this.pendingWrites = 0;
+    this.pending = Promise.resolve();
   }
   get info() {
     let stat = null;
@@ -43,15 +45,13 @@ class SaveFile {
       modifiedAt: stat ? stat.mtimeMs : null,
     };
   }
-  ensureDir() {
-    fs.mkdirSync(path.dirname(this.file), { recursive: true });
-  }
   read() {
     let raw;
     try {
       raw = fs.readFileSync(this.file, "utf8");
     } catch (error) {
-      if (error.code === "ENOENT") return { ok: true, present: false, data: null };
+      if (error.code === "ENOENT")
+        return { ok: true, present: false, data: null };
       return { ok: false, error: String(error.message || error) };
     }
     if (Buffer.byteLength(raw) > MAX_BYTES)
@@ -68,33 +68,71 @@ class SaveFile {
         sha256: createHash("sha256").update(raw).digest("hex"),
       };
     } catch (error) {
-      return { ok: false, error: "存档文件无法解析：" + String(error.message || error) };
+      return {
+        ok: false,
+        error: "存档文件无法解析：" + String(error.message || error),
+      };
     }
+  }
+  whenIdle() {
+    return this.pending;
   }
   write(payload) {
     let text;
     try {
       text = JSON.stringify(payload);
+      if (Buffer.byteLength(text) > MAX_BYTES)
+        return Promise.resolve({
+          ok: false,
+          error: "存档体积超出上限，未写入",
+        });
     } catch (error) {
-      return { ok: false, error: "存档无法序列化：" + String(error.message || error) };
+      return Promise.resolve({
+        ok: false,
+        error: "存档无法序列化：" + String(error.message || error),
+      });
     }
-    if (Buffer.byteLength(text) > MAX_BYTES)
-      return { ok: false, error: "存档体积超出上限，未写入" };
-    try {
-      this.ensureDir();
-      // Atomic replace: a crash mid-write must never truncate the last good file.
-      const tmp = `${this.file}.tmp`;
-      fs.writeFileSync(tmp, text, "utf8");
-      const check = fs.readFileSync(tmp, "utf8");
-      if (check !== text) throw Error("写入后校验不一致");
-      fs.renameSync(tmp, this.file);
-      return { ok: true, bytes: Buffer.byteLength(text), info: this.info };
-    } catch (error) {
+    // Snapshot both bytes and target at acceptance. One FIFO prevents .tmp
+    // collisions and an older save replacing a newer classroom snapshot.
+    const target = this.file;
+    this.pendingWrites++;
+    const run = async () => {
+      const tmp = `${target}.tmp`;
       try {
-        fs.rmSync(`${this.file}.tmp`, { force: true });
-      } catch {}
-      return { ok: false, error: String(error.message || error) };
-    }
+        await fs.promises.mkdir(path.dirname(target), { recursive: true });
+        await fs.promises.writeFile(tmp, text, "utf8");
+        const check = await fs.promises.readFile(tmp, "utf8");
+        if (check !== text) throw Error("写入后校验不一致");
+        await fs.promises.rename(tmp, target);
+        const stat = await fs.promises.stat(target);
+        return {
+          ok: true,
+          bytes: Buffer.byteLength(text),
+          info: {
+            path: target,
+            directory: path.dirname(target),
+            defaultPath: this.defaultPath,
+            isDefault: target === this.defaultPath,
+            exists: true,
+            bytes: stat.size,
+            modifiedAt: stat.mtimeMs,
+          },
+        };
+      } catch (error) {
+        let message = String(error.message || error);
+        try {
+          await fs.promises.rm(tmp, { force: true });
+        } catch (cleanup) {
+          message +=
+            "；临时文件清理失败：" + String(cleanup.message || cleanup);
+        }
+        return { ok: false, error: message };
+      } finally {
+        this.pendingWrites--;
+      }
+    };
+    this.pending = this.pending.then(run, run);
+    return this.pending;
   }
   choose(file) {
     const target = normalizeTarget(file);

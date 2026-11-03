@@ -1,0 +1,310 @@
+
+> godpower-electron@3.0.68 test:desktop
+> node scripts/desktop-test.mjs
+
+[17198:1103/153943.751134:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[17198:1103/153943.753240:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/153943.920874:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[17198:1103/153943.920920:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[17198:1103/153944.001247:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/153944.028985:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/153944.030189:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+[17198:1103/153944.030331:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/153944.075273:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+[17198:1103/153944.308975:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/153945.518236:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/153945.518279:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+[17198:1103/153945.518309:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/153945.518320:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+PASS disk IPC writes remain ordered and reads await verified bytes in isolated storage
+PASS 1920×1080 1x, 14 group fit and unchanged main layout
+[17198:1103/153950.107975:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/153950.108021:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+[17198:1103/153950.108043:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/153950.117333:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+[17198:1103/153959.827689:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/153959.827725:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+[17198:1103/153959.827745:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/153959.827753:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+[17198:1103/154004.628963:ERROR:ui/gfx/x/atom_cache.cc:236] Add _NET_RESTACK_WINDOW to kAtomsToCache
+PASS internal functional dialogs retain live input, settings state and one score owner
+[17198:1103/154004.806962:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/154006.603925:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+PASS fullscreen sound slots are configurable and score reveal is a native overlay
+[17223:1103/154006.824924:ERROR:ui/base/x/x11_software_bitmap_presenter.cc:147] XGetWindowAttributes failed for window 10485797
+PASS secure preload and isolated origin in independent picker
+[17198:1103/154010.514587:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/154010.593752:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/154010.593831:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+[17198:1103/154010.593860:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/154010.593875:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+[17198:1103/154011.730386:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+PASS Marx theme crosses HTML, native branding, picker reload, internal dialogs and effects
+PASS closing main keeps authoritative renderer alive and can restore it
+[17198:1103/154013.256445:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+PASS individual authoritative draw, continuous reel, overlay and score
+[17198:1103/154016.857378:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+PASS group authoritative draw, continuous reel, overlay and score
+[17198:1103/154020.326956:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/154023.305244:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/154023.305528:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+[17198:1103/154023.305581:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/154023.305823:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+PASS two_tier authoritative draw, continuous reel, overlay and score
+PASS floating launcher stays out of the taskbar and can be raised over video and PPT
+[17198:1103/154025.347324:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+PASS the launcher offers picker or hand and the hand panel runs one classroom command
+[17198:1103/154026.585586:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+PASS close/reopen while spinning keeps one engine and retained window bounds
+PASS picker reload accepts fresh commands without sequence conflicts
+[17198:1103/154026.831339:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+PASS duplicate effect ready always releases Escape registration
+[17198:1103/154027.086030:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/154027.109094:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/154027.119807:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/154027.130978:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/154027.140734:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/154027.151573:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/154027.163475:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/154027.214979:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/154027.233748:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/154027.302536:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/154027.323678:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/154027.461346:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+PASS reveals randomise across the ten presentation styles
+[17198:1103/154028.679311:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[17198:1103/154028.683975:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+PASS effect interrupts and stale finish cannot close a newer result
+PASS reload cancels transient picker, preserves classroom storage and rejects stale outcome
+PASS custom audio/resource store remains accessible to main only
+[17253:1103/154031.527520:FATAL:content/child/child_thread_impl.cc:380] Crashing because hung
+PASS main renderer crash blocks commands until explicit recovery without reroll
+{
+  "status": "PASS",
+  "results": [
+    {
+      "name": "disk IPC writes remain ordered and reads await verified bytes in isolated storage",
+      "status": "PASS",
+      "detail": {
+        "writes": 5,
+        "groups": 14
+      }
+    },
+    {
+      "name": "1920×1080 1x, 14 group fit and unchanged main layout",
+      "status": "PASS",
+      "detail": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "name": "internal functional dialogs retain live input, settings state and one score owner",
+      "status": "PASS",
+      "detail": {
+        "internalDialogs": 12,
+        "loads": 0,
+        "inputStable": true,
+        "scoreDelta": 123
+      }
+    },
+    {
+      "name": "fullscreen sound slots are configurable and score reveal is a native overlay",
+      "status": "PASS",
+      "detail": [
+        "fullscreen_pick",
+        "fullscreen_score_add",
+        "fullscreen_score_sub"
+      ]
+    },
+    {
+      "name": "secure preload and isolated origin in independent picker",
+      "status": "PASS",
+      "detail": {
+        "node": "undefined",
+        "process": "undefined",
+        "role": "picker",
+        "mainAPI": "undefined",
+        "storage": null
+      }
+    },
+    {
+      "name": "Marx theme crosses HTML, native branding, picker reload, internal dialogs and effects",
+      "status": "PASS",
+      "detail": {
+        "themes": [
+          "classic",
+          "marx",
+          "classic"
+        ],
+        "nativeIconCalls": 4,
+        "pickerReload": true,
+        "internalDialogTheme": true,
+        "semanticScores": true
+      }
+    },
+    {
+      "name": "closing main keeps authoritative renderer alive and can restore it",
+      "status": "PASS",
+      "detail": "same renderer and data after close; picker commands remain available"
+    },
+    {
+      "name": "individual authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1793720412157-1",
+        "groupId": 10,
+        "historyEntries": 1,
+        "scoreDelta": 5
+      }
+    },
+    {
+      "name": "group authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1793720415750-2",
+        "groupId": 3,
+        "historyEntries": 1,
+        "scoreDelta": 5
+      }
+    },
+    {
+      "name": "two_tier authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1793720419229-3",
+        "groupId": 2,
+        "historyEntries": 1,
+        "scoreDelta": 5
+      }
+    },
+    {
+      "name": "floating launcher stays out of the taskbar and can be raised over video and PPT",
+      "status": "PASS",
+      "detail": {
+        "version": "6.18.57",
+        "alwaysOnTop": true,
+        "skipTaskbar": true
+      }
+    },
+    {
+      "name": "the launcher offers picker or hand and the hand panel runs one classroom command",
+      "status": "PASS",
+      "detail": {
+        "token": "command-b2441341-eba5-472a-89ea-762a1d39fea2",
+        "scored": 226,
+        "item": "三重红龟壳",
+        "cinematic": "第 1 小组"
+      }
+    },
+    {
+      "name": "close/reopen while spinning keeps one engine and retained window bounds",
+      "status": "PASS",
+      "detail": {
+        "bounds": {
+          "x": 140,
+          "y": 140,
+          "width": 480,
+          "height": 760
+        },
+        "alwaysOnTop": true
+      }
+    },
+    {
+      "name": "picker reload accepts fresh commands without sequence conflicts",
+      "status": "PASS"
+    },
+    {
+      "name": "duplicate effect ready always releases Escape registration",
+      "status": "PASS",
+      "detail": {
+        "registeredBeforeClose": true
+      }
+    },
+    {
+      "name": "reveals randomise across the ten presentation styles",
+      "status": "PASS",
+      "detail": {
+        "requested": [
+          "aurora",
+          "burst",
+          "ripple",
+          "starlight",
+          "spotlight",
+          "confetti",
+          "vortex",
+          "prism",
+          "bloom",
+          "comet"
+        ],
+        "classroom": [
+          "aurora",
+          "bloom",
+          "burst",
+          "comet",
+          "confetti",
+          "prism",
+          "ripple",
+          "spotlight",
+          "starlight",
+          "vortex"
+        ]
+      }
+    },
+    {
+      "name": "effect interrupts and stale finish cannot close a newer result",
+      "status": "PASS"
+    },
+    {
+      "name": "reload cancels transient picker, preserves classroom storage and rejects stale outcome",
+      "status": "PASS"
+    },
+    {
+      "name": "custom audio/resource store remains accessible to main only",
+      "status": "PASS",
+      "detail": {
+        "indexedDB": "object",
+        "items": 28
+      }
+    },
+    {
+      "name": "main renderer crash blocks commands until explicit recovery without reroll",
+      "status": "PASS"
+    }
+  ],
+  "errors": [],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2560,
+          "height": 1440
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: all planned scenarios must execute
+
+20 !== 19
+
+    at file:///workspace/godpower-electron-latest/scripts/desktop-test.mjs:44:10 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 20,
+  expected: 19,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

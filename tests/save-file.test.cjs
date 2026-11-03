@@ -3,7 +3,11 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const { SaveFile, normalizeTarget, MAX_BYTES } = require("../desktop/save-file.cjs");
+const {
+  SaveFile,
+  normalizeTarget,
+  MAX_BYTES,
+} = require("../desktop/save-file.cjs");
 
 function workspace() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "gp-save-"));
@@ -23,11 +27,11 @@ test("the default save file lives under the app data root and is reported", () =
   }
 });
 
-test("writing creates the directory and verifies the bytes it stored", () => {
+test("writing creates the directory and verifies the bytes it stored", async () => {
   const { dir, file } = workspace();
   try {
     const payload = { schemaVersion: 2, groups: [{ id: 1, name: "第 1 组" }] };
-    const written = file.write(payload);
+    const written = await file.write(payload);
     assert.equal(written.ok, true);
     assert.ok(fs.existsSync(file.info.path));
     const read = file.read();
@@ -36,7 +40,7 @@ test("writing creates the directory and verifies the bytes it stored", () => {
     assert.deepEqual(read.data, payload);
     assert.match(read.sha256, /^[0-9a-f]{64}$/);
     // A second write replaces the file atomically and leaves no temp file.
-    assert.equal(file.write({ ...payload, groups: [] }).ok, true);
+    assert.equal((await file.write({ ...payload, groups: [] })).ok, true);
     assert.deepEqual(file.read().data.groups, []);
     assert.equal(fs.existsSync(file.info.path + ".tmp"), false);
   } finally {
@@ -60,11 +64,11 @@ test("a missing file reads as absent, a corrupt one as an error, never as data",
   }
 });
 
-test("oversized payloads are refused in both directions", () => {
+test("oversized payloads are refused in both directions", async () => {
   const { dir, file } = workspace();
   try {
     const big = { blob: "x".repeat(MAX_BYTES + 10) };
-    const result = file.write(big);
+    const result = await file.write(big);
     assert.equal(result.ok, false);
     assert.match(result.error, /上限/);
     assert.equal(fs.existsSync(file.info.path), false);
@@ -73,17 +77,23 @@ test("oversized payloads are refused in both directions", () => {
   }
 });
 
-test("only absolute .json paths are accepted as a custom location", () => {
-  assert.throws(() => normalizeTarget("relative/save.json"), /INVALID_PATH|absolute/);
+test("only absolute .json paths are accepted as a custom location", async () => {
+  assert.throws(
+    () => normalizeTarget("relative/save.json"),
+    /INVALID_PATH|absolute/,
+  );
   assert.throws(() => normalizeTarget(""), /INVALID_PATH/);
-  assert.throws(() => normalizeTarget(path.join(os.tmpdir(), "notes.txt")), /INVALID_EXTENSION/);
+  assert.throws(
+    () => normalizeTarget(path.join(os.tmpdir(), "notes.txt")),
+    /INVALID_EXTENSION/,
+  );
   const { dir, file } = workspace();
   try {
     const custom = path.join(dir, "custom", "my-save.json");
     const info = file.choose(custom);
     assert.equal(info.path, custom);
     assert.equal(info.isDefault, false);
-    assert.equal(file.write({ ok: 1 }).ok, true);
+    assert.equal((await file.write({ ok: 1 })).ok, true);
     assert.ok(fs.existsSync(custom) || fs.existsSync(file.info.path));
     // Reset returns to the shipped default.
     assert.equal(file.reset().isDefault, true);
@@ -125,4 +135,81 @@ test("sandboxed renderers cannot reach the save file directly", () => {
     /gp:save-file-write"[\s\S]{0,160}requireRole\(event, "main"\)/,
     "only the main renderer may write",
   );
+});
+
+test("writes yield the host event loop before disk verification completes", async () => {
+  const { dir, file } = workspace();
+  try {
+    let yielded = false;
+    setImmediate(() => {
+      yielded = true;
+    });
+    const result = await file.write({
+      schemaVersion: 2,
+      groups: [],
+      pad: "x".repeat(1024 * 1024),
+    });
+    assert.equal(result.ok, true);
+    assert.equal(
+      yielded,
+      true,
+      "file I/O must yield so other windows remain responsive",
+    );
+    assert.equal(file.read().data.pad.length, 1024 * 1024);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("rapid writes remain ordered, drainable and atomic", async () => {
+  const { dir, file } = workspace();
+  try {
+    const writes = Array.from({ length: 8 }, (_, i) =>
+      file.write({ schemaVersion: 2, sequence: i }),
+    );
+    assert.ok(file.pendingWrites > 0);
+    await file.whenIdle();
+    const results = await Promise.all(writes);
+    assert.ok(results.every((r) => r.ok));
+    assert.equal(file.pendingWrites, 0);
+    assert.equal(file.read().data.sequence, 7);
+    assert.equal(fs.existsSync(file.info.path + ".tmp"), false);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("an accepted write keeps its original target when the selected path changes", async () => {
+  const { dir, file } = workspace();
+  try {
+    const original = file.file;
+    const first = file.write({ sequence: 1 });
+    const secondPath = path.join(dir, "other.json");
+    file.choose(secondPath);
+    const second = file.write({ sequence: 2 });
+    assert.equal((await first).ok, true);
+    assert.equal((await second).ok, true);
+    assert.equal(JSON.parse(fs.readFileSync(original, "utf8")).sequence, 1);
+    assert.equal(JSON.parse(fs.readFileSync(secondPath, "utf8")).sequence, 2);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("failed replacement preserves the last good file and the queue recovers", async () => {
+  const { dir, file } = workspace();
+  try {
+    assert.equal((await file.write({ sequence: 1 })).ok, true);
+    fs.mkdirSync(file.file + ".tmp");
+    const failed = await file.write({ sequence: 2 });
+    assert.equal(failed.ok, false);
+    assert.equal(file.read().data.sequence, 1);
+    fs.rmSync(file.file + ".tmp", { recursive: true, force: true });
+    assert.equal((await file.write({ sequence: 3 })).ok, true);
+    await file.whenIdle();
+    assert.equal(file.pendingWrites, 0);
+    assert.equal(file.read().data.sequence, 3);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });

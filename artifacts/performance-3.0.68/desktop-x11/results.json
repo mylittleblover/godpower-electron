@@ -1,0 +1,37 @@
+{
+  "status": "FAIL",
+  "results": [
+    {
+      "name": "disk IPC writes remain ordered and reads await verified bytes in isolated storage",
+      "status": "PASS",
+      "detail": {
+        "writes": 5,
+        "groups": 14
+      }
+    },
+    {
+      "name": "1920×1080 1x, 14 group fit and unchanged main layout",
+      "status": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n+   1919,\n+   1079\n-   1920,\n-   1080\n  ]\n\n    at /workspace/godpower-electron-latest/desktop/test-probe.cjs:107:14\n    at async test (/workspace/godpower-electron-latest/desktop/test-probe.cjs:50:22)\n    at async Object.run (/workspace/godpower-electron-latest/desktop/test-probe.cjs:102:5)\n    at async /workspace/godpower-electron-latest/main.cjs:130:13"
+    }
+  ],
+  "errors": [
+    "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n+   1919,\n+   1079\n-   1920,\n-   1080\n  ]\n\n    at /workspace/godpower-electron-latest/desktop/test-probe.cjs:107:14\n    at async test (/workspace/godpower-electron-latest/desktop/test-probe.cjs:50:22)\n    at async Object.run (/workspace/godpower-electron-latest/desktop/test-probe.cjs:102:5)\n    at async /workspace/godpower-electron-latest/main.cjs:130:13"
+  ],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}

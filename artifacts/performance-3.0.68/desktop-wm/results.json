@@ -1,0 +1,29 @@
+{
+  "status": "FAIL",
+  "results": [
+    {
+      "name": "disk IPC writes remain ordered and reads await verified bytes in isolated storage",
+      "status": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n1 !== 0\n\n    at /workspace/godpower-electron-latest/desktop/test-probe.cjs:98:14\n    at async test (/workspace/godpower-electron-latest/desktop/test-probe.cjs:50:22)\n    at async Object.run (/workspace/godpower-electron-latest/desktop/test-probe.cjs:85:5)\n    at async /workspace/godpower-electron-latest/main.cjs:130:13"
+    }
+  ],
+  "errors": [
+    "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n1 !== 0\n\n    at /workspace/godpower-electron-latest/desktop/test-probe.cjs:98:14\n    at async test (/workspace/godpower-electron-latest/desktop/test-probe.cjs:50:22)\n    at async Object.run (/workspace/godpower-electron-latest/desktop/test-probe.cjs:85:5)\n    at async /workspace/godpower-electron-latest/main.cjs:130:13"
+  ],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 2560,
+          "height": 1440
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}

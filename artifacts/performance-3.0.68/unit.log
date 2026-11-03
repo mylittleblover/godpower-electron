@@ -1,0 +1,90 @@
+
+> godpower-electron@3.0.67 test
+> node --test tests/*.test.cjs
+
+✔ reject unknown commands, arbitrary IPC, invalid scores and modes (2.479573ms)
+✔ authorize exact webContents, main frame and URL (0.177255ms)
+✔ snapshot rejects malformed payload, oversized arrays and injected result data (0.280209ms)
+✔ concurrent replay dispatches once; changed payload cannot reuse id (0.978796ms)
+✔ reload rejects pending score without replay; stale epochs rejected (0.345567ms)
+Window preferences unavailable: Unexpected token 'b', "broken json" is not valid JSON
+✔ timeout fails once and ignores late acknowledgement (10.01638ms)
+✔ closed secondary window cleanup cancels receipts and cannot replay later (0.312018ms)
+✔ removed displays and oversized saved windows are clamped into visible work area (0.268131ms)
+✔ window preferences survive a new store instance and malformed files fall back safely (1.068841ms)
+✔ ordinary dialogs have no native window transport or cloned renderer (0.734611ms)
+✔ bundled HTML verifies SHA-256 and rejects any changed byte (2.658411ms)
+✔ valid snapshots strip private state and preserve display data without HTML interpretation (0.319639ms)
+✔ snapshot sanitizer accepts only bounded local WebP reveal thumbnails (0.344626ms)
+✔ Escape ownership survives duplicate readiness and is released exactly once (0.374271ms)
+✔ floating launcher is validated as its own command family (0.278748ms)
+✔ snapshots carry a bounded hand DTO and drop unknown group selections (0.499869ms)
+✔ the picker is hidden from the taskbar, the launcher menu and hand view are native actions (0.376654ms)
+✖ the dock picker button opens the floating picker instead of the in-page dialog (0.666178ms)
+✔ the launcher menu stays inside the monitor work area (0.268872ms)
+✔ item cinematics accept only bounded local data and drop injected fields (0.577625ms)
+✔ the item cinematic reuses the full-screen reveal window (0.381922ms)
+✔ exactly ten reveal styles exist and are stable identifiers (1.066207ms)
+✔ every style is reachable by the random picker and keeps a requested one (0.775021ms)
+✔ an unknown or injected style falls back into the pool (0.152819ms)
+✔ the snapshot keeps a valid style and never leaks an unknown one (1.009401ms)
+✔ the renderer defines a layer for all ten styles (1.22177ms)
+✔ pointer deltas move icon directly without relying on mouse cursor (1.76284ms)
+✔ drag intent remains set after returning to initial position (0.142593ms)
+✔ malformed cross-window coordinates are rejected (0.387951ms)
+✔ icon stays 72px and is clamped to work area (2.041908ms)
+✔ icon restores saved position independently from expanded bounds (0.46071ms)
+✔ the default save file lives under the app data root and is reported (1.352856ms)
+✔ writing creates the directory and verifies the bytes it stored (11.353102ms)
+✔ a missing file reads as absent, a corrupt one as an error, never as data (1.038765ms)
+✔ oversized payloads are refused in both directions (98.531527ms)
+✔ only absolute .json paths are accepted as a custom location (3.180743ms)
+✔ sandboxed renderers cannot reach the save file directly (0.51402ms)
+✔ writes yield the host event loop before disk verification completes (11.30524ms)
+✔ rapid writes remain ordered, drainable and atomic (5.967777ms)
+✔ an accepted write keeps its original target when the selected path changes (2.255157ms)
+✔ failed replacement preserves the last good file and the queue recovers (3.989575ms)
+✔ fresh Windows-style Git checkout preserves all hashed release bytes (160.003427ms)
+✔ source rebuild mismatch leaves every host artifact and version byte unchanged (147.187356ms)
+✔ missing tooltip leaves every host artifact and version byte unchanged (150.285825ms)
+✔ dirty source leaves every host artifact and version byte unchanged (89.333643ms)
+✔ missing committed source artifact leaves host version and files unchanged (106.907151ms)
+✔ successful sync keeps package, lock, HTML and tooltip provenance consistent (164.229877ms)
+✔ installation failure restores host files at package.json (101.082823ms)
+✔ installation failure restores host files at resources/BUILD_INFO.json (86.854627ms)
+✔ installation failure restores host files at renderer/tooltips.css (79.31155ms)
+✔ rollback removes newly created output when no previous artifact existed (85.222842ms)
+✔ canonical CSS under styles is selected and tracked even when a stale ui CSS exists (150.011211ms)
+✔ snapshot theme is strictly whitelisted and old snapshots default to classic (2.341982ms)
+✔ picker applies Marx branding from its snapshot and resets on legacy snapshots (4.8365ms)
+✔ effect theme leaves score colors semantic and uses gold for Marx picker reveal (2.898211ms)
+✔ full-screen reveal displays only bounded local WebP avatar data (2.070943ms)
+✔ native branding uses local icon and classic remains the fallback (0.453865ms)
+✔ native branding updates open main and picker windows and notifies tray once (7.928147ms)
+ℹ tests 58
+ℹ suites 0
+ℹ pass 57
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1965.493254
+
+✖ failing tests:
+
+test at tests/desktop.test.cjs:360:1
+✖ the dock picker button opens the floating picker instead of the in-page dialog (0.666178ms)
+  Error: ENOENT: no such file or directory, open '/workspace/godpower-html/src/runtime/picker/selection-engine.js'
+      at Object.readFileSync (node:fs:484:20)
+      at TestContext.<anonymous> (/workspace/godpower-electron-latest/tests/desktop.test.cjs:362:37)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    errno: -2,
+    code: 'ENOENT',
+    syscall: 'open',
+    path: '/workspace/godpower-html/src/runtime/picker/selection-engine.js'
+  }

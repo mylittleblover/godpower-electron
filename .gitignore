@@ -11,3 +11,6 @@ Thumbs.db
 !artifacts/electron-020/regressions/*.log
 
 !artifacts/marx-theme/*.log
+
+!artifacts/performance-3.0.68/**/*.log
+!artifacts/performance-3.0.68/*.log

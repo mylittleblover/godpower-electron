@@ -1,0 +1,57 @@
+✔ the default save file lives under the app data root and is reported (1.569048ms)
+✔ writing creates the directory and verifies the bytes it stored (1.892477ms)
+✔ a missing file reads as absent, a corrupt one as an error, never as data (0.426544ms)
+✔ oversized payloads are refused in both directions (80.320094ms)
+✔ only absolute .json paths are accepted as a custom location (1.039769ms)
+✔ sandboxed renderers cannot reach the save file directly (0.448146ms)
+✖ writes yield the host event loop before disk verification completes (6.468657ms)
+✖ rapid writes remain ordered, drainable and atomic (4.696429ms)
+✔ an accepted write keeps its original target when the selected path changes (0.456359ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 7
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 168.533289
+
+✖ failing tests:
+
+test at tests/save-file.test.cjs:130:1
+✖ writes yield the host event loop before disk verification completes (6.468657ms)
+  AssertionError [ERR_ASSERTION]: file I/O must yield so other windows remain responsive
+
+  false !== true
+
+      at TestContext.<anonymous> (/workspace/godpower-electron-latest/tests/save-file.test.cjs:137:12)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/save-file.test.cjs:142:1
+✖ rapid writes remain ordered, drainable and atomic (4.696429ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+    assert.ok(file.pendingWrites>0)
+
+      at TestContext.<anonymous> (/workspace/godpower-electron-latest/tests/save-file.test.cjs:146:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

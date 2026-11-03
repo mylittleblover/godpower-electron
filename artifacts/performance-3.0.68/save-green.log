@@ -1,0 +1,17 @@
+✔ the default save file lives under the app data root and is reported (1.587436ms)
+✔ writing creates the directory and verifies the bytes it stored (9.736777ms)
+✔ a missing file reads as absent, a corrupt one as an error, never as data (0.605624ms)
+✔ oversized payloads are refused in both directions (82.285776ms)
+✔ only absolute .json paths are accepted as a custom location (3.558642ms)
+✔ sandboxed renderers cannot reach the save file directly (0.824355ms)
+✔ writes yield the host event loop before disk verification completes (11.615558ms)
+✔ rapid writes remain ordered, drainable and atomic (6.52579ms)
+✔ an accepted write keeps its original target when the selected path changes (2.877984ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 192.773657

@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "zip": {
+    "name": "上帝的力量-3.0.68-win.zip",
+    "bytes": 149512407,
+    "sha256": "eeaa94887c8045683dfe52835763e7d021791a1e737c7383e1d5e323047c37a0"
+  },
+  "sourceCommit": "ca1f7c5cd9ad30a6cd5fe0947cb3f8c83f423f66"
+}

@@ -35,3 +35,9 @@ PASS仅代表实际执行通过；环境限制标BLOCKED，未运行标NOT TESTE
 按逻辑提交，保留回滚；未经指示不合并main或强推。每轮更新架构、维护清单及实际验证。性能优化先用相同条件测量，定位后单项修改并复测；收益未超过噪声不增加永久复杂度。
 
 常用命令：`npm test`、`npm run verify:bundle`、`npm run test:smoke`、`npm run build:win:cross`。源 checkout 如不在默认兄弟目录，显式设置GODPOWER_HTML_REPO。规范详情以HTML根目录开发须知和当前架构文档为准。
+
+## 性能与磁盘保存
+
+主进程频繁存档不得恢复writeFileSync/readFileSync/renameSync链。SaveFile.write返回Promise，FIFO固定接受时的字节与目标，读后校验和原子替换必须保留；读/换路径/退出要协调whenIdle。失败须保留旧文件且下一项可恢复，不可通过延迟所有保存或跳过校验提速。测试需要覆盖并发顺序、旧文件保留、路径切换与退出等待。
+
+原生探针除临时userData，还必须隔离Documents/GodPower；仅设置--user-data-dir不足以保护真实存档。开发探针入口已设置临时documents，发行版默认位置不变。需要验证置顶时使用有窗口管理器的显示环境，不得删除断言把无头环境限制计为PASS。默认1920×1080、1x；虚拟桌面边框会挤压viewport时使用受支持的应用全屏模式并等待确切尺寸。
