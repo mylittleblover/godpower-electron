@@ -42,6 +42,8 @@ function installProtocol(protocol, root) {
       "renderer/effect.html",
       "text/html; charset=utf-8",
     ],
+    "classroom://effect/hand-cards.js": ["renderer/hand-cards.js", "text/javascript;charset=utf-8"],
+    "classroom://effect/hand-cards.css": ["renderer/hand-cards.css", "text/css;charset=utf-8"],
     "classroom://effect/effect.js": [
       "renderer/effect.js",
       "text/javascript; charset=utf-8",

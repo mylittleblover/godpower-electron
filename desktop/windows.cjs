@@ -17,6 +17,7 @@ const {
 } = require("./contracts.cjs");
 const { branding } = require("./theme.cjs");
 const { Broker } = require("./broker.cjs");
+const {validateHandCardRequest}=require("./hand-cards.cjs");
 const PickerDrag = require("./picker-drag.cjs");
 const { EscapeLease } = require("./escape-lease.cjs");
 const {
@@ -465,26 +466,53 @@ class Windows {
       screen.getPrimaryDisplay()
     );
   }
+  presentHandCard(snapshot, phase = snapshot?.hand?.phase) {
+    const hand=snapshot?.hand,group=snapshot?.groups?.find(g=>g.id===hand?.groupId);
+    if(!hand?.selectionId||!group)return;
+    const id="hand-"+hand.selectionId;
+    const payload={kind:"hand",id,saveContext:snapshot.saveContext,theme:snapshot.theme,hand:{...hand,phase},group,slots:snapshot.slots,effects:{enabled:true,duration:2600,style:"aurora"}};
+    if(this.effectPayload?.kind==="hand"&&this.effectPayload.id===id&&this.effect&&!this.effect.isDestroyed()) {
+      this.effectPayload=payload;
+      if(!this.effect.webContents.isLoading())this.effect.webContents.send("gp:reveal",payload);
+      return;
+    }
+    const wasActive=this.nativeHandActive;
+    this.present(payload);
+    this.nativeHandActive=wasActive;
+  }
+  reconcileHandCard() {
+    if(!this.nativeHandActive)return;
+    const snapshot=this.broker.snapshot,hand=snapshot?.hand;
+    if(!hand?.selectionId){this.nativeHandActive=false;if(this.effectPayload?.kind==="hand")this.closeEffect();return;}
+    if(hand.rewardComplete&&hand.itemRewarded&&this.lastHandDraw!==hand.selectionId){
+      this.lastHandDraw=hand.selectionId;
+      if(!this.preferences.value.effectsEnabled){this.nativeHandActive=false;if(this.effectPayload?.kind==="hand")this.closeEffect();return;}
+      this.presentHandCard(snapshot,"DRAW");this.nativeHandActive=false;return;
+    }
+    if(hand.phase==="JUDGE"||hand.phase==="REWARD_CHOICE"){this.presentHandCard(snapshot);return;}
+    this.nativeHandActive=false;if(this.effectPayload?.kind==="hand")this.closeEffect();
+  }
   present(snapshot) {
     if (this.quitting) return;
-    if (
+    const handCard=snapshot.kind === "hand";
+    if (!handCard && (
       !snapshot.result ||
       snapshot.phase !== "revealed" ||
       snapshot.result.id === this.lastReveal
-    )
+    ))
       return;
-    if (snapshot.result.mode !== "score") this.lastReveal = snapshot.result.id;
-    if (!this.preferences.value.effectsEnabled || !snapshot.effects.enabled)
+    if (!handCard && snapshot.result.mode !== "score") this.lastReveal = snapshot.result.id;
+    if (!handCard && (!this.preferences.value.effectsEnabled || !snapshot.effects.enabled))
       return;
     this.closeEffect();
     const display = this.targetDisplay(),
-      id = snapshot.result.id;
+      id = handCard ? snapshot.id : snapshot.result.id;
     const win = new BrowserWindow({
       ...display.bounds,
       transparent: true,
       frame: false,
       show: false,
-      focusable: false,
+      focusable: handCard,
       skipTaskbar: true,
       resizable: false,
       hasShadow: false,
@@ -496,7 +524,7 @@ class Windows {
     win.webContents.on("render-process-gone", () => {
       if (this.effect === win) this.closeEffect();
     });
-    this.effectPayload = {
+    this.effectPayload = handCard ? snapshot : {
       id,
       theme: snapshot.theme === "marx" ? "marx" : "classic",
       result: snapshot.result,
@@ -506,7 +534,7 @@ class Windows {
     this.secure(win, "effect");
     win.setAlwaysOnTop(true, "screen-saver");
     win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-    win.setIgnoreMouseEvents(true, { forward: true });
+    win.setIgnoreMouseEvents(!handCard, { forward: true });
     win.on("closed", () => {
       if (this.effect === win) {
         this.effect = null;
@@ -518,7 +546,7 @@ class Windows {
     });
     this.effectTimeout = setTimeout(
       () => this.closeEffect(),
-      snapshot.effects.duration + 6500,
+      handCard ? 180000 : snapshot.effects.duration + 6500,
     );
     win.loadURL(URLS.effect).catch((error) => {
       if (!win.isDestroyed()) {
@@ -529,6 +557,7 @@ class Windows {
     this.broadcast();
   }
   closeEffect() {
+    if(this.effectPayload?.kind==="hand")this.nativeHandActive=false;
     clearTimeout(this.effectTimeout);
     const win = this.effect;
     this.effect = null;
@@ -646,6 +675,7 @@ class Windows {
         const changed=this.broker.acceptSnapshot(sanitizeSnapshot(value));
         if(changed){this.closeEffect();this.lastReveal=null;}
         if (this.broker.ready) this.present(this.broker.snapshot);
+        this.reconcileHandCard();
         this.broadcast();
       } catch (error) {
         console.error("Rejected classroom snapshot:", error.message);
@@ -738,14 +768,13 @@ class Windows {
       requireRole(event, "picker");
       return this.state();
     });
-    ipcMain.handle("gp:command", (event, request) => {
+    ipcMain.handle("gp:command", async (event, request) => {
       requireRole(event, "picker");
       if (request?.clientEpoch !== this.pickerSession)
         return { ok: false, error: "STALE_CLIENT" };
-      return this.broker.command(
-        request,
-        `${event.sender.id}:${this.pickerSession}`,
-      );
+      const result=await this.broker.command(request,`${event.sender.id}:${this.pickerSession}`);
+      if(request.action==="handSelect" && result.ok){this.nativeHandActive=true;this.reconcileHandCard();}
+      return result;
     });
     ipcMain.handle("gp:window", (event, message) => {
       requireRole(event, "picker");
@@ -839,6 +868,13 @@ class Windows {
       };
       this.presentItemFx(safe, effects);
     });
+    ipcMain.handle("gp:hand-card-command", async(event,message)=>{
+      requireRole(event,"effect");
+      try {
+        const safe=validateHandCardRequest(this.effectPayload,message,this.broker.snapshot?.saveContext);
+        return await this.broker.command({...safe,epoch:this.broker.epoch},"hand-card:"+event.sender.id);
+      }catch(error){return {ok:false,error:error.message};}
+    });
     ipcMain.on("gp:effect-ready", (event) => {
       if (!this.authorized(event, "effect") || !this.effectPayload) return;
       this.effect.webContents.send("gp:reveal", this.effectPayload);
@@ -858,7 +894,7 @@ class Windows {
         msg?.id === this.effectPayload?.id &&
         typeof msg.value === "boolean"
       )
-        this.effect.setIgnoreMouseEvents(!msg.value, { forward: true });
+        this.effect.setIgnoreMouseEvents(this.effectPayload?.kind === "hand" ? false : !msg.value, { forward: true });
     });
   }
 }

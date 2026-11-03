@@ -60,6 +60,7 @@ function validateCommand(action, p = {}) {
     handScore: ["groupId", "selectionId", "delta"],
     handDraw: ["groupId", "selectionId"],
     handUse: ["groupId", "selectionId"],
+    handCancel: ["groupId", "selectionId"],
   }[action];
   if (
     !fields ||
@@ -76,7 +77,7 @@ function validateCommand(action, p = {}) {
     action === "handJudge" ||
     action === "handScore" ||
     action === "handDraw" ||
-    action === "handUse"
+    action === "handUse" || action === "handCancel"
   ) {
     integer(p.groupId);
     text(p.selectionId, 120);
@@ -172,14 +173,18 @@ function sanitizeSnapshot(s) {
       selectionId: handGroupId !== null ? text(hand.selectionId || "", 120) : null,
       groupId: handGroupId,
       correct: typeof hand.correct === "boolean" ? hand.correct : null,
+      phase: ["CLOSED","SELECT_GROUP","JUDGE","REWARD_CHOICE","SCORE","DRAW","USE"].includes(hand.phase)?hand.phase:(handGroupId===null?"CLOSED":hand.correct===true?"REWARD_CHOICE":hand.correct===false?"SELECT_GROUP":"JUDGE"),
+      rewardComplete: hand.rewardComplete===true,
+      motionEnabled: hand.motionEnabled!==false,
+      canScore: handGroupId!==null && hand.correct===true && hand.rewardComplete!==true && hand.canScore!==false,
       itemRewarded: handGroupId !== null && hand.itemRewarded === true,
       busy: hand.busy === true,
       inventoryCount:
         handGroupId === null
           ? 0
           : Math.min(3, Math.max(0, integer(hand.inventoryCount || 0))),
-      canDraw: handGroupId !== null && hand.canDraw === true,
-      canUse: handGroupId !== null && hand.canUse === true,
+      canDraw: handGroupId !== null && hand.correct===true && hand.rewardComplete!==true && hand.canDraw === true,
+      canUse: handGroupId !== null && hand.correct===true && hand.rewardComplete!==true && hand.canUse === true,
       mainItemName:
         handGroupId !== null ? text(hand.mainItemName || "", 120) : "",
       itemName: handGroupId !== null ? text(hand.itemName || "", 120) : "",

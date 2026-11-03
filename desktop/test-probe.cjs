@@ -45,7 +45,10 @@ async function run(w, resultPath) {
       ]),
     main = (code) => js(w.main, code),
     picker = (code) => js(w.picker, code);
+  const selectedScenario=process.argv.find(a=>a.startsWith("--desktop-scenario="))?.slice(19);
+  const handScenario="the launcher offers picker or hand and the hand panel runs one classroom command";
   async function test(name, fn) {
+    if(selectedScenario==="hand" && name!==handScenario)return;
     try {
       const detail = await fn();
       results.push({ name, status: "PASS", detail });
@@ -91,6 +94,12 @@ async function run(w, resultPath) {
    state.picker={mode:'individual',antiRepeat:true,pickedStudentKeys:[],pickedGroupIds:[],preselectedGroupIds:[]};
    state.itemGlobal.pickerHistory=[];state.columnMode='double';state.resizerEnabled=true;state.resizerHeight=120;state.zoomLevel=1;document.body.style.zoom=1;switchView('battle');renderAll();saveState();
    window.testSoundCalls=[];window.originalPlaySound=playSound;playSound=function(key,...args){testSoundCalls.push(key);return originalPlaySound(key,...args)};GodpowerPicker.notify('idle');`);
+    if(selectedScenario==="hand"){
+      await main(`addItemToGroup(state.groups[0],'coin');saveState();void 0`);
+      await main(`SaveManager.whenIdle()`);
+      w.openPicker();await until(()=>w.picker&&!w.picker.webContents.isLoading(),"hand fixture picker");
+      await until(()=>picker(`!!current?.ready`),"hand fixture connected");
+    }
     await test("disk IPC writes remain ordered and reads await verified bytes in isolated storage", async () => {
       assert.ok(w.saveFile.info.path.startsWith(app.getPath("userData") + path.sep));
       const result = await main(`(async()=>{
@@ -172,7 +181,7 @@ async function run(w, resultPath) {
         ['pwdModal','openPwdModal()','closePwdModal()'],
         ['memberSearchBackdrop','openMemberSearchModal()','closeMemberSearchModal()'],
         ['itemModalBackdrop','openItemWindow(1)','closeItemWindow()'],
-        ['handRaiseBackdrop','openHandRaise()','closeHandRaise()'],
+        ['handRaiseBackdrop','openHandRaise();selectHandGroup(1)','closeHandRaise()'],
         ['aboutBackdrop','openAbout()','closeAbout()'],
         ['batchImportModal','openBatchImportModal()','closeBatchImportModal()'],
         ['quickPersonBackdropV218','openQuickPersonScoreV218()','closeQuickPersonScoreV218()'],
@@ -614,33 +623,45 @@ async function run(w, resultPath) {
       assert.ok(token);
       const early = await picker(`godpowerDesktop.command('handScore',{groupId:${groups[0].id},selectionId:'${token}',delta:3})`);
       assert.equal(early.ok, false, "reward needs a correct answer first");
-      const judged = await picker(`godpowerDesktop.command('handJudge',{groupId:${groups[0].id},selectionId:'${token}',correct:true})`);
-      assert.equal(judged.ok, true, JSON.stringify(judged));
-      await until(() => picker(`current?.snapshot?.hand?.correct===true`), "correct state");
-      const scored = await picker(`godpowerDesktop.command('handScore',{groupId:${groups[0].id},selectionId:'${token}',delta:3})`);
-      assert.equal(scored.ok, true, JSON.stringify(scored));
+      await until(()=>w.effectPayload?.kind==='hand' && !w.effect.webContents.isLoading(),"native judgment cards");
+      await until(()=>js(w.effect,`!!document.querySelector('[data-hand-command="correct"]')`),"judgment UI ready");
+      const denied=await js(w.effect,`godpowerDesktop.handAction('${w.effectPayload.id}','handScore',{groupId:${groups[1].id},selectionId:'${token}',delta:99})`);
+      assert.equal(denied.ok,false,"effect cannot target another group");
+      await settledShot(w.effect,"hand-judge-cards");
+      await js(w.effect,`document.querySelector('[data-hand-command="correct"]').click()`);
+      await until(()=>w.effectPayload?.hand?.phase==='REWARD_CHOICE',"native reward choices");
+      await until(()=>js(w.effect,`!!document.querySelector('[data-hand-choice="score"]')`),"reward UI ready");
+      await settledShot(w.effect,"hand-reward-cards");
+      await js(w.effect,`document.querySelector('[data-hand-choice="score"]').click();document.getElementById('handCardScore').value='3';document.getElementById('nativeHandScoreForm').requestSubmit()`);
+      await until(()=>main(`state.groups[0].score===${before.score+3}`),"native score submitted");
+      await main(`classroomCommands.whenIdle()`);
       const after = await main(`({score:state.groups[0].score,correct:state.groups[0].itemStats.correct,inventory:state.groups[0].inventory.length,history:state.itemGlobal.handRaiseHistory.length})`);
-      assert.equal(after.score, before.score + 3, "the main classroom applies the reward");
-      assert.equal(after.correct, before.correct + 1);
-      assert.equal(after.history, before.history + 1, "exactly one raise recorded");
-      await picker(`godpowerDesktop.command('handDraw',{groupId:${groups[0].id},selectionId:'${token}'})`);
-      await until(() => main(`state.groups[0].inventory.length===${before.inventory + 1}`), "item awarded");
-      const drawn = await picker(`current.snapshot.hand`);
-      assert.equal(drawn.itemRewarded, true);
-      await settledShot(w.picker, "floating-hand-panel");
-      const second = await picker(`godpowerDesktop.command('handDraw',{groupId:${groups[0].id},selectionId:'${token}'})`);
-      assert.equal(second.ok, false, "one hand session rewards once");
-      // Using the item from this panel must reach the native cinematic window.
-      await until(() => picker(`current.snapshot.hand.canUse===true`), "hand item usable");
-      const useButton = await picker(
-        `(()=>{const b=document.getElementById('handUse');return {hidden:b.hidden,disabled:b.disabled,text:b.textContent}})()`,
-      );
-      assert.equal(useButton.hidden, false, "the hand panel offers the item button");
-      assert.equal(useButton.disabled, false);
-      assert.match(useButton.text, /使用/);
-      w.closeEffect();
-      await picker(`document.getElementById('handUse').click()`);
-      await until(() => w.effect && !w.effect.webContents.isLoading(), "item cinematic opens");
+      assert.equal(after.score,before.score+3);assert.equal(after.correct,before.correct+1);assert.equal(after.history,before.history+1);
+      const spent=await picker(`godpowerDesktop.command('handScore',{groupId:${groups[0].id},selectionId:'${token}',delta:3})`);
+      assert.equal(spent.ok,false,"completed reward cannot score twice");
+      await picker(`godpowerDesktop.command('handSelect',{groupId:${groups[0].id}})`);
+      await until(()=>w.effectPayload?.kind==='hand'&&w.effectPayload.hand.phase==='JUDGE'&&!w.effect.webContents.isLoading(),"next hand judgment");
+      await until(()=>js(w.effect,`!!document.querySelector('[data-hand-command="correct"]')`),"next judgment ready");
+      await js(w.effect,`document.querySelector('[data-hand-command="correct"]').click()`);
+      await until(()=>w.effectPayload?.hand?.phase==='REWARD_CHOICE',"draw choices");
+      await until(()=>js(w.effect,`!!document.querySelector('[data-hand-command="draw"]')`),"draw button ready");
+      await js(w.effect,`document.querySelector('[data-hand-command="draw"]').click()`);
+      await until(()=>main(`state.groups[0].inventory.length===${before.inventory+1}`),"item awarded once");
+      await until(()=>w.effectPayload?.hand?.phase==='DRAW',"native item reel");
+      await until(()=>js(w.effect,`document.getElementById('nativeHandDrawName')?.textContent!=='道具正在揭晓'`),"native item reveal");
+      await settledShot(w.effect,"hand-draw-reveal");
+      const drawn=await picker(`current.snapshot.hand`);
+      assert.equal(drawn.itemRewarded,true);
+      const second=await picker(`godpowerDesktop.command('handDraw',{groupId:${groups[0].id},selectionId:'${drawn.selectionId}'})`);
+      assert.equal(second.ok,false,"one hand session rewards once");
+      await picker(`godpowerDesktop.command('handSelect',{groupId:${groups[0].id}})`);
+      await until(()=>w.effectPayload?.hand?.phase==='JUDGE'&&!w.effect.webContents.isLoading(),"use judgment");
+      await until(()=>js(w.effect,`!!document.querySelector('[data-hand-command="correct"]')`),"use judge ready");
+      await js(w.effect,`document.querySelector('[data-hand-command="correct"]').click()`);
+      await until(()=>w.effectPayload?.hand?.phase==='REWARD_CHOICE',"use choices");
+      await until(()=>js(w.effect,`!!document.querySelector('[data-hand-command="use"]:not(:disabled)')`),"item usable");
+      await js(w.effect,`document.querySelector('[data-hand-command="use"]').click()`);
+      await until(()=>w.effect && w.effectPayload?.kind==='item' && !w.effect.webContents.isLoading(),"item cinematic opens");
       await until(
         () => js(w.effect, `document.getElementById('mode').textContent.includes('道具')`),
         "item cinematic presented",

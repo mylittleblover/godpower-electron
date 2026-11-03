@@ -22,6 +22,10 @@ const args = [
   "--force-device-scale-factor=1",
   "--ozone-override-screen-size=1920,1080",
 ];
+const scenario = process.env.DESKTOP_SCENARIO || null;
+if (scenario && scenario !== "hand")
+  throw Error("Unsupported desktop scenario: " + scenario);
+if (scenario) args.push("--desktop-scenario=" + scenario);
 if (
   process.platform === "linux" &&
   !process.env.DISPLAY &&
@@ -41,8 +45,23 @@ try {
   const report = JSON.parse(await readFile(result, "utf8"));
   console.log(JSON.stringify(report, null, 2));
   assert.equal(report.status, "PASS");
-  assert.equal(report.results.length, 21, "19 existing scenarios plus verified disk queue and save-library IPC must execute");
-  assert.equal(new Set(report.results.map(row => row.name)).size, 21, "scenario results must be unique");
+  assert.equal(
+    report.results.length,
+    scenario ? 1 : 21,
+    scenario
+      ? "the requested hand scenario must execute"
+      : "19 existing scenarios plus verified disk queue and save-library IPC must execute",
+  );
+  if (scenario)
+    assert.equal(
+      report.results[0].name,
+      "the launcher offers picker or hand and the hand panel runs one classroom command",
+    );
+  assert.equal(
+    new Set(report.results.map((row) => row.name)).size,
+    scenario ? 1 : 21,
+    "scenario results must be unique",
+  );
 } finally {
   clearTimeout(timer);
   if (child.exitCode === null) child.kill();

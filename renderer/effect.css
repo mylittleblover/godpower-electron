@@ -32,7 +32,7 @@ body {
   backdrop-filter: blur(5px);
   z-index: -2;
 }
-.reveal {
+.reveal:not([hidden]) {
   position: absolute;
   inset: 20% 12%;
   display: flex;
@@ -218,7 +218,7 @@ h1 {
     transform: none;
   }
 }
-.halo {
+.halo:not([hidden]) {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -426,7 +426,7 @@ h1 {
 .comet .halo {
   border-color: #bae6fd33;
 }
-#skip {
+#skip:not([hidden]) {
   pointer-events: auto;
   position: absolute;
   right: 32px;

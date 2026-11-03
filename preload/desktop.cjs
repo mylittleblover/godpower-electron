@@ -74,12 +74,16 @@ if (role === "picker") {
       ipcRenderer.invoke("gp:window", { action, value }),
   });
 }
-if (role === "effect")
+if (role === "effect") {
+  let handSequence=0;
+  const handPrefix="card-"+Date.now().toString(36);
   Object.assign(base, {
     onReveal: (fn) => listen("gp:reveal", fn),
+    handAction: (id,action,payload) => ipcRenderer.invoke("gp:hand-card-command",{id,commandId:handPrefix+"-"+(++handSequence),seq:handSequence,action,payload}),
     ready: () => ipcRenderer.send("gp:effect-ready"),
     finish: (id) => ipcRenderer.send("gp:effect-finish", { id }),
     interactive: (id, value) =>
       ipcRenderer.send("gp:effect-interactive", { id, value }),
   });
+}
 contextBridge.exposeInMainWorld("godpowerDesktop", Object.freeze(base));

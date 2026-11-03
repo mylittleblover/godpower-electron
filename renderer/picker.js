@@ -249,6 +249,8 @@ function renderHand(s, busy, state) {
     ? "主课堂未就绪"
     : locked
       ? "课堂已锁定"
+      : hand.rewardComplete
+        ? "本次奖励已完成 · 请选择下一组"
       : active == null
         ? "选择举手小组"
         : hand.correct === true
@@ -281,7 +283,7 @@ function renderHand(s, busy, state) {
   $("handJudge").hidden = !s || active == null || judged;
   $("handCorrect").disabled = busy || locked || !s || active == null || judged;
   $("handWrong").disabled = busy || locked || !s || active == null || judged;
-  const canReward = !!s && hand.correct === true && !locked;
+  const canReward = !!s && hand.correct === true && !hand.rewardComplete && !locked;
   $("handRewards").hidden = !canReward;
   if (!canReward) return;
   const group = s.groups.find((g) => g.id === active);
@@ -309,8 +311,8 @@ function renderHand(s, busy, state) {
   }
   $("handSlots")
     .querySelectorAll("button")
-    .forEach((b) => (b.disabled = busy || locked));
-  $("handCustomScore").querySelector("button").disabled = busy || locked;
+    .forEach((b) => (b.disabled = busy || locked || !hand.canScore));
+  $("handCustomScore").querySelector("button").disabled = busy || locked || !hand.canScore;
   $("handDelta").disabled = busy || locked;
   $("handDraw").disabled = busy || locked || !hand.canDraw;
   $("handDraw").textContent = hand.itemRewarded

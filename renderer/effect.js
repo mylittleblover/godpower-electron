@@ -93,6 +93,16 @@ function escapeHtml(value) {
   );
 }
 api.onReveal((payload) => {
+  if(payload.kind === "hand") {
+    document.body.classList.toggle("theme-marx",payload.theme === "marx");
+    document.body.dataset.theme=payload.theme === "marx" ? "marx" : "classic";
+    if(id && id !== payload.id)return;
+    id=payload.id;
+    clearTimeout(exitTimer);
+    for(const selector of ['.reveal','.halo','#particles','#skip'])for(const node of document.querySelectorAll(selector))node.hidden=true;
+    window.HandCards.render(payload,exit);
+    return;
+  }
   if (id) return;
   id = payload.id;
   if (payload.kind === "item") {

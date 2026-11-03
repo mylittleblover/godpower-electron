@@ -527,6 +527,8 @@ body[data-collapsed="true"][data-view="launcher"] #pickerIcon {
   border-color: #d6ad58;
 }
 .hand-chips {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   max-height: 168px;
   overflow-y: auto;
 }
