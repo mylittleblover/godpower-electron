@@ -10,6 +10,9 @@ const listen = (channel, fn) => {
 const base = { role };
 if (role === "main")
   Object.assign(base, {
+    onSaveFlush: (fn) => listen("gp:save-flush",fn),
+    onSaveFlushCancel: (fn) => listen("gp:save-flush-cancel",fn),
+    saveFlushReply: (message) => ipcRenderer.send("gp:save-flush-reply",message),
     onExecute: (fn) => listen("gp:execute", fn),
     onUnlockRequest: (fn) => listen("gp:unlock-request", fn),
     onShellState: (fn) => listen("gp:shell", fn),
@@ -30,6 +33,7 @@ if (role === "main")
       savePreferences: (values, options = {}) => ipcRenderer.invoke("gp:save-vault", "savePreferences", [values, options]),
     }),
     saveFileInfo: () => ipcRenderer.invoke("gp:save-file-info"),
+    saveFileSource: () => ipcRenderer.invoke("gp:save-file-source"),
     saveFileRead: () => ipcRenderer.invoke("gp:save-file-read"),
     saveFileWrite: (payload) => ipcRenderer.invoke("gp:save-file-write", payload),
     saveFileChoose: () => ipcRenderer.invoke("gp:save-file-choose"),

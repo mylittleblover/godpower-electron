@@ -1,0 +1,107 @@
+{
+  "status": "FAIL",
+  "results": [
+    {
+      "name": "disk IPC writes remain ordered and reads await verified bytes in isolated storage",
+      "status": "PASS",
+      "detail": {
+        "writes": 5,
+        "groups": 14
+      }
+    },
+    {
+      "name": "save library IPC uses pinned schema, durable revisions and isolated native paths",
+      "status": "PASS",
+      "detail": {
+        "groups": 14,
+        "students": 28,
+        "saved": true,
+        "revision": 2,
+        "stale": "REVISION_CONFLICT",
+        "sourceExact": true
+      }
+    },
+    {
+      "name": "1920×1080 1x, 14 group fit and unchanged main layout",
+      "status": "PASS",
+      "detail": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "name": "internal functional dialogs retain live input, settings state and one score owner",
+      "status": "PASS",
+      "detail": {
+        "internalDialogs": 12,
+        "loads": 0,
+        "inputStable": true,
+        "scoreDelta": 123
+      }
+    },
+    {
+      "name": "fullscreen sound slots are configurable and score reveal is a native overlay",
+      "status": "PASS",
+      "detail": [
+        "fullscreen_pick",
+        "fullscreen_score_add",
+        "fullscreen_score_sub"
+      ]
+    },
+    {
+      "name": "secure preload and isolated origin in independent picker",
+      "status": "PASS",
+      "detail": {
+        "node": "undefined",
+        "process": "undefined",
+        "role": "picker",
+        "mainAPI": "undefined",
+        "storage": null
+      }
+    },
+    {
+      "name": "Marx theme crosses HTML, native branding, picker reload, internal dialogs and effects",
+      "status": "PASS",
+      "detail": {
+        "themes": [
+          "classic",
+          "marx",
+          "classic"
+        ],
+        "nativeIconCalls": 4,
+        "pickerReload": true,
+        "internalDialogTheme": true,
+        "semanticScores": true
+      }
+    },
+    {
+      "name": "closing main keeps authoritative renderer alive and can restore it",
+      "status": "PASS",
+      "detail": "same renderer and data after close; picker commands remain available"
+    },
+    {
+      "name": "individual authoritative draw, continuous reel, overlay and score",
+      "status": "FAIL",
+      "error": "Error: Timeout: settling\n    at until (/workspace/godpower-electron-latest/desktop/test-probe.cjs:13:9)\n    at async /workspace/godpower-electron-latest/desktop/test-probe.cjs:448:11\n    at async test (/workspace/godpower-electron-latest/desktop/test-probe.cjs:50:22)\n    at async Object.run (/workspace/godpower-electron-latest/desktop/test-probe.cjs:414:7)\n    at async /workspace/godpower-electron-latest/main.cjs:130:13"
+    }
+  ],
+  "errors": [
+    "Error: Timeout: settling\n    at until (/workspace/godpower-electron-latest/desktop/test-probe.cjs:13:9)\n    at async /workspace/godpower-electron-latest/desktop/test-probe.cjs:448:11\n    at async test (/workspace/godpower-electron-latest/desktop/test-probe.cjs:50:22)\n    at async Object.run (/workspace/godpower-electron-latest/desktop/test-probe.cjs:414:7)\n    at async /workspace/godpower-electron-latest/main.cjs:130:13"
+  ],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}

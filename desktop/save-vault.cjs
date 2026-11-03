@@ -168,7 +168,15 @@ class SaveVault {
         fail("ASSET_DIGEST_MISMATCH");
       await this.immutable(
         path.join(this.root, "assets", sha256 + ".json"),
-        Buffer.from(JSON.stringify(asset)),
+        Buffer.from(
+          JSON.stringify({
+            resourceId: asset.resourceId,
+            mimeType: asset.mimeType,
+            sha256,
+            byteLength: bytes.length,
+            dataBase64: bytes.toString("base64"),
+          }),
+        ),
       );
     }
   }

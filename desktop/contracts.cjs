@@ -108,6 +108,11 @@ function sanitizeSnapshot(s) {
     s.history.length > 30
   )
     throw Error("INVALID_SNAPSHOT");
+  let saveContext=null;
+  if(s.saveContext!=null){
+    if(typeof s.saveContext.saveId!=="string"||!/^save-[A-Za-z0-9_-]{1,96}$/.test(s.saveContext.saveId)||!Number.isSafeInteger(s.saveContext.generation)||s.saveContext.generation<0)throw Error("INVALID_SAVE_CONTEXT");
+    saveContext={saveId:s.saveContext.saveId,generation:s.saveContext.generation};
+  }
   const groups = s.groups.map((g) => ({
     id: integer(g.id),
     name: text(g.name),
@@ -147,6 +152,7 @@ function sanitizeSnapshot(s) {
       : null;
   return {
     protocolVersion: 1,
+    saveContext,
     theme: s.theme === "marx" ? "marx" : "classic",
     phase: s.phase,
     mode: s.mode,

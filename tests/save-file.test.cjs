@@ -213,3 +213,12 @@ test("failed replacement preserves the last good file and the queue recovers", a
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('migration source reads preserve exact bytes including malformed JSON without writing',async()=>{
+ const {dir,file}=workspace();try{
+  fs.mkdirSync(path.dirname(file.file),{recursive:true});const raw=' { "schemaVersion": 2,\n "groups": [broken ] }\n';fs.writeFileSync(file.file,raw);
+  const source=await file.readSource();assert.equal(source.ok,true);assert.equal(source.sourceText,raw);assert.equal(fs.readFileSync(file.file,'utf8'),raw);assert.match(source.sha256,/^[a-f0-9]{64}$/);
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+
+test('invalid UTF-8 source bytes are rejected without replacement or overwrite',async()=>{const {dir,file}=workspace();try{fs.mkdirSync(path.dirname(file.file),{recursive:true});const raw=Buffer.from([123,34,110,34,58,34,255,34,125]);fs.writeFileSync(file.file,raw);assert.equal((await file.readSource()).ok,false);assert.equal(file.read().ok,false);assert.deepEqual(fs.readFileSync(file.file),raw);}finally{fs.rmSync(dir,{recursive:true,force:true});}});

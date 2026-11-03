@@ -4,6 +4,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { createHash } = require("node:crypto");
+const { isUtf8 } = require("node:buffer");
 
 const MAX_BYTES = 32 * 1024 * 1024;
 
@@ -48,7 +49,9 @@ class SaveFile {
   read() {
     let raw;
     try {
-      raw = fs.readFileSync(this.file, "utf8");
+      const bytes=fs.readFileSync(this.file);
+      if(!isUtf8(bytes))return {ok:false,error:"原文件包含无效UTF-8字节，未转换或覆盖"};
+      raw = bytes.toString("utf8");
     } catch (error) {
       if (error.code === "ENOENT")
         return { ok: true, present: false, data: null };
@@ -72,6 +75,18 @@ class SaveFile {
         ok: false,
         error: "存档文件无法解析：" + String(error.message || error),
       };
+    }
+  }
+  async readSource() {
+    await this.whenIdle();
+    try {
+      const bytes=await fs.promises.readFile(this.file);
+      if(!isUtf8(bytes))return {ok:false,present:true,error:"原文件包含无效UTF-8字节，未转换或覆盖"};
+      if(bytes.length>MAX_BYTES)return {ok:false,error:"原始存档超过读取上限"};
+      return {ok:true,present:true,sourceText:bytes.toString("utf8"),bytes:bytes.length,sha256:createHash("sha256").update(bytes).digest("hex")};
+    } catch(error) {
+      if(error.code==="ENOENT")return {ok:true,present:false};
+      return {ok:false,error:String(error.message||error)};
     }
   }
   whenIdle() {

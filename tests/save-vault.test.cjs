@@ -48,7 +48,14 @@ function preview(score = 10) {
           groups: [{ groupUid: "group-test", name: "小组" }],
           assignments: [],
         },
+        archives: [],
+        achievements: { schemaVersion: 1, groups: {} },
+        perSaveOptions: {},
         match: {
+          season: { seasonId: "season-test" },
+          round: {},
+          picker: {},
+          itemGlobal: {},
           groups: [
             { groupUid: "group-test", score, members: [], inventory: [] },
           ],
@@ -256,5 +263,44 @@ test("only the main preload exposes the bounded save vault API", () => {
       assert.equal(JSON.stringify(calls[0][2]), '["save-test"]');
       assert.equal(bridge.saveVault.atomicWrite, undefined);
     } else assert.equal(bridge.saveVault, undefined);
+  }
+});
+
+test("equal avatar bytes are shared across imported saves regardless of metadata key order", async () => {
+  const w = setup();
+  try {
+    const bytes = Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+        "base64",
+      ),
+      sha256 = hash(bytes),
+      resourceId = "asset-" + sha256;
+    const first = preview();
+    first.assets = [
+      {
+        resourceId,
+        sha256,
+        mimeType: "image/png",
+        dataBase64: bytes.toString("base64"),
+        byteLength: bytes.length,
+      },
+    ];
+    first.documents[0].assetReferences = [resourceId];
+    assert.equal((await w.vault.importPreview(first)).ok, true);
+    const second = preview(31);
+    second.assets = [
+      {
+        resourceId,
+        mimeType: "image/png",
+        sha256,
+        byteLength: bytes.length,
+        dataBase64: bytes.toString("base64"),
+      },
+    ];
+    second.documents[0].assetReferences = [resourceId];
+    assert.equal((await w.vault.importPreview(second)).ok, true);
+    assert.equal((await w.vault.list()).index.entries.length, 2);
+  } finally {
+    await cleanup(w);
   }
 });

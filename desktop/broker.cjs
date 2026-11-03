@@ -51,7 +51,7 @@ class Broker {
       while (this.receipts.size > 256)
         this.receipts.delete(this.receipts.keys().next().value);
       try {
-        this.send({ id: internal, action, payload });
+        this.send({ id: internal, action, payload, saveContext:this.snapshot?.saveContext || null });
       } catch {
         this.finish(internal, { ok: false, error: "MAIN_UNAVAILABLE" });
       }
@@ -59,6 +59,15 @@ class Broker {
     } catch (e) {
       return Promise.resolve({ ok: false, error: e.message });
     }
+  }
+  acceptSnapshot(snapshot) {
+    const old=JSON.stringify(this.snapshot?.saveContext||null),next=JSON.stringify(snapshot.saveContext||null);
+    const changed=this.snapshot!==null&&old!==next;
+    if(changed){
+      for(const id of this.pending.keys())this.finish(id,{ok:false,error:"SAVE_CHANGED"});
+      this.epoch=randomUUID();this.receipts.clear();this.high.clear();
+    }
+    this.snapshot=snapshot;return changed;
   }
   finish(id, result) {
     const p = this.pending.get(id);

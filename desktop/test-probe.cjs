@@ -85,6 +85,7 @@ async function run(w, resultPath) {
       w.main.setFullScreen(true);
     await until(() => main(`innerWidth===1920 && innerHeight===1080`), "1920x1080 content resize");
     await until(() => main(`window.classroomReady && !ClassroomSaveFile.isHydrating()`), "classroom hydration");
+    await main(`SaveManager.ready()`);
     await main(`document.getElementById('gpIntroSkip')?.click();closeWelcomeModal();state.isLocked=false;state.soundEnabled=false;ClassroomFeedback.setOptions({pickEffects:true,scoreEffects:false,duration:1200});
    state.groups=normalizeAllGroups(Array.from({length:14},(_,i)=>({id:i+1,groupNo:i+1,name:'第 '+(i+1)+' 小组',color:['#0f766e','#e76f51','#3d6eaa'][i%3],score:100+i*20,members:['0'+(i+1)+' 同学','学生 '+(i+1)]})));
    state.picker={mode:'individual',antiRepeat:true,pickedStudentKeys:[],pickedGroupIds:[],preselectedGroupIds:[]};
@@ -112,9 +113,9 @@ async function run(w, resultPath) {
       const result = await main(`(async()=>{
         const preview=await SaveMigration.preview({rawText:JSON.stringify(buildClassroomBackup()),name:'隔离存档测试'});
         const api=godpowerDesktop.saveVault;
-        const imported=await api.importPreview(preview,{activate:true});
+        const imported=await api.importPreview(preview,{activate:false});
         if(!imported.ok)throw Error(JSON.stringify(imported));
-        const list=await api.list();const id=list.index.activeSaveId;
+        const list=await api.list();const id=imported.saveIds[0];
         const loaded=await api.load(id);const doc=loaded.document;
         doc.match.groups[0].score+=2;
         const saved=await api.commit(id,doc.revision,doc,{expectedGeneration:list.index.generation});
@@ -124,6 +125,9 @@ async function run(w, resultPath) {
       })()`);
       assert.deepEqual(result,{groups:14,students:28,saved:true,revision:2,stale:'REVISION_CONFLICT',sourceExact:true});
       assert.ok(w.saveVault.root.startsWith(app.getPath("userData") + path.sep));
+      const modeBefore=await main(`state.picker.mode`);
+      w.main.webContents.send("gp:execute",{id:"stale-save-probe",action:"mode",payload:{mode:modeBefore==="group"?"individual":"group"},saveContext:{saveId:"save-obsolete",generation:0}});
+      await delay(120);assert.equal(await main(`state.picker.mode`),modeBefore,"old save commands must not mutate the new classroom");
       return result;
     });
     await test("1920×1080 1x, 14 group fit and unchanged main layout", async () => {
@@ -441,7 +445,9 @@ async function run(w, resultPath) {
           await shot(w.picker, "picker-" + mode + "-rolling");
           const count = await main(`state.itemGlobal.pickerHistory.length`);
           await picker(`document.getElementById('lever').click()`);
-          await until(() => w.broker.snapshot.phase === "settling", "settling");
+          await until(() => w.broker.snapshot.phase === "settling", "settling").catch(async(error)=>{
+            console.error("Stop diagnostics",JSON.stringify({broker:{phase:w.broker.snapshot.phase,epoch:w.broker.epoch,saveContext:w.broker.snapshot.saveContext},picker:await picker(`({phase:current?.snapshot.phase,pending,message:document.getElementById('message').textContent,disabled:document.getElementById('lever').disabled})`),main:await main(`({phase:GodpowerPicker.getSnapshot().phase,spinning:slotEngine.isSpinning,chosen:!!slotEngine.chosenResult,closing:!!window.classroomClosing,save:SaveManager.status(),context:SaveManager.context(),modal:document.getElementById('pickerModal').className,external:document.getElementById('pickerModal').hasAttribute('data-external-picker'),generation:DesktopUI.getPickerGeneration(),motion:DesktopUI.getPreferences(),rootInert:document.body.inert})`)}));throw error;
+          });
           await until(
             () => w.effect && !w.effect.webContents.isLoading(),
             "overlay created",

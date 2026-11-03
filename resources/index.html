@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>上帝的力量 V3.0.68</title>
+<title>上帝的力量 V3.0.69</title>
 <script>/* Additive status state; legacy itemEffect owns defense charges independently. */
 globalThis.CompetitionEffects = (() => {
   const definitions = Object.freeze({
@@ -864,7 +864,7 @@ window.GodpowerTheme = (() => {
   }
   function apply() {
     boot();
-    document.title = name() + " V3.0.68";
+    document.title = name() + " V3.0.69";
     const label = document.querySelector(".gp-brand-label");
     if (label?.firstChild?.nodeType === Node.TEXT_NODE)
       label.firstChild.textContent = name() + " ";
@@ -14012,7 +14012,7 @@ html[data-theme="marx"] {
 <script>GodpowerTheme.boot();</script>
 
 <div class="header-banner app-topnav">
-  <div class="header-title"><span class="gp-brand-mount" id="gpBrandMount" aria-hidden="true"></span><span class="gp-brand-label">上帝的力量 <small>V3.0.68</small></span></div>
+  <div class="header-title"><span class="gp-brand-mount" id="gpBrandMount" aria-hidden="true"></span><span class="gp-brand-label">上帝的力量 <small>V3.0.69</small></span></div>
   <div class="nav-tabs" role="tablist">
     <button type="button" class="nav-tab active" data-view="welcome" onclick="switchView('welcome')">🏠 欢迎</button>
     <button type="button" class="nav-tab" data-view="battle" onclick="switchView('battle')">⚔️ 比赛</button>
@@ -14132,7 +14132,8 @@ html[data-theme="marx"] {
 </div>
 <!-- ===== 视图：欢迎界面 ===== -->
 <div id="classroomSaveWarning" class="classroom-save-warning" role="status" hidden>
-  <span>本页有尚未保存的课堂数据，计分可以继续。关闭或刷新前，请先导出备份。</span>
+  <span id="classroomSaveWarningText">本页有尚未保存的课堂数据。关闭或刷新前，请先导出备份。</span>
+  <button id="classroomSettlementResume" type="button" class="btn btn-primary" onclick="resumeFinalSettlement()" hidden>完成新一届初始化</button>
   <button type="button" class="btn btn-warning" onclick="exportData()">导出当前课堂备份</button>
   <section id="classroomRecoveryTools" class="classroom-recovery-tools" hidden aria-labelledby="classroomRecoveryTitle">
     <strong id="classroomRecoveryTitle">存档恢复</strong>
@@ -14622,9 +14623,9 @@ html[data-theme="marx"] {
     </div>
 
     <div class="setting-item" data-settings-category="data" data-settings-group="savefile">
-      <span class="setting-label">固定存档位置（桌面版）</span>
+      <span class="setting-label">旧版存档导入来源（桌面版）</span>
       <div style="display:flex;flex-direction:column;gap:8px;max-width:640px;">
-        <p class="ui-muted" style="margin:0">每次改动都会同步写入此文件，启动时也能从它恢复课堂。换机器只需复制该 JSON。浏览器版不适用。</p>
+        <p class="ui-muted" style="margin:0">此处保留旧版 JSON 来源位置。新版当前存档与头像在「学生与小组」中管理；换机器请导出完整存档。这里读取旧文件会建立独立恢复副本。</p>
         <code id="saveFilePath" style="display:block;padding:6px 10px;border:1px solid #cbd5e1;border-radius:6px;background:#f8fafc;color:#1e293b;font-size:12px;word-break:break-all;">未初始化</code>
         <div style="display:flex;flex-wrap:wrap;gap:8px;">
           <button class="btn btn-sm btn-primary" onclick="chooseSaveFileLocation()">更改位置…</button>
@@ -15064,6 +15065,8 @@ globalThis.StableIdentity = StableIdentity;
       fail("invalid match groups");
     if (current) unique(groups, "groupUid", "match group");
     for (const g of groups) {
+      if (current && typeof g.score !== "number")
+        fail("canonical score must be a number");
       if (!object(g) || !Number.isSafeInteger(Number(g.score ?? 0)))
         fail("score must be a safe integer");
       if (
@@ -15100,6 +15103,46 @@ globalThis.StableIdentity = StableIdentity;
       fail("save name is required");
     if (!object(input.roster) || !object(input.match))
       fail("missing roster or match");
+    if (
+      !Number.isSafeInteger(input.roster.revision) ||
+      input.roster.revision < 1
+    )
+      fail("invalid roster revision");
+    if (
+      !object(input.match.season) ||
+      !uid(input.match.season.seasonId) ||
+      !input.match.season.seasonId.startsWith("season-")
+    )
+      fail("invalid match season");
+    for (const key of ["round", "picker", "itemGlobal"])
+      if (!object(input.match[key])) fail("invalid match " + key);
+    if (!object(input.achievements) || !object(input.perSaveOptions))
+      fail("invalid achievement/options metadata");
+    if (
+      input.perSaveOptions.saveAllIn !== undefined &&
+      typeof input.perSaveOptions.saveAllIn !== "boolean"
+    )
+      fail("invalid saveAllIn option");
+    if (!Array.isArray(input.archives) || input.archives.length > 10000)
+      fail("archives must be an array");
+    for (const archive of input.archives) {
+      if (!object(archive)) fail("invalid archive entry");
+      if (archive.groups !== undefined) validateGroups(archive.groups, false);
+    }
+    if (input.match.pendingSettlement !== undefined) {
+      const pending = input.match.pendingSettlement;
+      if (
+        !object(pending) ||
+        !(typeof pending.recordId === "string"
+          ? pending.recordId.length > 0
+          : Number.isSafeInteger(pending.recordId)) ||
+        pending.seasonId !== input.match.season.seasonId ||
+        !input.archives.some(
+          (a) => a.id === pending.recordId && a.seasonId === pending.seasonId,
+        )
+      )
+        fail("invalid pending settlement");
+    }
     const students = unique(input.roster.students, "studentUid", "student");
     const groups = unique(input.roster.groups, "groupUid", "roster group");
     if (students.size > 100000 || groups.size > 1000)
@@ -15193,6 +15236,101 @@ globalThis.StableIdentity = StableIdentity;
   });
 })(globalThis);
 </script>
+<script>/* Canonical roster edits; labels are a compatibility projection, never identity. */
+(function installSaveRoster(root) {
+  "use strict";
+  const validate = (input) => root.SaveSchema.validateV2(input);
+  const label = (student) =>
+    student.legacyLabel ||
+    [student.number, student.displayName].filter(Boolean).join(" ");
+  function project(doc) {
+    const students = new Map(doc.roster.students.map((s) => [s.studentUid, s]));
+    for (const group of doc.match.groups)
+      group.members = doc.roster.assignments
+        .filter((a) => a.groupUid === group.groupUid)
+        .map((a) => label(students.get(a.studentUid)));
+    return doc;
+  }
+  function finish(doc) {
+    doc.roster.revision = (doc.roster.revision || 1) + 1;
+    return validate(doc);
+  }
+  function assign(input, groupUid, studentUids) {
+    const doc = validate(input);
+    if (!doc.roster.groups.some((g) => g.groupUid === groupUid))
+      throw Error("小组不存在");
+    if (
+      !Array.isArray(studentUids) ||
+      new Set(studentUids).size !== studentUids.length
+    )
+      throw Error("学生选择重复或无效");
+    const ids = new Set(doc.roster.students.map((s) => s.studentUid)),
+      selection = new Set(studentUids);
+    for (const id of studentUids) if (!ids.has(id)) throw Error("学生不存在");
+    doc.roster.assignments = doc.roster.assignments.filter(
+      (a) => a.groupUid !== groupUid && !selection.has(a.studentUid),
+    );
+    doc.roster.assignments.push(
+      ...studentUids.map((studentUid) => ({ studentUid, groupUid })),
+    );
+    return finish(project(doc));
+  }
+  function editStudent(input, studentUid, changes) {
+    const doc = validate(input),
+      student = doc.roster.students.find((s) => s.studentUid === studentUid);
+    if (!student) throw Error("学生不存在");
+    const name = String(changes.displayName ?? student.displayName).trim();
+    if (!name || name.length > 200) throw Error("姓名不能为空且不得超过200字");
+    const number = String(changes.number ?? student.number ?? "").trim();
+    if (number.length > 30) throw Error("学号过长");
+    student.displayName = name;
+    student.number = number || null;
+    student.legacyLabel = [number, name].filter(Boolean).join(" ");
+    return finish(project(doc));
+  }
+  function addStudent(input, { displayName, number = null }) {
+    const doc = validate(input),
+      name = String(displayName ?? "").trim(),
+      studentNumber = String(number ?? "").trim();
+    if (!name || name.length > 200 || studentNumber.length > 30)
+      throw Error("学生姓名或学号无效");
+    const studentUid = root.StableIdentity.createStudentUid();
+    doc.roster.students.push({
+      studentUid,
+      displayName: name,
+      number: studentNumber || null,
+      legacyLabel: [studentNumber, name].filter(Boolean).join(" "),
+      avatarResourceId: null,
+    });
+    return finish(doc);
+  }
+  function setAvatar(input, type, identity, resourceId) {
+    const doc = validate(input);
+    if (resourceId !== null && !doc.assetReferences.includes(resourceId))
+      throw Error("头像资源 asset 尚未加入当前存档");
+    const rows =
+      type === "student"
+        ? doc.roster.students
+        : type === "group"
+          ? doc.roster.groups
+          : null;
+    if (!rows) throw Error("头像目标类型无效");
+    const row = rows.find(
+      (r) => (type === "student" ? r.studentUid : r.groupUid) === identity,
+    );
+    if (!row) throw Error("头像目标不存在");
+    row.avatarResourceId = resourceId;
+    return finish(doc);
+  }
+  root.SaveRoster = Object.freeze({
+    assign,
+    editStudent,
+    addStudent,
+    setAvatar,
+    label,
+  });
+})(globalThis);
+</script>
 <script>/* Read-only legacy conversion, resource extraction and reversible projection. */
 (function installSaveMigration(root) {
   "use strict";
@@ -15224,6 +15362,65 @@ globalThis.StableIdentity = StableIdentity;
       displayName: (m ? m[2] : label).trim() || label.trim() || "未命名学生",
     };
   }
+  async function validateAssets(input) {
+    if (!Array.isArray(input) || input.length > 10000)
+      throw Error("invalid asset collection");
+    const result = [],
+      ids = new Set();
+    let total = 0;
+    for (const asset of input) {
+      if (
+        !asset ||
+        typeof asset.dataBase64 !== "string" ||
+        !/^image\/(png|jpeg|webp)$/.test(asset.mimeType)
+      )
+        throw Error("invalid avatar asset");
+      const bytes = Uint8Array.from(atob(asset.dataBase64), (c) =>
+        c.charCodeAt(0),
+      );
+      total += bytes.length;
+      if (total > 96 * 1024 * 1024)
+        throw Error("asset collection exceeds import limit");
+      const sha256 = await digest(bytes);
+      if (
+        asset.resourceId !== "asset-" + sha256 ||
+        asset.sha256 !== sha256 ||
+        asset.byteLength !== bytes.length ||
+        ids.has(asset.resourceId)
+      )
+        throw Error("asset digest/identity mismatch");
+      ids.add(asset.resourceId);
+      result.push({
+        resourceId: asset.resourceId,
+        mimeType: asset.mimeType,
+        sha256,
+        byteLength: bytes.length,
+        dataBase64: asset.dataBase64,
+      });
+    }
+    return result;
+  }
+  function bundle(document, assets) {
+    const doc = root.SaveSchema.validateV2(document);
+    const byId = new Map(assets.map((a) => [a.resourceId, a]));
+    const resources = doc.assetReferences.map((id) => {
+      const asset = byId.get(id);
+      if (!asset) throw Error("缺少头像资源 asset " + id);
+      return {
+        resourceId: asset.resourceId,
+        mimeType: asset.mimeType,
+        sha256: asset.sha256,
+        byteLength: asset.byteLength,
+        dataBase64: asset.dataBase64,
+      };
+    });
+    return {
+      kind: "godpower.save-bundle",
+      schemaVersion: 2,
+      documents: [doc],
+      assets: resources,
+    };
+  }
   async function preview({
     rawText,
     name = "导入课堂",
@@ -15236,6 +15433,36 @@ globalThis.StableIdentity = StableIdentity;
       throw Error("source text is missing or exceeds import limit");
     const raw = JSON.parse(rawText);
     root.SaveSchema.safeTree(raw);
+    if (raw?.kind === "godpower.save-bundle") {
+      if (
+        raw.schemaVersion !== 2 ||
+        !Array.isArray(raw.documents) ||
+        !raw.documents.length
+      )
+        throw Error("unsupported save bundle");
+      const documents = raw.documents.map(root.SaveSchema.validateV2);
+      if (new Set(documents.map((d) => d.saveId)).size !== documents.length)
+        throw Error("duplicate save identity");
+      const assets = await validateAssets(raw.assets),
+        ids = new Set(assets.map((a) => a.resourceId));
+      for (const doc of documents)
+        for (const id of doc.assetReferences)
+          if (!ids.has(id)) throw Error("缺少头像资源 asset " + id);
+      return {
+        documents,
+        assets,
+        appPreferences: { schemaVersion: 1, values: {} },
+        sourceDigest: await textDigest(rawText),
+        sourceText: rawText,
+        warnings: [],
+        report: {
+          saves: documents.length,
+          groups: documents.reduce((n, d) => n + d.roster.groups.length, 0),
+          students: documents.reduce((n, d) => n + d.roster.students.length, 0),
+          assets: assets.length,
+        },
+      };
+    }
     if (raw?.kind === "godpower.save")
       return {
         documents: [root.SaveSchema.validateV2(raw)],
@@ -15258,7 +15485,7 @@ globalThis.StableIdentity = StableIdentity;
       ![1, 2].includes(raw.schemaVersion ?? 1)
     )
       throw Error("unsupported legacy save");
-    if (!Array.isArray(raw.groups) || !raw.groups.length)
+    if (!Array.isArray(raw.groups))
       throw Error("legacy save groups are missing");
     root.SaveSchema.validateGroups(raw.groups, false);
     const sourceDigest = await textDigest(rawText),
@@ -15455,6 +15682,8 @@ globalThis.StableIdentity = StableIdentity;
   }
   root.SaveMigration = Object.freeze({
     preview,
+    bundle,
+    validateAssets,
     convert: (p) => ({
       documents: clone(p.documents),
       assets: clone(p.assets),
@@ -15496,6 +15725,56 @@ globalThis.StableIdentity = StableIdentity;
   const failure = (code, message) =>
     Object.assign(new Error(message || code), { code });
   async function open({ name = "godpower_save_library_v2" } = {}) {
+    const native =
+      root.godpowerDesktop?.role === "main"
+        ? root.godpowerDesktop.saveVault
+        : null;
+    if (native) {
+      // The desktop disk library is authoritative. Do not dual-write IndexedDB
+      // or turn an IPC failure into a new empty classroom.
+      return Object.freeze({
+        name: "native-save-library",
+        backend: "native",
+        close: () => {},
+        list: () => native.list(),
+        load: (id) => native.load(id),
+        importPreview: (preview, options = {}) =>
+          native.importPreview(preview, options),
+        commit: (id, revision, saveDoc, options = {}) =>
+          native.commit(id, revision, saveDoc, options),
+        switchActive: (id, options = {}) => native.switchActive(id, options),
+        loadPreferences: () => native.loadPreferences(),
+        savePreferences: (values, options = {}) =>
+          native.savePreferences(values, options),
+        getSource: async (digest) => {
+          const source = await native.getSource(digest);
+          return source?.sourceText !== undefined
+            ? {
+                ...source,
+                raw: new Blob([source.sourceText], {
+                  type: "application/json",
+                }),
+              }
+            : source;
+        },
+        getAsset: async (id) => {
+          const asset = await native.getAsset(id);
+          return asset?.dataBase64 !== undefined
+            ? {
+                ...asset,
+                raw: new Blob(
+                  [
+                    Uint8Array.from(atob(asset.dataBase64), (c) =>
+                      c.charCodeAt(0),
+                    ),
+                  ],
+                  { type: asset.mimeType },
+                ),
+              }
+            : asset;
+        },
+      });
+    }
     const opening = root.indexedDB.open(name, 1);
     opening.onupgradeneeded = () => {
       for (const store of stores) opening.result.createObjectStore(store);
@@ -15562,31 +15841,15 @@ globalThis.StableIdentity = StableIdentity;
           preview.sourceDigest
         )
           throw failure("SOURCE_DIGEST_MISMATCH");
-        assets = [];
-        for (const asset of preview.assets || []) {
-          if (!/^image\/(png|jpeg|webp)$/.test(asset.mimeType))
-            throw failure("INVALID_ASSET_TYPE");
-          const bytes = Uint8Array.from(atob(asset.dataBase64), (c) =>
-            c.charCodeAt(0),
-          );
-          const hash = [
-            ...new Uint8Array(
-              await root.crypto.subtle.digest("SHA-256", bytes),
-            ),
-          ]
-            .map((n) => n.toString(16).padStart(2, "0"))
-            .join("");
-          if (
-            asset.resourceId !== "asset-" + hash ||
-            asset.sha256 !== hash ||
-            asset.byteLength !== bytes.length
-          )
-            throw failure("ASSET_DIGEST_MISMATCH");
-          assets.push({
-            ...asset,
-            raw: new Blob([bytes], { type: asset.mimeType }),
-          });
-        }
+        assets = (
+          await root.SaveMigration.validateAssets(copy(preview.assets || []))
+        ).map((asset) => ({
+          ...asset,
+          raw: new Blob(
+            [Uint8Array.from(atob(asset.dataBase64), (c) => c.charCodeAt(0))],
+            { type: asset.mimeType },
+          ),
+        }));
       } catch (error) {
         return {
           ok: false,
@@ -15635,6 +15898,7 @@ globalThis.StableIdentity = StableIdentity;
     }
     return Object.freeze({
       name,
+      backend: "indexeddb",
       close: () => db.close(),
       importPreview,
       list: () =>
@@ -15660,40 +15924,66 @@ globalThis.StableIdentity = StableIdentity;
           "readonly",
           async (api) => (await api.get("assets", id)) || null,
         ),
-      commit: (
+      commit: async (
         saveId,
         expectedRevision,
         saveDoc,
-        { expectedGeneration } = {},
-      ) =>
-        transact(["meta", "documents", "assets"], "readwrite", async (api) => {
-          const index = await indexOf(api);
-          checkGeneration(index, expectedGeneration);
-          const old = await api.get("documents", saveId);
-          if (!old) throw failure("SAVE_NOT_FOUND");
-          if (old.revision !== expectedRevision)
-            throw failure("REVISION_CONFLICT");
-          if (
-            saveDoc.saveId !== saveId ||
-            saveDoc.revision !== expectedRevision
-          )
-            throw failure("INVALID_REVISION");
-          const doc = root.SaveSchema.validateV2({
-            ...copy(saveDoc),
-            revision: expectedRevision + 1,
-            updatedAt: new Date().toISOString(),
-          });
-          for (const id of doc.assetReferences)
-            if (!(await api.get("assets", id)))
-              throw failure("MISSING_ASSET", id);
-          await api.put("documents", saveId, doc);
-          index.entries = index.entries.map((e) =>
-            e.saveId === saveId ? entry(doc) : e,
+        { expectedGeneration, assets: inputAssets = [] } = {},
+      ) => {
+        let preparedAssets;
+        try {
+          saveDoc = copy(saveDoc);
+          preparedAssets = await root.SaveMigration.validateAssets(
+            copy(inputAssets),
           );
-          index.revision++;
-          await api.put("meta", "index", index);
-          return { ok: true, document: doc, index };
-        }),
+        } catch (error) {
+          return { ok: false, code: "INVALID_ASSET", message: error.message };
+        }
+        return transact(
+          ["meta", "documents", "assets"],
+          "readwrite",
+          async (api) => {
+            const index = await indexOf(api);
+            checkGeneration(index, expectedGeneration);
+            const old = await api.get("documents", saveId);
+            if (!old) throw failure("SAVE_NOT_FOUND");
+            if (old.revision !== expectedRevision)
+              throw failure("REVISION_CONFLICT");
+            if (
+              saveDoc.saveId !== saveId ||
+              saveDoc.revision !== expectedRevision
+            )
+              throw failure("INVALID_REVISION");
+            const doc = root.SaveSchema.validateV2({
+              ...copy(saveDoc),
+              revision: expectedRevision + 1,
+              updatedAt: new Date().toISOString(),
+            });
+            for (const asset of preparedAssets)
+              await api.put("assets", asset.resourceId, {
+                ...asset,
+                raw: new Blob(
+                  [
+                    Uint8Array.from(atob(asset.dataBase64), (c) =>
+                      c.charCodeAt(0),
+                    ),
+                  ],
+                  { type: asset.mimeType },
+                ),
+              });
+            for (const id of doc.assetReferences)
+              if (!(await api.get("assets", id)))
+                throw failure("MISSING_ASSET", id);
+            await api.put("documents", saveId, doc);
+            index.entries = index.entries.map((e) =>
+              e.saveId === saveId ? entry(doc) : e,
+            );
+            index.revision++;
+            await api.put("meta", "index", index);
+            return { ok: true, document: doc, index };
+          },
+        );
+      },
       switchActive: (saveId, { expectedGeneration } = {}) =>
         transact(["meta", "documents"], "readwrite", async (api) => {
           const index = await indexOf(api);
@@ -15742,6 +16032,296 @@ globalThis.StableIdentity = StableIdentity;
     });
   }
   root.SaveRepository = Object.freeze({ open });
+})(globalThis);
+</script>
+<script>/* One active save owner; serialized ACKs precede cutover and stale work is rejected. */
+(function installSaveSession(root) {
+  "use strict";
+  const clone = (value) => root.SaveSchema.clone(value);
+  async function create({
+    repository,
+    apply,
+    onStatus = () => {},
+    beforeSwitch = () => {},
+    commandBusy = () => false,
+  }) {
+    const initial = await repository.list();
+    if (!initial?.ok)
+      throw Error(initial?.message || initial?.code || "无法读取存档索引");
+    let index = initial.index;
+    if (!index.activeSaveId) throw Error("NO_ACTIVE_SAVE");
+    const loaded = await repository.load(index.activeSaveId);
+    if (!loaded?.ok)
+      throw Error(loaded?.message || loaded?.code || "无法读取当前存档");
+    let current = root.SaveSchema.validateV2(loaded.document),
+      switching = false,
+      queue = Promise.resolve({ ok: true });
+    function status(phase, error = null) {
+      try {
+        onStatus({
+          phase,
+          saveId: current.saveId,
+          revision: current.revision,
+          pendingSettlement: !!current.match.pendingSettlement,
+          generation: index.generation,
+          error,
+        });
+      } catch (reportError) {
+        console.error("Save status presentation failed", reportError);
+      }
+    }
+    const token = () =>
+      Object.freeze({ saveId: current.saveId, generation: index.generation });
+    const matches = (t) =>
+      t && t.saveId === current.saveId && t.generation === index.generation;
+    const reject = (code, message = code) => ({
+      ok: false,
+      code,
+      error: message,
+    });
+    function enqueue(operation) {
+      const run = async () => {
+        try {
+          return await operation();
+        } catch (error) {
+          status("error", error.message);
+          return reject(error.code || "SAVE_FAILED", error.message);
+        }
+      };
+      queue = queue.then(run, run);
+      return queue;
+    }
+    async function applyCurrent() {
+      try {
+        await apply(clone(current));
+        return true;
+      } catch (error) {
+        status("presentation-error", error.message);
+        return false;
+      }
+    }
+    if (!(await applyCurrent()))
+      throw Error("无法显示已保存的课堂，存档原文仍保留");
+    status("ready");
+    return Object.freeze({
+      token,
+      snapshot: () => clone(current),
+      isSwitching: () => switching,
+      whenIdle: () => queue,
+      update: (
+        prepare,
+        { token: requested = token(), apply: shouldApply = false } = {},
+      ) => {
+        if (switching)
+          return Promise.resolve(
+            reject("SAVE_SWITCHING", "正在切换存档，请稍候"),
+          );
+        if (!matches(requested))
+          return Promise.resolve(
+            reject("GENERATION_CONFLICT", "操作属于旧存档，已取消"),
+          );
+        return enqueue(async () => {
+          if (!matches(requested)) return reject("GENERATION_CONFLICT");
+          status("saving");
+          const prepared = await prepare(clone(current));
+          if (!matches(requested)) return reject("GENERATION_CONFLICT");
+          const doc = root.SaveSchema.validateV2(prepared.document);
+          if (
+            doc.saveId !== current.saveId ||
+            doc.revision !== current.revision
+          )
+            return reject("REVISION_CONFLICT");
+          const result = await repository.commit(
+            current.saveId,
+            current.revision,
+            doc,
+            {
+              expectedGeneration: index.generation,
+              assets: prepared.assets || [],
+            },
+          );
+          if (!result?.ok) {
+            status("error", result?.message || result?.code);
+            return {
+              ...result,
+              error: result?.message || result?.code || "保存失败",
+            };
+          }
+          current = result.document;
+          index = result.index;
+          const applied = shouldApply ? await applyCurrent() : true;
+          status(applied ? "saved" : "presentation-error");
+          return { ...result, applied };
+        });
+      },
+      switchTo: (id) => {
+        if (switching) return Promise.resolve(reject("SAVE_SWITCHING"));
+        if (commandBusy())
+          return Promise.resolve(
+            reject("COMMAND_PENDING", "请先完成当前操作再切换存档"),
+          );
+        switching = true;
+        status("switching");
+        return enqueue(async () => {
+          try {
+            await beforeSwitch();
+            const result = await repository.switchActive(id, {
+              expectedGeneration: index.generation,
+            });
+            if (!result?.ok) {
+              status("error", result?.message || result?.code);
+              return { ...result, error: result?.message || result?.code };
+            }
+            index = result.index;
+            current = result.document;
+            const applied = await applyCurrent();
+            status(applied ? "ready" : "presentation-error");
+            return { ...result, applied };
+          } finally {
+            switching = false;
+          }
+        });
+      },
+    });
+  }
+  root.SaveSession = Object.freeze({ create });
+})(globalThis);
+</script>
+<script>/* Bridge the unchanged competition envelope to canonical save/roster storage. */
+(function installSaveProjection(root) {
+  "use strict";
+  const copy = (value) => root.SaveSchema.clone(value);
+  function toRuntime(input, preferences = { values: {} }) {
+    const doc = root.SaveSchema.validateV2(input);
+    function compact(value) {
+      if (Array.isArray(value)) return value.map(compact);
+      if (value && typeof value === "object") {
+        const out = {};
+        for (const [key, child] of Object.entries(value)) {
+          if (key === "groupAvatar" && child?.$asset) {
+            out.groupAvatar = "";
+            out.avatarResourceId = child.$asset;
+          } else out[key] = compact(child);
+        }
+        return out;
+      }
+      return value;
+    }
+    const compactDoc = { ...doc, match: compact(doc.match) };
+    const runtime = root.SaveMigration.toLegacy(compactDoc, [], preferences);
+    runtime.rosterSnapshot = copy(doc.roster);
+    for (const group of runtime.groups) {
+      const row = doc.roster.groups.find((g) => g.groupUid === group.groupUid);
+      group.avatarResourceId = row?.avatarResourceId || null;
+      group.memberStudentUids = doc.roster.assignments
+        .filter((a) => a.groupUid === group.groupUid)
+        .map((a) => a.studentUid);
+    }
+    return runtime;
+  }
+  async function fromRuntime(input, payload) {
+    const current = root.SaveSchema.validateV2(input),
+      snapshot = copy(payload);
+    const imported = await root.SaveMigration.preview({
+        rawText: JSON.stringify(snapshot),
+      }),
+      replacement = imported.documents[0];
+    const roster = copy(snapshot.rosterSnapshot || current.roster);
+    const oldAssignments = roster.assignments,
+      assigned = new Set(),
+      assignments = [];
+    const groupRows = [];
+    for (const group of replacement.match.groups) {
+      const previous = roster.groups.find((g) => g.groupUid === group.groupUid);
+      groupRows.push({
+        groupUid: group.groupUid,
+        name: group.name,
+        groupNo: group.groupNo ?? previous?.groupNo,
+        color: group.color,
+        avatarResourceId:
+          group.groupAvatar?.$asset ||
+          (Object.hasOwn(group, "avatarResourceId")
+            ? group.avatarResourceId
+            : previous?.avatarResourceId) ||
+          null,
+      });
+      const oldIds = oldAssignments
+        .filter((a) => a.groupUid === group.groupUid)
+        .map((a) => a.studentUid);
+      for (const label of group.members || []) {
+        // Same-name students in different groups never become one identity.
+        const candidates = roster.students.filter(
+          (s) =>
+            oldIds.includes(s.studentUid) &&
+            !assigned.has(s.studentUid) &&
+            root.SaveRoster.label(s) === label,
+        );
+        let student = candidates[0];
+        if (!student) {
+          student = {
+            studentUid: root.StableIdentity.createStudentUid(),
+            ...root.SaveMigration.parseMember(label),
+            legacyLabel: label,
+            avatarResourceId: null,
+          };
+          roster.students.push(student);
+        }
+        assigned.add(student.studentUid);
+        assignments.push({
+          studentUid: student.studentUid,
+          groupUid: group.groupUid,
+        });
+      }
+    }
+    roster.groups = groupRows;
+    roster.assignments = assignments;
+    const a = copy(roster),
+      b = copy(current.roster);
+    delete a.revision;
+    delete b.revision;
+    roster.revision =
+      current.roster.revision +
+      (JSON.stringify(a) === JSON.stringify(b) ? 0 : 1);
+    const document = {
+      ...current,
+      roster,
+      match: replacement.match,
+      achievements: replacement.achievements,
+      perSaveOptions: replacement.perSaveOptions,
+      assetReferences: [
+        ...new Set([
+          ...current.assetReferences,
+          ...replacement.assetReferences,
+          ...[...roster.students, ...roster.groups]
+            .map((r) => r.avatarResourceId)
+            .filter(Boolean),
+        ]),
+      ],
+    };
+    if (
+      current.match.pendingSettlement &&
+      current.match.season.seasonId === document.match.season.seasonId
+    )
+      document.match.pendingSettlement = copy(current.match.pendingSettlement);
+    const refs = new Set(document.assetReferences);
+    for (const group of [
+      ...document.match.groups,
+      ...document.match.history.flatMap((row) => row.groups),
+    ]) {
+      if (
+        typeof group.avatarResourceId === "string" &&
+        refs.has(group.avatarResourceId)
+      )
+        group.groupAvatar = { $asset: group.avatarResourceId };
+    }
+    delete document.match.extensions.rosterSnapshot;
+    return {
+      document: root.SaveSchema.validateV2(document),
+      assets: imported.assets,
+      appPreferences: imported.appPreferences,
+    };
+  }
+  root.SaveProjection = Object.freeze({ toRuntime, fromRuntime });
 })(globalThis);
 </script>
 <script>/* Pure, versioned dashboard layout model. No classroom state or DOM access. */
@@ -17894,6 +18474,8 @@ globalThis.StableIdentity = StableIdentity;
   let contextKey = "";
   let avatarIndex = new Map();
   let generation = 0;
+  const ownGroupAvatars = new Map();
+  let saveIndexPending = null;
 
   function currentContext() {
     try {
@@ -17919,6 +18501,7 @@ globalThis.StableIdentity = StableIdentity;
     compactImages.clear();
     compactGroups.clear();
     avatarIndex = new Map();
+    ownGroupAvatars.clear();
   }
 
   function canvasImage(source, width, height) {
@@ -17967,7 +18550,55 @@ globalThis.StableIdentity = StableIdentity;
     return pending;
   }
 
+  async function readSaveIndex() {
+    const doc = root.SaveManager.snapshot(),
+      nextKey = `save:${doc.saveId}:${doc.roster.revision}`;
+    if (nextKey === contextKey) return saveIndexPending;
+    generation++;
+    clearUrls();
+    contextKey = nextKey;
+    const localGeneration = generation;
+    const byStudent = new Map(
+      doc.roster.students.map((s) => [s.studentUid, s]),
+    );
+    for (const group of doc.roster.groups) {
+      const entries = doc.roster.assignments
+        .filter((a) => a.groupUid === group.groupUid)
+        .map((a) => byStudent.get(a.studentUid))
+        .filter(Boolean)
+        .map((s) => ({
+          name: root.SaveRoster.label(s),
+          resourceId: s.avatarResourceId || "",
+        }));
+      avatarIndex.set(group.groupUid, entries);
+      if (group.avatarResourceId)
+        ownGroupAvatars.set(group.groupUid, group.avatarResourceId);
+    }
+    const ids = new Set(
+      [...avatarIndex.values()]
+        .flatMap((rows) => rows.map((r) => r.resourceId))
+        .filter(Boolean),
+    );
+    for (const id of ownGroupAvatars.values()) ids.add(id);
+    saveIndexPending = (async () => {
+      await Promise.all(
+        [...ids].map(async (id) => {
+          try {
+            const asset = await root.SaveManager.repository().getAsset(id);
+            if (localGeneration !== generation || !asset?.raw) return;
+            urls.set(id, root.URL.createObjectURL(asset.raw));
+          } catch (error) {
+            console.warn("可选存档头像读取失败", error.message);
+          }
+        }),
+      );
+      if (localGeneration === generation)
+        await Promise.all([...urls.values()].map(compactImage));
+    })();
+    return saveIndexPending;
+  }
   async function readIndex() {
+    if (root.SaveManager?.enabled()) return readSaveIndex();
     const context = currentContext();
     const nextKey = context
       ? `${context.userProfileId}\u0000${context.classroomId}`
@@ -18047,18 +18678,29 @@ globalThis.StableIdentity = StableIdentity;
     await Promise.all([...urls.values()].map(compactImage));
   }
 
-  function studentUrl(group, name, occurrence = 0) {
+  function studentUrl(group, name, memberIndex = 0) {
     const entries = avatarIndex.get(group?.groupUid) || [];
-    let matchIndex = 0;
-    for (const entry of entries) {
-      if (entry.name !== name) continue;
-      if (matchIndex++ !== occurrence) continue;
-      return entry.resourceId ? urls.get(entry.resourceId) || "" : "";
+    // Picker callers pass the student's absolute position in the group, not
+    // the occurrence count among identical names.
+    const indexed = entries[memberIndex];
+    if (indexed?.name === name)
+      return indexed.resourceId ? urls.get(indexed.resourceId) || "" : "";
+    const matches = entries.filter((entry) => entry.name === name);
+    if (matches.length === 1)
+      return matches[0].resourceId ? urls.get(matches[0].resourceId) || "" : "";
+    if (group?.members?.[memberIndex] === name) {
+      const occurrence = group.members
+        .slice(0, memberIndex)
+        .filter((label) => label === name).length;
+      const match = matches[occurrence];
+      return match?.resourceId ? urls.get(match.resourceId) || "" : "";
     }
     return "";
   }
 
   function groupUrls(group) {
+    const own = urls.get(ownGroupAvatars.get(group?.groupUid));
+    if (own) return [own];
     const entries = avatarIndex.get(group?.groupUid) || [];
     const seen = new Set();
     const result = [];
@@ -18144,7 +18786,9 @@ globalThis.StableIdentity = StableIdentity;
     const taskGeneration = generation;
     // A teacher-chosen group avatar wins over the member stack.
     for (const group of groups) {
-      if (!group.groupAvatar) continue;
+      const ownAvatar =
+        group.groupAvatar || urls.get(ownGroupAvatars.get(group.groupUid));
+      if (!ownAvatar) continue;
       const card = root.document.querySelector(
         `.group-row-card[data-group-id="${CSS.escape(String(group.id))}"]`,
       );
@@ -18155,7 +18799,7 @@ globalThis.StableIdentity = StableIdentity;
       badge.replaceChildren();
       const image = root.document.createElement("img");
       image.className = "battle-group-avatar-single";
-      image.src = group.groupAvatar;
+      image.src = ownAvatar;
       image.alt = `${group.name} 头像`;
       image.draggable = false;
       const number = root.document.createElement("span");
@@ -18233,6 +18877,11 @@ globalThis.StableIdentity = StableIdentity;
   root.addEventListener("godpower:active-classroom-changed", () => {
     contextKey = "!refresh!";
     readIndex();
+  });
+  root.addEventListener("godpower:active-save-changed", () => {
+    readIndex().then(() =>
+      decorateGroupCards(typeof state !== "undefined" ? state.groups : []),
+    );
   });
   root.addEventListener("pagehide", clearUrls, { once: true });
 
@@ -22548,6 +23197,39 @@ const CLASSROOM_STORAGE = {
 <script>/* Shared application guard; cancellable defense waits remain distinct from durable commits. */
 const ClassroomWriteBarrier = {
   conflict() {
+    if (window.classroomClosing)
+      return {
+        ok: false,
+        reason: "closing",
+        error: "正在完成保存并退出，请稍候。",
+      };
+    if (globalThis.SaveManager?.blocked?.())
+      return {
+        ok: false,
+        reason: "library-unavailable",
+        error: "存档库未成功读取，已暂停修改以保护原数据。",
+      };
+    if (globalThis.SaveManager?.pendingSettlement?.())
+      return {
+        ok: false,
+        reason: "settlement-recovery",
+        error: "本届已归档，请先完成新一届初始化后再操作。",
+      };
+    if (typeof settlementSaving !== "undefined" && settlementSaving)
+      return {
+        ok: false,
+        reason: "settlement-pending",
+        error: "正在归档课堂，请等待保存完成。",
+      };
+    if (
+      globalThis.SaveManager?.isStarting() ||
+      globalThis.SaveManager?.isSwitching()
+    )
+      return {
+        ok: false,
+        reason: "save-switching",
+        error: "存档正在初始化或切换，请稍后再试。",
+      };
     if (!window.classroomReady || !classroomCommands.isCommitting())
       return null;
     return {
@@ -22624,6 +23306,8 @@ const HistoryCommands = (() => {
         snapshot.achievementLedger,
       );
     state.groups = normalizeAllGroups(snapshot.groups);
+    if (snapshot.rosterSnapshot)
+      state.rosterSnapshot = clone(snapshot.rosterSnapshot);
     state.groups.forEach((g) => {
       g.displayScore = g.score;
     });
@@ -22715,6 +23399,7 @@ const HistorySnapshots = {
       desc,
       time,
       groups: copy(s.groups),
+      ...(s.rosterSnapshot ? { rosterSnapshot: copy(s.rosterSnapshot) } : {}),
       picker: copy(s.picker),
       resizerHeight: s.resizerHeight,
       correctAns: s.correctAns,
@@ -23450,6 +24135,8 @@ function normalizeGroup(raw, index = 0) {
     /* Group avatar: a small local data URL chosen by the teacher. Empty means the
        card keeps showing its member stack as before. */
     groupAvatar: normalizeGroupAvatarV2200(source.groupAvatar),
+    ...(source.avatarResourceId !== undefined ? {avatarResourceId:source.avatarResourceId} : {}),
+    ...(Array.isArray(source.memberStudentUids) ? {memberStudentUids:[...source.memberStudentUids]} : {}),
     /* V2.8: these fields are persistent classroom data, not session-only UI state. */
     inventory: Array.isArray(source.inventory)
       ? source.inventory.map((it) => ({ ...it }))
@@ -23565,6 +24252,7 @@ let confettiAnimationId = null;
 let confettiParticles = [];
 
 function getSettlementHistory() {
+  if(globalThis.SaveManager?.enabled())return SaveManager.snapshot().archives;
   return STORAGE.getJSON("politics_settlement_history", []);
 }
 
@@ -23608,12 +24296,41 @@ function closeSettlementNameModal() {
   hideClassroomWindow(document.getElementById("settlementNameModal"));
 }
 
-function confirmFinalSettlement() {
+let settlementSaving = false;
+async function confirmFinalSettlement(){
+  if(settlementSaving)return {ok:false,reason:"busy"};
+  try{return await performFinalSettlement();}finally{settlementSaving=false;}
+}
+async function resumeFinalSettlement() {
+  if (settlementSaving || !globalThis.SaveManager?.pendingSettlement?.()) return {ok:false,reason:"not-pending"};
+  if (state.isLocked) { openPwdModal(); return {ok:false,reason:"locked"}; }
+  if (classroomCommands.isPending() || SaveManager.isStarting() || SaveManager.isSwitching()) return {ok:false,reason:"busy"};
+  settlementSaving = true;
+  const before = clone(state), history = clone(historyStack);
+  try {
+    Reliability.invalidateDefenseDecisions();
+    resetCompetitionDataAfterSettlementV21812();
+    const pending = saveState();
+    const result = await (pending?.completion || pending);
+    if (!result?.ok) {
+      state = before; historyStack = history;
+      showClassroomSaveWarning("新一届初始化未保存，原赛季和归档均保留，请重试。");
+    } else { showToast("新一届初始化已完成，原档案保留。"); }
+    renderAll(); refreshClassroomSaveWarning();
+    return result;
+  } catch (error) {
+    state = before; historyStack = history; renderAll();
+    showClassroomSaveWarning(error.message);
+    return {ok:false,error:error.message};
+  } finally { settlementSaving = false; }
+}
+async function performFinalSettlement() {
   const conflict = ClassroomWriteBarrier.conflict();
   if (conflict) {
     showToast(conflict.error);
     return conflict;
   }
+  settlementSaving=true;
   Reliability.invalidateDefenseDecisions();
   if (state.isLocked) {
     openPwdModal();
@@ -23667,7 +24384,8 @@ function confirmFinalSettlement() {
     groups: clone(sorted),
     achievementLedger: AchievementLedger.normalize(state.achievementLedger),
   };
-  const archiveResult = saveSettlementRecord(record);
+  if(globalThis.SaveManager?.enabled())record.clearedData=buildSettlementClearedDataV21813();
+  const archiveResult = globalThis.SaveManager?.enabled() ? await SaveManager.archive(record) : saveSettlementRecord(record);
   if (!archiveResult.ok) {
     themeAlert(
       "归档失败，课堂数据保持原样。请导出 JSON 备份并释放存储空间。" +
@@ -23712,7 +24430,8 @@ function confirmFinalSettlement() {
   initConfetti();
 
   resetCompetitionDataAfterSettlementV21812();
-  const resetResult = saveState();
+  const pendingReset = saveState();
+  const resetResult = pendingReset?.completion ? await pendingReset.completion : await pendingReset;
   if (!resetResult.ok) {
     state = beforeReset;
     historyStack = beforeHistory;
@@ -23853,26 +24572,25 @@ function exportLatestSettlementCSV() {
 }
 
 async function deleteSettlementRecord(index) {
-  if (state.isLocked) {
-    themeAlert(
-      "想删档案先解锁上帝模式。历史已经够脆弱了，系统至少要求你先输个密码。",
-    );
-    openPwdModal();
-    return;
+  if(!ClassroomWriteBarrier.allow())return false;
+  if(state.isLocked){openPwdModal();return false;}
+  const initial=getSettlementHistory(),target=initial[index];if(!target)return false;
+  const context=globalThis.SaveManager?.context?.()||null;
+  const owner=state,season=state.seasonId,id=target.id,fingerprint=JSON.stringify(target);
+  if(!(await themeConfirm("确定要删除这条最终结算档案记录吗？此操作不可逆！",{title:"删除结算档案",danger:true,confirmText:"删除"})))return false;
+  const currentContext=globalThis.SaveManager?.context?.()||null;
+  if(state.isLocked||state!==owner||state.seasonId!==season||context?.saveId!==currentContext?.saveId||context?.generation!==currentContext?.generation||!ClassroomWriteBarrier.allow()){
+    showToast("课堂或权限已变化，请重新确认删除。");return false;
   }
-  if (
-    !(await themeConfirm("确定要删除这条最终结算档案记录吗？此操作不可逆！", {
-      title: "删除结算档案",
-      danger: true,
-      confirmText: "删除",
-    }))
-  )
-    return;
-  const list = getSettlementHistory();
-  list.splice(index, 1);
-  STORAGE.setJSON("politics_settlement_history", list);
-  renderSettlementHistoryList();
-  showToast("该结算档案已删除");
+  const list=getSettlementHistory(),current=list.findIndex(record=>record.id===id&&JSON.stringify(record)===fingerprint);
+  if(current<0){showToast("档案记录已变化，请重新确认删除。");return false;}
+  if(globalThis.SaveManager?.enabled()){
+    const result=await SaveManager.removeArchive(id);
+    if(!result.ok){themeAlert('删除未保存，原档案保留：'+(result.error||result.message||result.code));return false;}
+  }else{
+    list.splice(current,1);if(!STORAGE.setJSON("politics_settlement_history",list)){themeAlert("删除未保存，原档案保留。");return false;}
+  }
+  renderSettlementHistoryList();showToast("该结算档案已删除");return true;
 }
 
 // ===== 启动性能优化：音频元数据缓存 + 延迟音频初始化 =====
@@ -25003,6 +25721,13 @@ function getPersistableGroups() {
 }
 
 function saveState(transaction) {
+  if (globalThis.SaveManager?.blocked?.()) {
+    showClassroomSaveWarning(
+      "新版存档库读取失败，已禁止回退覆盖旧存档，请重试或导出当前显示的数据。",
+    );
+    return { ok: false, error: "存档库未成功读取，旧文件保持不变" };
+  }
+  if (globalThis.SaveManager?.isStarting()) return { ok: true, deferred: true };
   if (window.classroomRecoveryRequired) {
     showClassroomSaveWarning("需要先恢复主存档");
     return { ok: false, error: "需要先恢复主存档" };
@@ -25011,8 +25736,15 @@ function saveState(transaction) {
     !window.classroomReady ||
     window.itemCommandActive ||
     classroomCommands.isPending()
-  )
+  ) {
+    if (
+      globalThis.SaveManager?.enabled() &&
+      !window.itemCommandActive &&
+      classroomCommands.isPending()
+    )
+      SaveManager.scheduleLegacySave();
     return { ok: true, deferred: true };
+  }
   ensureV2State();
   if (Array.isArray(transaction?.events) && transaction.events.length) {
     state.achievementLedger = AchievementLedger.apply(
@@ -25026,6 +25758,13 @@ function saveState(transaction) {
   // writing now would overwrite a classroom the user copied in.
   if (globalThis.ClassroomSaveFile?.isHydrating?.())
     return { ok: true, deferred: true };
+  if (globalThis.SaveManager?.enabled()) {
+    const completion = SaveManager.persist(payload).then((result) => ({
+      ...result,
+      ...(transaction?.events?.length ? { eventsPersisted: !!result.ok } : {}),
+    }));
+    return transaction ? completion : { ok: true, pending: true, completion };
+  }
   const result = Reliability.writeVerified(
     CLASSROOM_STORAGE,
     Reliability.stateKey,
@@ -25397,6 +26136,7 @@ function forceEndRound() {
   return RoundSettlement.forceEnd();
 }
 function applySettingsBatchMembers() {
+  if (!ClassroomWriteBarrier.allow()) return false;
   if (state.isLocked) {
     openPwdModal();
     return;
@@ -26032,6 +26772,7 @@ function closePickerModal() {
 }
 
 function setPickerMode(mode) {
+  if (globalThis.SaveManager?.pendingSettlement?.()) { showToast("请先完成新一届初始化"); return false; }
   if (slotEngine.isSpinning || window.GodpowerPicker?.isSettling()) return;
   if (typeof DesktopUI !== "undefined") DesktopUI.cancelPickerPreparation();
   state.picker.mode = mode;
@@ -26137,12 +26878,14 @@ function resetSlotDisplay() {
 }
 
 function toggleAntiRepeat(checked) {
+  if (globalThis.SaveManager?.pendingSettlement?.()) { showToast("请先完成新一届初始化"); return false; }
   state.picker.antiRepeat = checked;
   saveState();
   updatePickerPoolUI();
 }
 
 function resetPickerPool() {
+  if (globalThis.SaveManager?.pendingSettlement?.()) { showToast("请先完成新一届初始化"); return false; }
   state.picker.pickedStudentKeys = [];
   state.picker.pickedGroupIds = [];
   saveState();
@@ -26245,6 +26988,7 @@ function toggleSlotSpin() {
 }
 
 async function startSlotSpin() {
+  if (globalThis.SaveManager?.pendingSettlement?.()) { showToast("请先完成新一届初始化"); return false; }
   const uiGeneration =
     typeof DesktopUI !== "undefined" ? DesktopUI.getPickerGeneration() : null;
   const pool = getAvailablePool();
@@ -26479,7 +27223,10 @@ function applyBatchImport() {
   closeBatchImportModal();
   showToast(`成功导入 ${parsedCount} 名学生`);
 }
-function exportData() {
+async function exportData() {
+  if(globalThis.SaveManager?.enabled()){
+    const data=await SaveManager.exportCurrent(),url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"})),a=document.createElement("a");a.href=url;a.download="上帝的力量_完整存档_含头像.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);return;
+  }
   const blob = new Blob([JSON.stringify(buildClassroomBackup(), null, 2)], {
     type: "application/json",
   });
@@ -26508,9 +27255,9 @@ function handleFileImport(event) {
     return;
   }
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.onload = async () => {
     try {
-      const result = importClassroomData(JSON.parse(reader.result));
+      const result = globalThis.SaveManager?.enabled() ? await SaveManager.importSource(await SaveManager.previewSource(String(reader.result),file.name)) : await importClassroomData(JSON.parse(reader.result));
       if (result.ok) showToast("数据恢复成功");
       else themeAlert("导入失败，原数据已保留：" + result.error);
     } catch (error) {
@@ -26525,6 +27272,7 @@ function handleFileImport(event) {
   reader.readAsText(file);
 }
 function addGroup() {
+  if (!ClassroomWriteBarrier.allow()) return false;
   if (state.isLocked) {
     openPwdModal();
     return;
@@ -26552,6 +27300,7 @@ function addGroup() {
 }
 
 async function deleteGroup(groupId) {
+  if (!ClassroomWriteBarrier.allow()) return false;
   if (state.isLocked) {
     openPwdModal();
     return;
@@ -26564,6 +27313,7 @@ async function deleteGroup(groupId) {
       confirmText: "删除",
     })
   ) {
+    if (!ClassroomWriteBarrier.allow()) return false;
     recordHistory(`删除小组 (${target ? target.name : ""})`);
     state.groups = state.groups.filter((x) => x.id !== groupId);
     saveState();
@@ -26572,6 +27322,7 @@ async function deleteGroup(groupId) {
 }
 
 function updateGroupName(groupId, newName) {
+  if (!ClassroomWriteBarrier.allow()) return false;
   if (state.isLocked) return;
   const g = state.groups.find((x) => x.id === groupId);
   if (!g) return;
@@ -26583,6 +27334,7 @@ function updateGroupName(groupId, newName) {
 }
 
 function updateGroupColor(groupId, newColor) {
+  if (!ClassroomWriteBarrier.allow()) return false;
   if (state.isLocked) return;
   const g = state.groups.find((x) => x.id === groupId);
   if (!g) return;
@@ -26592,6 +27344,7 @@ function updateGroupColor(groupId, newColor) {
 }
 
 async function resetAllScores() {
+  if (!ClassroomWriteBarrier.allow()) return false;
   cancelScoreAnimationAndSync();
   if (state.isLocked) {
     openPwdModal();
@@ -26604,6 +27357,7 @@ async function resetAllScores() {
       confirmText: "全部清零",
     })
   ) {
+    if (!ClassroomWriteBarrier.allow()) return false;
     recordHistory("全局重置所有小组积分");
     const updates = [];
     state.groups.forEach((g) => {
@@ -29028,8 +29782,9 @@ function renderItemWindow() {
           </div>
         </section>
         <section class="group-detail-section">
-          <h4>成员管理（每行一人，也支持逗号或顿号分隔）</h4>
-          <div class="group-detail-field"><textarea id="groupDetailMembers" ${disabled}>${escapeHtml((g.members || []).join("\n"))}</textarea></div>
+          <h4>成员管理</h4>
+          <p>${escapeHtml((g.members || []).join(' · ') || '暂无成员')}</p>
+          <button type="button" class="btn" ${disabled} onclick="closeItemWindow();switchView('settings');DesktopUI.selectSettings('students');SaveWorkspace.openMembers('${escapeHtml(g.groupUid)}')">从学生名单选择成员</button>
         </section>
         <section class="group-detail-section"><h4>当前状态</h4><div>${escapeHtml(status)}</div></section>
         <div class="group-detail-actions"><button type="button" class="btn" onclick="renderItemWindow()" ${disabled}>放弃未保存修改</button><button type="button" class="btn btn-primary" onclick="saveItemGroupDetail(${g.id})" ${disabled}>保存更改</button></div>
@@ -29070,6 +29825,7 @@ function saveItemDetailColor(id, value) {
   renderItemWindow();
 }
 function saveItemGroupDetail(id) {
+  if (!ClassroomWriteBarrier.allow()) return false;
   if (state.isLocked) {
     openPwdModal();
     return;
@@ -29092,23 +29848,10 @@ function saveItemGroupDetail(id) {
     showToast("该编号已被其他小组使用");
     return;
   }
-  const rawMembers = document.getElementById("groupDetailMembers")?.value || "";
-  const members = Array.from(
-    new Set(
-      rawMembers
-        .split(/[\n,，、]+/)
-        .map((s) => s.trim())
-        .filter(Boolean),
-    ),
-  );
-  const changed =
-    g.name !== name ||
-    Number(g.groupNo) !== groupNo ||
-    JSON.stringify(g.members || []) !== JSON.stringify(members);
+  const changed = g.name !== name || Number(g.groupNo) !== groupNo;
   if (changed) recordHistory(`${g.name} 更新小组详情`);
   g.name = name;
   g.groupNo = groupNo;
-  g.members = members;
   saveState();
   renderAll();
   updatePickerPoolUI();
@@ -29460,6 +30203,7 @@ function renderHandRaise() {
   document.getElementById("handRewardBox").innerHTML = "";
 }
 function selectHandGroup(id) {
+  if (!ClassroomWriteBarrier.allow()) return false;
   handRaiseGroupId = id;
   renderHandRaise();
   document
@@ -36515,7 +37259,7 @@ if (typeof renderLockState === "function") {
 </script>
 
 
-<script id="v2186OpenFixMarker">window.__GOD_POWER_VERSION__ = "V3.0.68";
+<script id="v2186OpenFixMarker">window.__GOD_POWER_VERSION__ = "V3.0.69";
 </script>
 
 
@@ -40084,6 +40828,7 @@ globalThis.ClassroomSaveFile = (() => {
   let info = null;
   let ready = false;
   let lastError = null;
+  let startupSourceText = null;
   // True while startup reads the file; classroom saves wait so the file is not
   // overwritten before we know what it holds.
   let hydrating = true;
@@ -40123,7 +40868,18 @@ globalThis.ClassroomSaveFile = (() => {
       if (!current) return { status: "unavailable", error: lastError };
       let result;
       try {
-        result = await bridge().saveFileRead();
+        if (typeof bridge().saveFileSource === "function") {
+          const source = await bridge().saveFileSource();
+          if (source?.ok && source.present) {
+            startupSourceText = source.sourceText;
+            result = {
+              ok: true,
+              present: true,
+              data: JSON.parse(source.sourceText),
+              bytes: source.bytes,
+            };
+          } else result = source;
+        } else result = await bridge().saveFileRead();
       } catch (error) {
         return { status: "error", error: String(error?.message || error) };
       }
@@ -40227,6 +40983,7 @@ globalThis.ClassroomSaveFile = (() => {
 
   return {
     available,
+    sourceText: () => startupSourceText,
     hydrate,
     write,
     choose,
@@ -40247,6 +41004,498 @@ globalThis.ClassroomSaveFile = (() => {
   };
 })();
 </script>
+<script>/* Runtime owner for the save library. Competition rules remain in their existing commands. */
+(function installSaveManager(root) {
+  "use strict";
+  let libraryBlocked = false,
+    deferredLegacySave = null,
+    preferenceQueue = Promise.resolve({ ok: true });
+  let repo = null,
+    session = null,
+    starting = true,
+    readyPromise = null;
+  let currentStatus = { phase: "starting" },
+    preferences = { schemaVersion: 1, revision: 0, values: {} };
+  const pendingAssets = new Map();
+  const prefs = () =>
+    Object.fromEntries(SaveSchema.appPreferenceKeys.map((k) => [k, state[k]]));
+  function notify(detail) {
+    currentStatus = detail;
+    if (typeof refreshClassroomSaveWarning === "function")
+      refreshClassroomSaveWarning();
+    root.dispatchEvent(new CustomEvent("godpower:save-status", { detail }));
+  }
+  function applyDocument(doc) {
+    Reliability.invalidateDefenseDecisions();
+    root.GodpowerPicker?.invalidate();
+    root.ClassroomHandSync?.notify(null);
+    cancelScoreAnimationAndSync();
+    root.ClassroomFeedback?.cancel();
+    root.ItemScoreCinematics?.cancel?.();
+    applyClassroomBackup(SaveProjection.toRuntime(doc, { values: prefs() }));
+    root.classroomRecoveryRequired = false;
+    renderAll();
+    updatePickerPoolUI();
+    root.dispatchEvent(
+      new CustomEvent("godpower:active-save-changed", {
+        detail: { saveId: doc.saveId, rosterRevision: doc.roster.revision },
+      }),
+    );
+  }
+  async function start() {
+    const wasInert = document.body.inert;
+    document.body.inert = true;
+    try {
+      await root.classroomHydrationPromise;
+      repo = await SaveRepository.open();
+      const listed = await repo.list();
+      if (!listed?.ok)
+        throw Error(listed?.message || listed?.code || "无法读取存档库");
+      if (
+        !listed.index.entries.length &&
+        root.classroomStorageUnavailable &&
+        ClassroomSaveFile?.sourceText?.() == null
+      )
+        throw Error("旧版存储暂不可读取，已停止自动迁移并保留原数据");
+      if (
+        !listed.index.entries.length &&
+        ClassroomSaveFile?.available?.() &&
+        ["error", "invalid", "restore-failed"].includes(
+          root.classroomSaveFileStatus,
+        )
+      )
+        throw Error("原始桌面存档读取失败，已停止自动迁移并保留原文件");
+      const savedPrefs = await repo.loadPreferences();
+      if (!savedPrefs?.ok)
+        throw Error(
+          savedPrefs?.message || savedPrefs?.code || "无法读取全局设置",
+        );
+      preferences = savedPrefs.preferences;
+      if (preferences.revision > 0) {
+        for (const key of SaveSchema.appPreferenceKeys)
+          if (Object.hasOwn(preferences.values, key))
+            state[key] = preferences.values[key];
+      } else {
+        const written = await repo.savePreferences(prefs(), {
+          expectedRevision: 0,
+        });
+        if (!written.ok) throw Error(written.message || written.code);
+        preferences = written.preferences;
+      }
+      if (!listed.index.activeSaveId) {
+        if (listed.index.entries.length) {
+          const chosen = await repo.switchActive(
+            listed.index.entries[0].saveId,
+            { expectedGeneration: listed.index.generation },
+          );
+          if (!chosen.ok) throw Error(chosen.message || chosen.code);
+        } else {
+          if (root.classroomRecoveryRequired)
+            throw Error("旧存档需要恢复，原始数据已保留；请先使用恢复工具");
+          const rawText =
+            ClassroomSaveFile?.sourceText?.() ??
+            CLASSROOM_STORAGE.getItem(Reliability.stateKey) ??
+            JSON.stringify(buildClassroomBackup());
+          const preview = await SaveMigration.preview({
+            rawText,
+            name: "当前课堂",
+          });
+          preview.documents[0].archives = getSettlementHistory();
+          for (const doc of preview.documents)
+            Reliability.validateBackup(
+              SaveProjection.toRuntime(doc, { values: prefs() }),
+            );
+          const imported = await repo.importPreview(preview, {
+            activate: true,
+          });
+          if (!imported.ok) throw Error(imported.message || imported.code);
+        }
+      }
+      session = await SaveSession.create({
+        repository: repo,
+        apply: applyDocument,
+        onStatus: notify,
+        commandBusy: () =>
+          classroomCommands.isPending() && !classroomCommands.isCommitting(),
+        beforeSwitch: async () => {
+          await classroomCommands.whenIdle();
+          Reliability.invalidateDefenseDecisions();
+          root.GodpowerPicker?.invalidate();
+          root.ClassroomFeedback?.cancel();
+          if (typeof closePickerModal === "function") closePickerModal();
+        },
+      });
+      libraryBlocked = false;
+      return { ok: true };
+    } catch (error) {
+      libraryBlocked = true;
+      notify({ phase: "error", error: error.message });
+      showClassroomSaveWarning(
+        "新版存档未启用，旧数据仍保留：" + error.message,
+      );
+      return { ok: false, error: error.message };
+    } finally {
+      starting = false;
+      document.body.inert = wasInert;
+    }
+  }
+  const ready = () => (readyPromise ||= start());
+  function persistPreferences(values) {
+    const snapshot = SaveSchema.clone(values);
+    const run = async () => {
+      if (JSON.stringify(snapshot) === JSON.stringify(preferences.values))
+        return { ok: true };
+      const changed = await repo.savePreferences(snapshot, {
+        expectedRevision: preferences.revision,
+      });
+      if (changed.ok) preferences = changed.preferences;
+      return changed;
+    };
+    preferenceQueue = preferenceQueue
+      .then(run, run)
+      .catch((error) => ({ ok: false, error: error.message }));
+    return preferenceQueue;
+  }
+  function scheduleLegacySave() {
+    if (!session || deferredLegacySave) return deferredLegacySave;
+    const token = session.token();
+    deferredLegacySave = classroomCommands
+      .whenIdle()
+      .then(async () => {
+        const current = session?.token();
+        if (
+          !current ||
+          current.saveId !== token.saveId ||
+          current.generation !== token.generation ||
+          session.isSwitching()
+        )
+          return persistPreferences({ ...preferences.values, ...prefs() });
+        const result = saveState();
+        return result.completion || result;
+      })
+      .catch((error) => {
+        showClassroomSaveWarning(error.message);
+        return { ok: false, error: error.message };
+      })
+      .finally(() => {
+        deferredLegacySave = null;
+      });
+    return deferredLegacySave;
+  }
+  async function persist(payload) {
+    const token = session.token(),
+      snapshot = SaveSchema.clone(payload);
+    const assets = [...pendingAssets.values()]
+      .filter(
+        (a) => a.saveId === token.saveId && a.generation === token.generation,
+      )
+      .map((a) => a.asset);
+    const result = await session.update(
+      async (doc) => {
+        const projected = await SaveProjection.fromRuntime(doc, snapshot);
+        if (
+          doc.match.pendingSettlement &&
+          doc.match.season.seasonId === projected.document.match.season.seasonId
+        ) {
+          const before = SaveSchema.clone(doc.match),
+            after = SaveSchema.clone(projected.document.match);
+          delete before.pendingSettlement;
+          delete after.pendingSettlement;
+          if (JSON.stringify(before) !== JSON.stringify(after))
+            throw Error("本届已归档，请先完成新一届初始化");
+        }
+        return {
+          ...projected,
+          assets: [
+            ...new Map(
+              [...projected.assets, ...assets].map((a) => [a.resourceId, a]),
+            ).values(),
+          ],
+        };
+      },
+      { token },
+    );
+    if (!result.ok) {
+      showClassroomSaveWarning(result.error || result.message || result.code);
+      return result;
+    }
+    if (
+      session.token().saveId === token.saveId &&
+      session.token().generation === token.generation
+    )
+      if (
+        JSON.stringify(state.rosterSnapshot) ===
+        JSON.stringify(snapshot.rosterSnapshot)
+      )
+        state.rosterSnapshot = SaveSchema.clone(result.document.roster);
+    for (const asset of assets)
+      pendingAssets.delete(token.saveId + ":" + asset.resourceId);
+    const values = Object.assign(
+      {},
+      preferences.values,
+      ...SaveSchema.appPreferenceKeys.map((k) => ({ [k]: snapshot[k] })),
+    );
+    const prefResult = await persistPreferences(values);
+    // A compatibility cache is not a second authority. Its failure cannot undo a
+    // successful native/IDB commit or cause a duplicate classroom command.
+    const cache = Reliability.writeVerified(
+      CLASSROOM_STORAGE,
+      Reliability.stateKey,
+      snapshot,
+    );
+    if (!cache.ok)
+      console.warn("新版存档已确认，旧版兼容缓存未更新：" + cache.error);
+    root.classroomUnsavedChanges = false;
+    const warning = document.getElementById("classroomSaveWarning");
+    if (warning) warning.hidden = true;
+    if (!prefResult.ok)
+      showClassroomSaveWarning(
+        "课堂已保存，全局设置保存失败：" +
+          (prefResult.message || prefResult.error || prefResult.code),
+      );
+    return result;
+  }
+  async function edit(description, operation, { assets = [] } = {}) {
+    await ready();
+    if (!session) return { ok: false, error: "存档库尚未就绪" };
+    if (!ClassroomWriteBarrier.allow())
+      return { ok: false, error: "课堂正在保存或切换" };
+    if (state.isLocked) {
+      openPwdModal();
+      return { ok: false, error: "请先解锁" };
+    }
+    const token = session.token();
+    const accepted = runClassroomCommand(
+      description,
+      () => {
+        const doc = operation(session.snapshot());
+        for (const asset of assets)
+          pendingAssets.set(token.saveId + ":" + asset.resourceId, {
+            ...token,
+            asset,
+          });
+        state.rosterSnapshot = SaveSchema.clone(doc.roster);
+        state.groups = normalizeAllGroups(
+          SaveProjection.toRuntime(doc, { values: prefs() }).groups,
+        );
+        return true;
+      },
+      { source: "manual", retainOnPersistenceFailure: false },
+    );
+    if (!accepted) return { ok: false, error: "操作未提交" };
+    return classroomCommands.whenIdle();
+  }
+  async function previewSource(rawText, name) {
+    const preview = await SaveMigration.preview({ rawText, name });
+    for (const doc of preview.documents)
+      Reliability.validateBackup(
+        SaveProjection.toRuntime(doc, { values: prefs() }),
+      );
+    return preview;
+  }
+  async function importSource(preview) {
+    await ready();
+    if (!repo) return { ok: false, error: "存档库尚未就绪，请重试读取" };
+    if (state.isLocked) {
+      openPwdModal();
+      return { ok: false, error: "请先解锁" };
+    }
+    if (session && !ClassroomWriteBarrier.allow())
+      return { ok: false, error: "课堂正在保存或切换" };
+    const listed = await repo.list();
+    if (!listed.ok) return listed;
+    let imported = await repo.importPreview(preview, { activate: false });
+    if (imported.code === "SAVE_ALREADY_EXISTS") {
+      // A newer snapshot of the same save must never overwrite the classroom
+      // being used. Store a separate recovery copy; the original source bytes
+      // and its receipt still determine idempotency on retry.
+      const copy = SaveSchema.clone(preview);
+      for (const doc of copy.documents) {
+        const originalSaveId = doc.saveId;
+        doc.saveId = "save-" + crypto.randomUUID();
+        doc.revision = 1;
+        doc.name += "（导入副本）";
+        doc.migration = {
+          ...(doc.migration || {}),
+          copiedFromSaveId: originalSaveId,
+        };
+      }
+      imported = await repo.importPreview(copy, { activate: false });
+    }
+    if (!imported.ok) return imported;
+    if (session) return session.switchTo(imported.saveIds[0]);
+    const active = await repo.switchActive(imported.saveIds[0], {
+      expectedGeneration: listed.index.generation,
+    });
+    if (!active.ok) return active;
+    readyPromise = null;
+    starting = true;
+    repo.close();
+    return ready();
+  }
+
+  async function exportCurrent() {
+    if (!session) throw Error("尚未读取可用存档，请先重试读取；原文件仍受保护");
+    await session.whenIdle();
+    const doc = session.snapshot(),
+      assets = [];
+    for (const id of doc.assetReferences) {
+      const asset = await repo.getAsset(id);
+      if (!asset || asset.ok === false) throw Error("缺少资源：" + id);
+      assets.push(asset);
+    }
+    return SaveMigration.bundle(doc, assets);
+  }
+  root.SaveManager = Object.freeze({
+    ready,
+    blocked: () => libraryBlocked,
+    pendingSettlement: () => !!currentStatus.pendingSettlement,
+    retry: () => {
+      if (starting) return ready();
+      readyPromise = null;
+      starting = true;
+      session = null;
+      repo?.close();
+      return ready();
+    },
+    isStarting: () => starting,
+    enabled: () => !!session,
+    isSwitching: () => !!session?.isSwitching(),
+    context: () =>
+      session?.token() ||
+      (currentStatus.saveId
+        ? { saveId: currentStatus.saveId, generation: currentStatus.generation }
+        : null),
+    snapshot: () => session?.snapshot() || null,
+    status: () => ({ ...currentStatus }),
+    repository: () => repo,
+    persist,
+    scheduleLegacySave,
+    edit,
+    previewSource,
+    importSource,
+    exportCurrent,
+    rename: async (name) => {
+      const trimmed = String(name || "").trim();
+      if (!trimmed || trimmed.length > 100)
+        return { ok: false, error: "存档名称需为1至100字" };
+      await ready();
+      if (state.isLocked) {
+        openPwdModal();
+        return { ok: false, error: "请先解锁" };
+      }
+      if (!ClassroomWriteBarrier.allow())
+        return { ok: false, error: "请等待当前操作完成" };
+      return session.update((doc) => {
+        doc.name = trimmed;
+        return { document: doc };
+      });
+    },
+    create: async ({ name = "新课堂", copy = false } = {}) => {
+      await ready();
+      if (state.isLocked) {
+        openPwdModal();
+        return { ok: false, error: "请先解锁" };
+      }
+      if (!ClassroomWriteBarrier.allow())
+        return { ok: false, error: "请等待当前操作完成" };
+      let bundle;
+      if (copy) bundle = await exportCurrent();
+      else {
+        const raw = buildClassroomBackup();
+        raw.groups = [
+          normalizeGroup(
+            {
+              id: 1,
+              groupUid: StableIdentity.createGroupUid(),
+              groupNo: 1,
+              name: "第 1 组",
+              color: DEFAULT_COLORS[0],
+              score: 0,
+              members: [],
+            },
+            0,
+          ),
+        ];
+        raw.history = [];
+        raw.itemGlobal = {};
+        raw.picker = {
+          mode: "individual",
+          antiRepeat: true,
+          pickedStudentKeys: [],
+          pickedGroupIds: [],
+          preselectedGroupIds: [],
+        };
+        raw.round = {
+          roundActive: false,
+          evaluated: false,
+          correctAns: "",
+          hasStartedOnce: false,
+          lastRoundAllIn: null,
+        };
+        raw.seasonId = StableIdentity.createSeasonId();
+        raw.achievementLedger = AchievementLedger.empty();
+        delete raw.rosterSnapshot;
+        const preview = await SaveMigration.preview({
+          rawText: JSON.stringify(raw),
+          name,
+        });
+        bundle = SaveMigration.bundle(preview.documents[0], preview.assets);
+      }
+      const doc = bundle.documents[0];
+      doc.saveId = "save-" + crypto.randomUUID();
+      doc.revision = 1;
+      doc.name = String(name).trim() || "新课堂";
+      doc.createdAt = doc.updatedAt = new Date().toISOString();
+      return importSource(
+        await previewSource(JSON.stringify(bundle), doc.name),
+      );
+    },
+    archive: (record) =>
+      session.update((doc) => {
+        if (record.seasonId !== doc.match.season.seasonId)
+          throw Error("归档赛季已变化");
+        const existing = doc.archives.find(
+          (a) => a.seasonId === record.seasonId,
+        );
+        if (existing && !doc.match.pendingSettlement)
+          throw Error("本届已有归档，请先检查档案");
+        if (!existing)
+          doc.archives.unshift(
+            SaveSchema.clone({
+              ...record,
+              schemaVersion: Reliability.schemaVersion,
+            }),
+          );
+        doc.match.pendingSettlement = {
+          seasonId: record.seasonId,
+          recordId: (existing || record).id,
+        };
+        return { document: doc };
+      }),
+    removeArchive: (id) =>
+      session.update((doc) => {
+        doc.archives = doc.archives.filter((a) => a.id !== id);
+        return { document: doc };
+      }),
+    whenIdle: async () => {
+      await deferredLegacySave;
+      const result = await session?.whenIdle();
+      await preferenceQueue;
+      return result || { ok: false };
+    },
+    switchTo: async (id) => {
+      await ready();
+      if (state.isLocked) {
+        openPwdModal();
+        return { ok: false, error: "请先解锁" };
+      }
+      return session?.switchTo(id) || { ok: false, error: "存档未就绪" };
+    },
+  });
+  document.addEventListener("DOMContentLoaded", ready, { once: true });
+})(globalThis);
+</script>
 <script>/* Stable public APIs. ItemOperationBlocks is the sole item executor;
    new features must not add another override layer. */
 function buildClassroomBackup() {
@@ -40254,7 +41503,7 @@ function buildClassroomBackup() {
     return clone(classroomCommands.baseline().backup);
   return {
     schemaVersion: Reliability.schemaVersion,
-    appVersion: "V3.0.68",
+    appVersion: "V3.0.69",
     timestamp: new Date().toISOString(),
     seasonId: state.seasonId,
     achievementLedger: AchievementLedger.normalize(state.achievementLedger),
@@ -40269,6 +41518,9 @@ function buildClassroomBackup() {
       lastRoundAllIn: state.lastRoundAllIn,
     },
     history: clone(historyStack),
+    ...(state.rosterSnapshot
+      ? { rosterSnapshot: clone(state.rosterSnapshot) }
+      : {}),
     firstHandDrawPending: firstHandDrawPendingV218,
     adminPin: state.adminPin,
     masterVolume: state.masterVolume,
@@ -40294,6 +41546,7 @@ function applyClassroomBackup(raw) {
   else if (!state.achievementLedger)
     state.achievementLedger = AchievementLedger.empty();
   state.groups = normalizeAllGroups(data.groups);
+  if (data.rosterSnapshot) state.rosterSnapshot = clone(data.rosterSnapshot);
   if (data.picker) {
     const p = data.picker;
     state.picker = {
@@ -40367,6 +41620,10 @@ function applyClassroomBackup(raw) {
   ensureGroupNumbersV213(false);
 }
 function importClassroomData(data) {
+  if (globalThis.SaveManager?.enabled())
+    return SaveManager.previewSource(JSON.stringify(data), "导入课堂").then(
+      (preview) => SaveManager.importSource(preview),
+    );
   const conflict = ClassroomWriteBarrier.conflict();
   if (conflict) return conflict;
   if (state.isLocked) return { ok: false, error: "请先解锁" };
@@ -40410,6 +41667,22 @@ function importClassroomData(data) {
 function itemCommandSnapshot() {
   return JSON.stringify({ groups: state.groups, itemGlobal: state.itemGlobal });
 }
+function refreshClassroomSaveWarning() {
+  const warning = document.getElementById("classroomSaveWarning");
+  if (!warning) return;
+  const pending = !!globalThis.SaveManager?.pendingSettlement?.(),
+    blocked = !!globalThis.SaveManager?.blocked?.();
+  warning.hidden = !pending && !blocked && !window.classroomUnsavedChanges;
+  const text = document.getElementById("classroomSaveWarningText");
+  if (text)
+    text.textContent = pending
+      ? "本届档案已安全保存，新一届初始化尚未完成。已暂停课堂修改，请完成初始化；也可先导出备份。"
+      : blocked
+        ? "存档库未成功读取，已暂停修改保护原数据。请重试或导出当前显示的数据。"
+        : "本页有尚未保存的课堂数据。关闭或刷新前，请先导出备份。";
+  const resume = document.getElementById("classroomSettlementResume");
+  if (resume) resume.hidden = !pending;
+}
 function showClassroomSaveWarning(error) {
   const alreadyUnsaved = !!window.classroomUnsavedChanges;
   window.classroomUnsavedChanges = true;
@@ -40419,6 +41692,7 @@ function showClassroomSaveWarning(error) {
     warning.hidden = false;
     warning.dataset.reason = String(error || "保存不可用");
   }
+  refreshClassroomSaveWarning();
   if (!alreadyUnsaved) showToast("更改仅保存在本页。关闭或刷新前请导出备份。");
 }
 // Only this adapter touches global classroom state; the controller is pure/testable.
@@ -40487,6 +41761,7 @@ Reliability.onDefenseInvalidation(() =>
   classroomCommands.cancel("lifecycle-changed"),
 );
 function runClassroomCommand(description, operation, options) {
+  if (!ClassroomWriteBarrier.allow()) return false;
   return classroomCommands.run(description, operation, options);
 }
 function deferClassroomDefense(promise, apply, isCurrent) {
@@ -40657,24 +41932,26 @@ window.classroomReady = true;
    copying that file is how a teacher moves a classroom between machines. Saves
    are held off until this settles (ClassroomSaveFile.isHydrating). */
 if (globalThis.ClassroomSaveFile?.available?.()) {
-  ClassroomSaveFile.hydrate().then((result) => {
-    window.classroomSaveFileStatus = result.status;
-    if (result.status !== "loaded") return;
-    try {
-      applyClassroomBackup(result.data);
-      // Hydration is settled now, so this write mirrors the restored classroom
-      // back to both localStorage and the file.
-      saveState();
-      renderAll();
-      updatePickerPoolUI();
-      window.classroomSaveFileStatus = "restored";
-      showToast("已从存档文件恢复课堂：" + (result.info?.path || ""));
-    } catch (error) {
-      window.classroomSaveFileStatus = "restore-failed";
-      console.error("存档文件恢复失败", error);
-      showToast("存档文件无法恢复，已保留本机数据：" + error.message);
-    }
-  });
+  window.classroomHydrationPromise = ClassroomSaveFile.hydrate().then(
+    (result) => {
+      window.classroomSaveFileStatus = result.status;
+      if (result.status !== "loaded") return;
+      try {
+        applyClassroomBackup(result.data);
+        // Hydration is settled now, so this write mirrors the restored classroom
+        // back to both localStorage and the file.
+        saveState();
+        renderAll();
+        updatePickerPoolUI();
+        window.classroomSaveFileStatus = "restored";
+        showToast("已从存档文件恢复课堂：" + (result.info?.path || ""));
+      } catch (error) {
+        window.classroomSaveFileStatus = "restore-failed";
+        console.error("存档文件恢复失败", error);
+        showToast("存档文件无法恢复，已保留本机数据：" + error.message);
+      }
+    },
+  );
 } else {
   // The browser build has no file bridge, so nothing waits.
   ClassroomSaveFile?.markHydrated?.();
@@ -40855,7 +42132,7 @@ const ClassroomRecovery = (() => {
     if (!accepted) return;
     byId("classroomRecoveryRestore").disabled = true;
     try {
-      const result = importClassroomData(selected.data);
+      const result = await importClassroomData(selected.data);
       if (!result?.ok) throw new Error(result?.error || "恢复未完成");
       byId("classroomRecoveryTools").hidden = true;
       setStatus("课堂已恢复并完成主存档写入。");
@@ -46364,6 +47641,42 @@ const GodPowerComponentCatalog = {
       sources: ["src/styles/components/application-surfaces.css"],
     },
     {
+      name: "save-avatar-button",
+      sources: ["src/styles/settings/save-workspace.css"],
+    },
+    {
+      name: "save-group-row",
+      sources: ["src/styles/settings/save-workspace.css"],
+    },
+    {
+      name: "save-member-options",
+      sources: ["src/styles/settings/save-workspace.css"],
+    },
+    {
+      name: "save-roster-columns",
+      sources: ["src/styles/settings/save-workspace.css"],
+    },
+    {
+      name: "save-student-form",
+      sources: ["src/styles/settings/save-workspace.css"],
+    },
+    {
+      name: "save-student-table",
+      sources: ["src/styles/settings/save-workspace.css"],
+    },
+    {
+      name: "save-workspace",
+      sources: ["src/styles/settings/save-workspace.css"],
+    },
+    {
+      name: "save-workspace-help",
+      sources: ["src/styles/settings/save-workspace.css"],
+    },
+    {
+      name: "save-workspace-toolbar",
+      sources: ["src/styles/settings/save-workspace.css"],
+    },
+    {
       name: "score-card-number",
       sources: ["src/styles/feedback/item-score-cinematics.css"],
     },
@@ -49225,6 +50538,568 @@ const UIComponentLibrary = (() => {
   });
 })();
 </script>
+<style>.save-workspace {
+  color: var(--ui-text);
+  padding: 24px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--radius-lg);
+  background: var(--ui-surface);
+}
+.save-workspace header h3 {
+  margin: 0 0 8px;
+}
+.save-workspace-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.save-workspace-toolbar select {
+  flex: 1;
+  min-width: 200px;
+}
+.save-workspace-help {
+  color: var(--ui-muted);
+  line-height: 1.6;
+}
+.save-student-form {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  margin: 20px 0;
+}
+.save-student-form label {
+  display: grid;
+  gap: 6px;
+}
+.save-workspace input:not([type="checkbox"]),
+.save-workspace select {
+  border: 1px solid var(--ui-border);
+  border-radius: var(--radius-sm);
+  background: var(--ui-surface);
+  color: var(--ui-text);
+  padding: 9px 12px;
+}
+.save-roster-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.save-student-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.save-student-table th,
+.save-student-table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--ui-border);
+  overflow-wrap: anywhere;
+}
+.save-student-table th {
+  color: var(--ui-muted);
+  font-weight: 600;
+}
+.save-avatar-button {
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--radius-md);
+  background: var(--ui-surface);
+  color: var(--ui-text);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.save-avatar-button img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.save-avatar-button span {
+  font-size: 12px;
+}
+.save-group-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ui-border);
+}
+.save-group-row div {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.save-group-row p {
+  margin: 6px 0 0;
+  color: var(--ui-muted);
+}
+.save-member-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+.save-member-options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--radius-sm);
+}
+.save-member-options small {
+  color: var(--ui-muted);
+}
+.save-workspace [data-member-editor] {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ui-border);
+}
+</style>
+<script>/* Current-save management; no parallel classroom/teacher roster is edited here. */
+(function installSaveWorkspace(root) {
+  "use strict";
+  const E = (value) =>
+    String(value ?? "").replace(
+      /[&<>"']/g,
+      (c) =>
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;",
+        })[c],
+    );
+  let mounted = null,
+    lastRoster = "",
+    saveId = "",
+    avatarTarget = null,
+    batchContext = null;
+  const urls = new Map();
+  function message(text) {
+    if (mounted)
+      mounted.querySelector("[data-save-message]").textContent = text;
+  }
+  function revoke() {
+    for (const url of urls.values()) URL.revokeObjectURL(url);
+    urls.clear();
+  }
+  function download(value, name) {
+    const url = URL.createObjectURL(
+      new Blob([JSON.stringify(value, null, 2)], { type: "application/json" }),
+    );
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  async function thumbnails() {
+    const id = saveId;
+    for (const image of mounted.querySelectorAll("img[data-asset]")) {
+      const assetId = image.dataset.asset;
+      try {
+        if (!urls.has(assetId)) {
+          const asset = await SaveManager.repository().getAsset(assetId);
+          if (id !== saveId) return;
+          if (!asset?.raw) continue;
+          urls.set(assetId, URL.createObjectURL(asset.raw));
+        }
+        image.src = urls.get(assetId);
+      } catch (error) {
+        image.alt = "头像暂不可用";
+        console.warn("读取可选头像失败", error.message);
+      }
+    }
+  }
+  function avatar(row, type) {
+    const id = type === "student" ? row.studentUid : row.groupUid;
+    return `<button type="button" class="save-avatar-button" data-avatar-type="${type}" data-avatar-id="${E(id)}" aria-label="为${E(row.displayName || row.name)}设置头像">${row.avatarResourceId ? `<img data-asset="${E(row.avatarResourceId)}" alt="头像">` : "<span>＋头像</span>"}</button>`;
+  }
+  async function render() {
+    if (!mounted) return;
+    const doc = SaveManager.snapshot();
+    const status = SaveManager.status();
+    mounted.querySelector("[data-save-state]").textContent = doc
+      ? `${doc.name} · 修订 ${doc.revision} · ${status.phase === "saving" ? "保存中…" : status.phase === "error" ? "保存失败，保留当前数据" : "本地保存"}`
+      : status.error || "正在读取当前存档…";
+    mounted.querySelector("[data-save-retry]").hidden = !SaveManager.blocked();
+    if (!doc) return;
+    if (saveId !== doc.saveId) {
+      saveId = doc.saveId;
+      lastRoster = "";
+      mounted.querySelector("[data-member-editor]").hidden = true;
+      delete mounted.querySelector("#saveStudentForm").dataset.editing;
+      mounted.querySelector("#saveStudentName").value = "";
+      mounted.querySelector("#saveStudentNumber").value = "";
+      mounted.querySelector("#saveStudentAdd").textContent = "新增学生";
+      revoke();
+    }
+    const signature = doc.saveId + ":" + doc.roster.revision;
+    if (signature === lastRoster) return;
+    lastRoster = signature;
+    const groups = new Map(doc.roster.groups.map((g) => [g.groupUid, g]));
+    mounted.querySelector("#saveWorkspaceStudentRows").innerHTML =
+      doc.roster.students
+        .map((s) => {
+          const a = doc.roster.assignments.find(
+            (a) => a.studentUid === s.studentUid,
+          );
+          return `<tr><td>${avatar(s, "student")}</td><td><b>${E(s.number || "—")}</b></td><td>${E(s.displayName)}</td><td>${E(groups.get(a?.groupUid)?.name || "未分组")}</td><td><button type="button" class="btn" data-edit-student="${E(s.studentUid)}">编辑</button></td></tr>`;
+        })
+        .join("") ||
+      '<tr><td colspan="5">暂无学生，可在上方新增学生，或导入课堂存档。</td></tr>';
+    mounted.querySelector("[data-save-students-count]").textContent =
+      `学生 ${doc.roster.students.length} 人`;
+    mounted.querySelector("[data-save-groups]").innerHTML =
+      doc.roster.groups
+        .map(
+          (g) =>
+            `<article class="save-group-row">${avatar(g, "group")}<div><b>${E(g.name)}</b><p>${doc.roster.assignments.filter((a) => a.groupUid === g.groupUid).length} 名成员</p></div><button type="button" class="btn" data-members="${E(g.groupUid)}">选择成员</button></article>`,
+        )
+        .join("") || "<p>暂无小组，可从比赛页添加小组。</p>";
+    const listed = await SaveManager.repository().list();
+    if (listed.ok)
+      mounted.querySelector("[data-save-select]").innerHTML =
+        listed.index.entries
+          .map(
+            (e) =>
+              `<option value="${E(e.saveId)}" ${e.saveId === doc.saveId ? "selected" : ""}>${E(e.name)}</option>`,
+          )
+          .join("");
+    thumbnails();
+  }
+  async function assetFromFile(file) {
+    if (
+      file.size > 12 * 1024 * 1024 ||
+      !/^image\/(png|jpeg|webp)$/.test(file.type)
+    )
+      throw Error("头像需为12MB以内的PNG、JPG或WebP");
+    const url = URL.createObjectURL(file);
+    let image;
+    try {
+      image = new Image();
+      image.src = url;
+      await image.decode();
+      if (image.naturalWidth * image.naturalHeight > 40e6)
+        throw Error("头像分辨率过大");
+      const canvas = document.createElement("canvas");
+      canvas.width = canvas.height = 320;
+      const c = canvas.getContext("2d");
+      if (!c) throw Error("无法处理图片");
+      const scale = Math.max(
+          320 / image.naturalWidth,
+          320 / image.naturalHeight,
+        ),
+        w = image.naturalWidth * scale,
+        h = image.naturalHeight * scale;
+      c.drawImage(image, (320 - w) / 2, (320 - h) / 2, w, h);
+      const dataBase64 = canvas.toDataURL("image/webp", 0.86).split(",")[1],
+        bytes = Uint8Array.from(atob(dataBase64), (c) => c.charCodeAt(0));
+      const sha256 = [
+        ...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)),
+      ]
+        .map((n) => n.toString(16).padStart(2, "0"))
+        .join("");
+      return {
+        resourceId: "asset-" + sha256,
+        sha256,
+        mimeType: "image/webp",
+        dataBase64,
+        byteLength: bytes.length,
+      };
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+  async function setAvatarFiles(files, target) {
+    const before = SaveManager.snapshot(),
+      context = SaveManager.context();
+    if (!before) throw Error("存档未就绪");
+    const expected = target?.context || batchContext;
+    if (
+      expected &&
+      (expected.saveId !== before.saveId ||
+        expected.generation !== context.generation)
+    )
+      throw Error("头像选择窗口属于旧存档，已取消");
+    const updates = [],
+      assets = [];
+    let unmatched = 0;
+    for (const file of files) {
+      let row = target;
+      if (!row) {
+        const name = file.name.replace(/\.[^.]+$/, "").trim();
+        const matches = before.roster.students.filter(
+          (s) => s.displayName === name || SaveRoster.label(s) === name,
+        );
+        if (matches.length !== 1) {
+          unmatched++;
+          continue;
+        }
+        row = { type: "student", id: matches[0].studentUid };
+      }
+      const asset = await assetFromFile(file);
+      assets.push(asset);
+      updates.push({ ...row, resourceId: asset.resourceId });
+    }
+    if (
+      SaveManager.snapshot().saveId !== before.saveId ||
+      SaveManager.context().generation !== context.generation
+    )
+      throw Error("处理图片时存档已切换，已取消");
+    if (!updates.length) {
+      message("没有找到唯一匹配的学生；请逐人选择头像。");
+      return;
+    }
+    const result = await SaveManager.edit(
+      "更新名单头像",
+      (doc) => {
+        doc.assetReferences = [
+          ...new Set([
+            ...doc.assetReferences,
+            ...assets.map((a) => a.resourceId),
+          ]),
+        ];
+        for (const row of updates)
+          doc = SaveRoster.setAvatar(doc, row.type, row.id, row.resourceId);
+        return doc;
+      },
+      { assets },
+    );
+    if (!result.ok || !result.persisted)
+      throw Error(result.error || "头像未保存");
+    message(
+      `已保存 ${updates.length} 张头像${unmatched ? `，${unmatched} 张未唯一匹配，未自动填写` : ""}`,
+    );
+    await render();
+  }
+  function editStudent(id) {
+    const student = SaveManager.snapshot()?.roster.students.find(
+      (s) => s.studentUid === id,
+    );
+    if (!student) return;
+    mounted.querySelector("#saveStudentName").value = student.displayName;
+    mounted.querySelector("#saveStudentNumber").value = student.number || "";
+    mounted.querySelector("#saveStudentForm").dataset.editing = id;
+    mounted.querySelector("#saveStudentAdd").textContent = "保存学生";
+    mounted.querySelector("#saveStudentName").focus();
+  }
+  function openMembers(groupUid) {
+    const doc = SaveManager.snapshot(),
+      group = doc?.roster.groups.find((g) => g.groupUid === groupUid);
+    if (!group) return;
+    const body = mounted.querySelector("[data-member-options]");
+    mounted.querySelector("[data-member-title]").textContent =
+      group.name + " · 选择成员";
+    body.innerHTML =
+      doc.roster.students
+        .map((s) => {
+          const a = doc.roster.assignments.find(
+            (a) => a.studentUid === s.studentUid,
+          );
+          const other = doc.roster.groups.find(
+            (g) => g.groupUid === a?.groupUid,
+          );
+          return `<label><input type="checkbox" value="${E(s.studentUid)}" ${a?.groupUid === groupUid ? "checked" : ""}><span>${E(SaveRoster.label(s))}</span><small>${E(other && other.groupUid !== groupUid ? "将从" + other.name + "移入" : "")}</small></label>`;
+        })
+        .join("") || "<p>请先新增学生。</p>";
+    const panel = mounted.querySelector("[data-member-editor]");
+    panel.hidden = false;
+    panel.dataset.groupUid = groupUid;
+    panel.dataset.saveId = doc.saveId;
+    panel.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+  function mount(parent) {
+    if (mounted) return mounted;
+    mounted = document.createElement("section");
+    mounted.id = "saveWorkspace";
+    mounted.className = "ui-settings-card save-workspace";
+    mounted.innerHTML = `<header><h3>当前存档 · 学生与小组</h3><p data-save-state role="status">正在读取…</p><button type="button" class="btn" hidden data-save-retry>重试存档读取</button></header>
+   <div class="save-workspace-toolbar"><select aria-label="切换存档" data-save-select></select><button type="button" class="btn" data-save-import>导入新存档</button><button type="button" class="btn" data-save-export>导出完整存档（含头像）</button><button type="button" class="btn" data-batch-avatar>批量添加头像</button></div>
+   <details class="ui-settings-disclosure"><summary>更多存档管理</summary><div class="save-workspace-toolbar"><input data-save-name aria-label="存档名称" placeholder="存档名称" maxlength="100"><button type="button" class="btn" data-save-new>新建空白课堂</button><button type="button" class="btn" data-save-copy>复制当前存档</button><button type="button" class="btn" data-save-rename>重命名当前存档</button></div></details>
+   <p class="save-workspace-help">姓名和头像保存在当前存档中。批量头像按文件名唯一匹配姓名；不匹配或重名时不自动猜测。更改后立即保存。</p>
+   <p data-save-message role="status"></p>
+   <form id="saveStudentForm" class="save-student-form"><label>学号<input id="saveStudentNumber" autocomplete="off" maxlength="30"></label><label>姓名<input id="saveStudentName" autocomplete="off" maxlength="200" required></label><button class="btn btn-primary" type="submit" id="saveStudentAdd">新增学生</button></form>
+   <div class="save-roster-columns"><section><h4 data-save-students-count>学生</h4><table class="save-student-table"><thead><tr><th>头像</th><th>学号</th><th>姓名</th><th>小组</th><th>管理</th></tr></thead><tbody id="saveWorkspaceStudentRows"></tbody></table></section><section><h4>小组列表</h4><div data-save-groups></div></section></div>
+   <section data-member-editor hidden><h4 data-member-title></h4><p>学生同一时间只属于一个小组；未勾选的原成员会保留在未分组名单中。</p><div data-member-options class="save-member-options"></div><button type="button" class="btn btn-primary" data-member-save>保存成员</button><button type="button" class="btn" data-member-close>取消</button></section>
+   <input hidden type="file" accept=".json" data-save-file><input hidden type="file" accept="image/png,image/jpeg,image/webp" data-avatar-file><input hidden multiple type="file" accept="image/png,image/jpeg,image/webp" data-batch-file>`;
+    parent.prepend(mounted);
+    const handle = (fn) => async (event) => {
+      try {
+        await fn(event);
+      } catch (error) {
+        message(error.message);
+        console.error("存档工作区操作失败", error);
+      }
+    };
+    mounted.querySelector("#saveStudentForm").addEventListener(
+      "submit",
+      handle(async (event) => {
+        event.preventDefault();
+        const name = mounted.querySelector("#saveStudentName"),
+          number = mounted.querySelector("#saveStudentNumber");
+        const editing = event.target.dataset.editing;
+        const result = await SaveManager.edit(
+          editing ? "编辑学生" : "新增学生",
+          (doc) =>
+            editing
+              ? SaveRoster.editStudent(doc, editing, {
+                  displayName: name.value,
+                  number: number.value,
+                })
+              : SaveRoster.addStudent(doc, {
+                  displayName: name.value,
+                  number: number.value,
+                }),
+        );
+        if (!result.ok || !result.persisted)
+          throw Error(result.error || "未保存");
+        name.value = "";
+        number.value = "";
+        delete event.target.dataset.editing;
+        mounted.querySelector("#saveStudentAdd").textContent = "新增学生";
+        render();
+      }),
+    );
+    mounted.addEventListener(
+      "click",
+      handle(async (event) => {
+        const button = event.target.closest("button");
+        if (!button) return;
+        if (button.hasAttribute("data-save-retry")) {
+          await SaveManager.retry();
+          lastRoster = "";
+          await render();
+        }
+        if (button.dataset.avatarId) {
+          avatarTarget = {
+            type: button.dataset.avatarType,
+            id: button.dataset.avatarId,
+            context: SaveManager.context(),
+          };
+          mounted.querySelector("[data-avatar-file]").click();
+        }
+        if (button.dataset.editStudent)
+          await editStudent(button.dataset.editStudent);
+        if (button.dataset.members) openMembers(button.dataset.members);
+        if (button.hasAttribute("data-save-import"))
+          mounted.querySelector("[data-save-file]").click();
+        if (button.hasAttribute("data-batch-avatar")) {
+          batchContext = SaveManager.context();
+          mounted.querySelector("[data-batch-file]").click();
+        }
+        if (
+          button.hasAttribute("data-save-new") ||
+          button.hasAttribute("data-save-copy")
+        ) {
+          const result = await SaveManager.create({
+            name: mounted.querySelector("[data-save-name]").value || "新课堂",
+            copy: button.hasAttribute("data-save-copy"),
+          });
+          if (!result.ok)
+            throw Error(result.error || result.message || result.code);
+          lastRoster = "";
+          await render();
+        }
+        if (button.hasAttribute("data-save-rename")) {
+          const result = await SaveManager.rename(
+            mounted.querySelector("[data-save-name]").value,
+          );
+          if (!result.ok)
+            throw Error(result.error || result.message || result.code);
+          lastRoster = "";
+          await render();
+        }
+        if (button.hasAttribute("data-save-export"))
+          download(
+            await SaveManager.exportCurrent(),
+            SaveManager.snapshot().name + ".godpower-save.json",
+          );
+        if (button.hasAttribute("data-member-close"))
+          mounted.querySelector("[data-member-editor]").hidden = true;
+        if (button.hasAttribute("data-member-save")) {
+          const panel = mounted.querySelector("[data-member-editor]");
+          if (panel.dataset.saveId !== SaveManager.snapshot().saveId)
+            throw Error("存档已切换，请重新选择");
+          const ids = [...panel.querySelectorAll("input:checked")].map(
+            (i) => i.value,
+          );
+          const result = await SaveManager.edit("调整小组成员", (doc) =>
+            SaveRoster.assign(doc, panel.dataset.groupUid, ids),
+          );
+          if (!result.ok || !result.persisted)
+            throw Error(result.error || "未保存");
+          panel.hidden = true;
+          render();
+        }
+      }),
+    );
+    mounted.querySelector("[data-avatar-file]").addEventListener(
+      "change",
+      handle(async (event) => {
+        const files = [...event.target.files];
+        event.target.value = "";
+        if (files.length) await setAvatarFiles(files, avatarTarget);
+      }),
+    );
+    mounted.querySelector("[data-batch-file]").addEventListener(
+      "change",
+      handle(async (event) => {
+        const files = [...event.target.files];
+        event.target.value = "";
+        if (files.length) await setAvatarFiles(files, null);
+      }),
+    );
+    mounted.querySelector("[data-save-file]").addEventListener(
+      "change",
+      handle(async (event) => {
+        const file = event.target.files[0];
+        event.target.value = "";
+        if (!file) return;
+        if (file.size > 128 * 1024 * 1024) throw Error("存档文件超过128MB");
+        const preview = await SaveManager.previewSource(
+          await file.text(),
+          file.name.replace(/\.json$/, ""),
+        );
+        const info = preview.report;
+        if (
+          !(await themeConfirm(
+            `导入 ${preview.documents.length} 份存档、${info.students} 名学生。当前存档会保留，成功保存后切换。`,
+            { title: "导入存档", confirmText: "导入并切换" },
+          ))
+        )
+          return;
+        const result = await SaveManager.importSource(preview);
+        if (!result.ok)
+          throw Error(result.error || result.message || result.code);
+        lastRoster = "";
+        render();
+      }),
+    );
+    mounted.querySelector("[data-save-select]").addEventListener(
+      "change",
+      handle(async (event) => {
+        const result = await SaveManager.switchTo(event.target.value);
+        if (!result.ok)
+          throw Error(result.error || result.message || result.code);
+        lastRoster = "";
+        render();
+      }),
+    );
+    root.addEventListener("godpower:save-status", render);
+    root.addEventListener("pagehide", revoke, { once: true });
+    SaveManager.ready().then(render);
+    return mounted;
+  }
+  root.SaveWorkspace = Object.freeze({ mount, openMembers });
+})(globalThis);
+</script>
 <script>/* UI composition service. Existing business commands remain the only state writers. */
 const DesktopUI = (() => {
   const M = GodpowerUIModel,
@@ -49298,6 +51173,7 @@ const DesktopUI = (() => {
     document.body.dataset.itemFx = preferences.itemFx ? "on" : "off";
     document.body.dataset.systemMotion = String(preferences.systemMotion);
     if (!canAnimate()) {
+      clearPickerReveal();
       cancelItemScoreAnimations();
       cancelScoreAnimationAndSync();
       cancelAnimations();
@@ -50033,14 +51909,7 @@ const DesktopUI = (() => {
     };
     GodPowerSettingsLayout.organize(sections, shell, { query: $, escape: E });
     installSettingsSafetyGuard();
-    ClassroomRosterWorkspace.mount(sections.students, {
-      storage: localStorage,
-      getGroups: () => state.groups,
-    });
-    sections.students.insertBefore(
-      $("#classroomRosterWorkspace"),
-      $("#uiSettingsRoster"),
-    );
+    SaveWorkspace.mount(sections.students);
     TeachingWorkspace.mount(sections.teaching, { storage: localStorage });
 
     TeachingResourceWorkspace.mount(sections.teaching, {
@@ -50582,8 +52451,17 @@ const DesktopUI = (() => {
   let pickerGeneration = 0,
     pickerPreparing = false,
     pickerRevealing = false;
+  let pickerRevealDeadline = null;
+  const pickerRevealAnimations = [];
   const pickerReelRestores = [];
   function clearPickerReveal() {
+    if (pickerRevealDeadline) {
+      clearTimeout(pickerRevealDeadline.timer);
+      pickerRevealDeadline.resolve();
+      pickerRevealDeadline = null;
+    }
+    for (const animation of pickerRevealAnimations.splice(0))
+      animation.cancel();
     pickerRevealing = false;
     $("#pickerModal")?.removeAttribute("data-picker-reveal");
     for (const restore of pickerReelRestores.splice(0)) restore();
@@ -50670,6 +52548,17 @@ const DesktopUI = (() => {
       return;
     }
     pickerRevealing = true;
+    // Native reels must not depend on WAAPI in the hidden/minimized main window.
+    // Cancellation resolves animation.finished early; a paused timeline may never
+    // resolve it. This owned deadline preserves the one-second reveal contract.
+    const minimumReveal = new Promise((resolve) => {
+      const owner = { resolve, timer: null };
+      owner.timer = setTimeout(() => {
+        if (pickerRevealDeadline === owner) pickerRevealDeadline = null;
+        resolve();
+      }, 1000);
+      pickerRevealDeadline = owner;
+    });
     modal.dataset.pickerReveal = "pending";
     button.disabled = true;
     button.setAttribute("aria-busy", "true");
@@ -50730,12 +52619,18 @@ const DesktopUI = (() => {
           fill: "forwards",
         },
       );
-      if (a) pending.push(a.finished.catch(() => {}));
+      if (a) {
+        pickerRevealAnimations.push(a);
+        pending.push(a.finished.catch(() => {}));
+      }
     });
     ClassroomFeedback.clearLive();
     // clearLive restores the legacy name; keep it hidden behind the settling strip.
     pendingActual.forEach((e) => (e.style.visibility = "hidden"));
-    Promise.all(pending).then(complete);
+    (window.GodpowerPicker?.isExternalPresentation()
+      ? minimumReveal
+      : Promise.all([minimumReveal, ...pending])
+    ).then(complete);
   }
   function pickerChanged() {
     const target = pickerTargetGroup();
@@ -52447,113 +54342,253 @@ window.addEventListener("DOMContentLoaded", MigrationPanel.init, {
 </script>
 <script>/* Authoritative, presentation-neutral picker port. All commands reuse the existing classroom engine. */
 window.GodpowerPicker = (() => {
-  'use strict';
-  let phase = 'idle', serial = 0, resultId = null, preparing = false, external = false, externalEffects = true;
+  "use strict";
+  let phase = "idle",
+    serial = 0,
+    resultId = null,
+    preparing = false,
+    external = false,
+    externalEffects = true;
   const listeners = new Set();
-  let revealStyle = 'aurora';
+  let revealStyle = "aurora";
   function notify(next) {
-    if (next === 'rolling') {
+    if (next === "rolling") {
       resultId = `pick-${Date.now()}-${++serial}`;
       revealStyle = randomEffectStyle();
     }
-    if (next === 'idle' || next === 'cancelled') { next = 'idle'; resultId = null; }
+    if (next === "idle" || next === "cancelled") {
+      next = "idle";
+      resultId = null;
+    }
     if (next) phase = next;
     const snapshot = getSnapshot();
-    for (const listener of listeners) { try { listener(snapshot); } catch (e) { console.error('Picker observer failed', e); } }
+    for (const listener of listeners) {
+      try {
+        listener(snapshot);
+      } catch (e) {
+        console.error("Picker observer failed", e);
+      }
+    }
     return snapshot;
   }
   function currentResult() {
     const win = slotEngine.chosenResult;
     if (!win || !resultId) return null;
-    const source = state.picker.mode === 'group' ? win : win.group;
-    const group = state.groups.find(g => g.id === source?.id);
-    if (!group || group !== source || (state.picker.mode !== 'group' && !group.members?.includes(win.memberName))) return null;
-    const student = state.picker.mode === 'group' ? null : parseStudentV218(win.memberName);
-    const avatarDataUrl = state.picker.mode === 'group'
-      ? window.ClassroomAvatarDisplay?.groupDataUrlCached(group) || ''
-      : window.ClassroomAvatarDisplay?.studentDataUrl(group, win.memberName, win.memberIndex) || '';
-    return { id: resultId, mode: state.picker.mode, groupId: group.id, groupName: group.name,
-      groupNo: group.groupNo || group.id, color: group.color, score: group.score,
-      name: student?.name || group.name, number: student?.number ?? null,
+    const source = state.picker.mode === "group" ? win : win.group;
+    const group = state.groups.find((g) => g.id === source?.id);
+    if (
+      !group ||
+      group !== source ||
+      (state.picker.mode !== "group" &&
+        !group.members?.includes(win.memberName))
+    )
+      return null;
+    const student =
+      state.picker.mode === "group" ? null : parseStudentV218(win.memberName);
+    const avatarDataUrl =
+      state.picker.mode === "group"
+        ? window.ClassroomAvatarDisplay?.groupDataUrlCached(group) || ""
+        : window.ClassroomAvatarDisplay?.studentDataUrl(
+            group,
+            win.memberName,
+            win.memberIndex,
+          ) || "";
+    return {
+      id: resultId,
+      mode: state.picker.mode,
+      groupId: group.id,
+      groupName: group.name,
+      groupNo: group.groupNo || group.id,
+      color: group.color,
+      score: group.score,
+      name: student?.name || group.name,
+      number: student?.number ?? null,
       avatarDataUrl,
-      memberName: state.picker.mode === 'group' ? null : win.memberName };
+      memberName: state.picker.mode === "group" ? null : win.memberName,
+    };
   }
   /* Ten presentations; a reveal picks one at random so the show stays varied.
      The saved setting chooses the pool: "aurora"/"burst" now mean "any". */
-  const EFFECT_STYLES = ['aurora', 'burst', 'ripple', 'starlight', 'spotlight',
-    'confetti', 'vortex', 'prism', 'bloom', 'comet'];
+  const EFFECT_STYLES = [
+    "aurora",
+    "burst",
+    "ripple",
+    "starlight",
+    "spotlight",
+    "confetti",
+    "vortex",
+    "prism",
+    "bloom",
+    "comet",
+  ];
   function randomEffectStyle() {
     return EFFECT_STYLES[Math.floor(Math.random() * EFFECT_STYLES.length)];
   }
   globalThis.randomEffectStyle = randomEffectStyle;
   globalThis.EFFECT_STYLES = EFFECT_STYLES;
   function getSnapshot() {
-    const actual = slotEngine.isSpinning ? 'rolling' : phase;
-    const result = ['settling', 'revealed'].includes(actual) ? currentResult() : null;
-    const options = ClassroomFeedback.getOptions(), motion = DesktopUI.getPreferences();
-    const effectEnabled = options.pickEffects && motion.motion !== 'off' &&
-      (window.godpowerDesktop?.role !== 'main' || externalEffects) &&
-      !(motion.systemMotion && matchMedia('(prefers-reduced-motion: reduce)').matches);
-    return { protocolVersion: 1, theme: window.GodpowerTheme?.get() || 'classic', phase: !slotEngine.isSpinning && !slotEngine.chosenResult && !preparing ? 'idle' : actual,
-      mode: state.picker.mode, antiRepeat: !!state.picker.antiRepeat,
+    const actual = slotEngine.isSpinning ? "rolling" : phase;
+    const result = ["settling", "revealed"].includes(actual)
+      ? currentResult()
+      : null;
+    const options = ClassroomFeedback.getOptions(),
+      motion = DesktopUI.getPreferences();
+    const effectEnabled =
+      options.pickEffects &&
+      motion.motion !== "off" &&
+      (window.godpowerDesktop?.role !== "main" || externalEffects) &&
+      !(
+        motion.systemMotion &&
+        matchMedia("(prefers-reduced-motion: reduce)").matches
+      );
+    return {
+      protocolVersion: 1,
+      theme: window.GodpowerTheme?.get() || "classic",
+      phase:
+        !slotEngine.isSpinning && !slotEngine.chosenResult && !preparing
+          ? "idle"
+          : actual,
+      mode: state.picker.mode,
+      antiRepeat: !!state.picker.antiRepeat,
       preselectedGroupIds: [...(state.picker.preselectedGroupIds || [])],
-      remaining: document.getElementById('poolStatusText')?.textContent || '',
-      preview: { group: document.getElementById('reelTextGroup')?.textContent || '',
-        student: document.getElementById('reelTextStudent')?.textContent || '' },
-      groups: state.groups.map(g => ({ id: g.id, name: g.name, color: g.color, members: g.members?.length || 0, score: g.score })),
-      result, slots: options.slots,
-      history: (state.itemGlobal?.pickerHistory || []).slice(-30).map(x => ({ text: x.text, time: x.time })),
-      locked: !!state.isLocked, unsaved: !!window.classroomUnsavedChanges,
-      effects: { enabled: effectEnabled, style: revealStyle, duration: options.duration } };
+      remaining: document.getElementById("poolStatusText")?.textContent || "",
+      preview: {
+        group: document.getElementById("reelTextGroup")?.textContent || "",
+        student: document.getElementById("reelTextStudent")?.textContent || "",
+      },
+      groups: state.groups.map((g) => ({
+        id: g.id,
+        name: g.name,
+        color: g.color,
+        members: g.members?.length || 0,
+        score: g.score,
+      })),
+      result,
+      slots: options.slots,
+      history: (state.itemGlobal?.pickerHistory || [])
+        .slice(-30)
+        .map((x) => ({ text: x.text, time: x.time })),
+      locked: !!state.isLocked,
+      unsaved: !!window.classroomUnsavedChanges,
+      effects: {
+        enabled: effectEnabled,
+        style: revealStyle,
+        duration: options.duration,
+      },
+    };
   }
   function cancel() {
-    clearInterval(slotEngine.timerGroup); clearInterval(slotEngine.timerStudent);
-    slotEngine.isSpinning = false; slotEngine.chosenResult = null;
-    DesktopUI.cancelPickerPreparation(); stopRollLoop(); resetSlotDisplay();
-    return notify('cancelled');
+    clearInterval(slotEngine.timerGroup);
+    clearInterval(slotEngine.timerStudent);
+    slotEngine.isSpinning = false;
+    slotEngine.chosenResult = null;
+    DesktopUI.cancelPickerPreparation();
+    stopRollLoop();
+    resetSlotDisplay();
+    return notify("cancelled");
   }
   async function command(action, payload = {}) {
-    if (action === 'cancel') { cancel(); return { ok: true }; }
-    if (action === 'stop') {
+    if (action === "cancel") {
+      cancel();
+      return { ok: true };
+    }
+    if (globalThis.SaveManager?.pendingSettlement?.())
+      return { ok: false, error: "SETTLEMENT_RECOVERY" };
+    if (action === "stop") {
       if (preparing) cancel();
       else if (slotEngine.isSpinning) stopSlotSpin();
       return { ok: true, phase: getSnapshot().phase };
     }
-    if (preparing || slotEngine.isSpinning || phase === 'settling') return { ok: false, error: 'BUSY' };
-    if (action === 'start') {
-      preparing = true; notify('preparing');
+    if (preparing || slotEngine.isSpinning || phase === "settling")
+      return { ok: false, error: "BUSY" };
+    if (action === "start") {
+      preparing = true;
+      notify("preparing");
       try {
-        openPickerModal({internal:true});
+        openPickerModal({ internal: true });
         await DesktopUI.togglePicker();
-        return { ok: slotEngine.isSpinning, error: slotEngine.isSpinning ? undefined : 'NOT_STARTED' };
-      } finally { preparing = false; if (!slotEngine.isSpinning) notify('idle'); }
+        return {
+          ok: slotEngine.isSpinning,
+          error: slotEngine.isSpinning ? undefined : "NOT_STARTED",
+        };
+      } finally {
+        preparing = false;
+        if (!slotEngine.isSpinning) notify("idle");
+      }
     }
-    if (action === 'mode') {
-      if (!['individual', 'group', 'two_tier'].includes(payload.mode)) return { ok: false, error: 'INVALID_MODE' };
-      setPickerMode(payload.mode); saveState(); notify('idle');
-    } else if (action === 'antiRepeat') {
-      if (typeof payload.enabled !== 'boolean') return { ok: false, error: 'INVALID_VALUE' };
-      toggleAntiRepeat(payload.enabled); notify();
-    } else if (action === 'preselect') {
-      if (!state.groups.some(g => g.id === payload.groupId)) return { ok: false, error: 'INVALID_GROUP' };
-      toggleGroupPreselect(payload.groupId); notify('idle');
-    } else if (action === 'resetPool') {
-      resetPickerPool(); notify();
-    } else if (action === 'score') {
-      const result = currentResult(), delta = payload.delta;
-      if (state.isLocked) return { ok: false, error: 'LOCKED' };
-      if (phase !== 'revealed' || !result || result.id !== payload.resultId) return { ok: false, error: 'STALE_RESULT' };
-      if (!Number.isSafeInteger(delta) || !delta || !Number.isSafeInteger(result.score + delta)) return { ok: false, error: 'INVALID_SCORE' };
-      if (classroomCommands.isPending()) return { ok: false, error: 'BUSY' };
-      applyScoreDelta(result.groupId, delta); syncPickerScoreTarget(); notify();
-    } else return { ok: false, error: 'UNKNOWN_COMMAND' };
+    if (action === "mode") {
+      if (!["individual", "group", "two_tier"].includes(payload.mode))
+        return { ok: false, error: "INVALID_MODE" };
+      setPickerMode(payload.mode);
+      saveState();
+      notify("idle");
+    } else if (action === "antiRepeat") {
+      if (typeof payload.enabled !== "boolean")
+        return { ok: false, error: "INVALID_VALUE" };
+      toggleAntiRepeat(payload.enabled);
+      notify();
+    } else if (action === "preselect") {
+      if (!state.groups.some((g) => g.id === payload.groupId))
+        return { ok: false, error: "INVALID_GROUP" };
+      toggleGroupPreselect(payload.groupId);
+      notify("idle");
+    } else if (action === "resetPool") {
+      resetPickerPool();
+      notify();
+    } else if (action === "score") {
+      const result = currentResult(),
+        delta = payload.delta;
+      if (state.isLocked) return { ok: false, error: "LOCKED" };
+      if (phase !== "revealed" || !result || result.id !== payload.resultId)
+        return { ok: false, error: "STALE_RESULT" };
+      if (
+        !Number.isSafeInteger(delta) ||
+        !delta ||
+        !Number.isSafeInteger(result.score + delta)
+      )
+        return { ok: false, error: "INVALID_SCORE" };
+      if (classroomCommands.isPending()) return { ok: false, error: "BUSY" };
+      if (applyScoreDelta(result.groupId, delta) !== true)
+        return { ok: false, error: "COMMAND_REJECTED" };
+      const completion = await classroomCommands.whenIdle();
+      syncPickerScoreTarget();
+      notify();
+      return {
+        ok: !!completion.ok,
+        persisted: completion.persisted === true,
+        ...(completion.error ? { error: completion.error } : {}),
+      };
+    } else return { ok: false, error: "UNKNOWN_COMMAND" };
+    if (globalThis.SaveManager?.enabled()) {
+      const saved = await SaveManager.whenIdle();
+      if (!saved?.ok)
+        return {
+          ok: false,
+          persisted: false,
+          error: saved?.error || saved?.message || saved?.code || "SAVE_FAILED",
+        };
+    }
     return { ok: true, persisted: !window.classroomUnsavedChanges };
   }
-  return Object.freeze({ invalidate: cancel, command, getSnapshot, notify, isSettling: () => phase === 'settling',
-    subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
-    setExternalEffectsEnabled(value) { externalEffects = value === true; },
+  return Object.freeze({
+    invalidate: cancel,
+    command,
+    getSnapshot,
+    notify,
+    isSettling: () => phase === "settling",
+    subscribe(fn) {
+      listeners.add(fn);
+      return () => listeners.delete(fn);
+    },
+    setExternalEffectsEnabled(value) {
+      externalEffects = value === true;
+    },
     effectsAllowed: () => externalEffects,
-    setExternalPresentation(value) { external = value === true; }, isExternalPresentation: () => external });
+    setExternalPresentation(value) {
+      external = value === true;
+    },
+    isExternalPresentation: () => external,
+  });
 })();
 </script>
 <script>/* Keeps the floating hand menu and the dock hand panel on the same selection.
@@ -52869,6 +54904,64 @@ globalThis.HandRaisePort = (() => {
 (() => {
   const desktop = window.godpowerDesktop;
   if (!desktop || desktop.role !== "main") return;
+  let flushOwner = null;
+  const restoreFlush = (owner) => {
+    if (flushOwner !== owner) return;
+    window.classroomClosing = false;
+    if (owner.inert !== null) document.body.inert = owner.inert;
+    flushOwner = null;
+  };
+  desktop.onSaveFlush?.(async ({ id }) => {
+    if (flushOwner) {
+      desktop.saveFlushReply({ id, ok: false, error: "FLUSH_BUSY" });
+      return;
+    }
+    const owner = { id, inert: null };
+    flushOwner = owner;
+    try {
+      const ready = await globalThis.SaveManager?.ready();
+      if (flushOwner !== owner) return;
+      if (ready?.ok === false || globalThis.SaveManager?.blocked?.()) {
+        desktop.saveFlushReply({ id, ok: true });
+        return;
+      }
+      owner.inert = document.body.inert;
+      document.body.inert = true;
+      window.classroomClosing = true;
+      if (classroomCommands.isPending() && !classroomCommands.isCommitting())
+        Reliability.invalidateDefenseDecisions();
+      window.GodpowerPicker?.invalidate();
+      await classroomCommands.whenIdle();
+      await globalThis.SaveManager?.whenIdle();
+      if (window.classroomUnsavedChanges) {
+        const result = saveState();
+        const saved = result.completion
+          ? await result.completion
+          : await result;
+        if (!saved.ok)
+          throw Error(saved.error || saved.message || "退出前保存失败");
+      }
+      await globalThis.SaveManager?.whenIdle();
+      if (window.classroomUnsavedChanges)
+        throw Error("还有未保存的数据或设置，请先导出备份");
+      if (flushOwner === owner) desktop.saveFlushReply({ id, ok: true });
+    } catch (error) {
+      if (flushOwner === owner) {
+        showClassroomSaveWarning("退出前保存未完成：" + error.message);
+        desktop.saveFlushReply({ id, ok: false, error: error.message });
+        restoreFlush(owner);
+      }
+    }
+  });
+  desktop.onSaveFlushCancel?.((message) => {
+    const owner = flushOwner;
+    if (owner?.id === message.id) {
+      restoreFlush(owner);
+      showClassroomSaveWarning(
+        "退出已取消：" + (message.error || "保存尚未确认"),
+      );
+    }
+  });
   const completed = new Map();
   let last = "",
     timer,
@@ -52930,6 +55023,7 @@ globalThis.HandRaisePort = (() => {
       handSnapshot = hand?.getSnapshot() || null;
     const payload = {
       ...snapshot,
+      saveContext: globalThis.SaveManager?.context?.() || null,
       hand: handSnapshot
         ? {
             selectionId: handSnapshot.selectionId,
@@ -52981,7 +55075,19 @@ globalThis.HandRaisePort = (() => {
     handUse: "settings",
   };
 
-  desktop.onExecute(async ({ id, action, payload }) => {
+  desktop.onExecute(async ({ id, action, payload, saveContext = null }) => {
+    const active = globalThis.SaveManager?.context?.() || null;
+    if (
+      window.classroomClosing ||
+      globalThis.SaveManager?.blocked?.() ||
+      globalThis.SaveManager?.isStarting() ||
+      globalThis.SaveManager?.isSwitching() ||
+      active?.saveId !== saveContext?.saveId ||
+      active?.generation !== saveContext?.generation
+    ) {
+      desktop.reply({ id, result: { ok: false, error: "STALE_SAVE" } });
+      return;
+    }
     if (!completed.has(id)) {
       // Remote controls use the same configurable sound slots as the classroom buttons.
       const buttonSound =
@@ -53018,7 +55124,11 @@ globalThis.HandRaisePort = (() => {
   /* The dock owns the hand selection. Adopt its session (never re-select) so the
      floating menu keeps a valid token without recording a second raise. */
   globalThis.ClassroomHandSync?.subscribe(async (next) => {
-    if (!next || !Number.isSafeInteger(next.groupId)) return;
+    if (!next || !Number.isSafeInteger(next.groupId)) {
+      hand.invalidate();
+      publish();
+      return;
+    }
     const snapshot = hand.getSnapshot?.();
     if (snapshot?.groupId === next.groupId) return;
     try {
@@ -53032,6 +55142,12 @@ globalThis.HandRaisePort = (() => {
       console.warn("Hand selection sync failed", error);
     }
   });
+  window.addEventListener("godpower:active-save-changed", () => {
+    hand.invalidate();
+    completed.clear();
+    publish();
+  });
+  window.addEventListener("godpower:save-status", publish);
   window.addEventListener(
     "DOMContentLoaded",
     () => {
@@ -53177,8 +55293,21 @@ globalThis.HandRaisePort = (() => {
         status("读取失败：" + (result.error || "未知原因"), "ERROR");
         return;
       }
-      applyClassroomBackup(result.data);
-      saveState();
+      if (globalThis.SaveManager?.enabled()) {
+        const preview = await SaveManager.previewSource(
+          JSON.stringify(result.data),
+          "旧文件恢复课堂",
+        );
+        const imported = await SaveManager.importSource(preview);
+        if (!imported.ok)
+          throw Error(imported.error || imported.message || imported.code);
+      } else {
+        applyClassroomBackup(result.data);
+        const saved = saveState();
+        const ack = saved.completion ? await saved.completion : await saved;
+        if (!ack.ok) throw Error(ack.error);
+      }
+
       renderAll();
       updatePickerPoolUI();
       status("已从文件恢复课堂。", "OK");

@@ -27,6 +27,7 @@ const {
 } = require("./window-state.cjs");
 const { SaveFile, normalizeTarget } = require("./save-file.cjs");
 const { SaveVault } = require("./save-vault.cjs");
+const { SaveFlush } = require("./save-flush.cjs");
 const { loadSaveSchema, dispatch: dispatchSaveVault } = require("./save-vault-bridge.cjs");
 class Windows {
   constructor(root) {
@@ -55,10 +56,32 @@ class Windows {
       (message) => this.main.webContents.send("gp:execute", message),
       { onChange: () => this.broadcast() },
     );
+    this.saveFlush=new SaveFlush(message=>{
+      if(!this.main||this.main.isDestroyed())throw Error("MAIN_UNAVAILABLE");
+      this.main.webContents.send("gp:save-flush",message);
+    });
+    this.rendererQuitFlushed=false;this.rendererQuitPending=false;
     this.pickerView = "icon";
     this.installIPC();
     app.on("before-quit", (event) => {
       this.quitting = true;
+      if(!this.rendererQuitFlushed&&this.main&&!this.main.isDestroyed()&&this.broker.ready){
+        event.preventDefault();
+        if(!this.rendererQuitPending){
+          this.rendererQuitPending=true;
+          this.saveFlush.request().then(result=>{
+            this.rendererQuitPending=false;
+            if(result.ok){this.rendererQuitFlushed=true;app.quit();}
+            else {
+              this.quitting=false;
+              if(this.main&&!this.main.isDestroyed())this.main.webContents.send("gp:save-flush-cancel",result);
+              this.showMain();console.error("退出前保存未完成",result.error);
+            }
+          });
+        }
+        return;
+      }
+
       if (this.saveFile.pendingWrites > 0 || this.saveVault?.pendingWrites > 0) {
         event.preventDefault();
         if (!this.saveQuitPending) {
@@ -620,7 +643,8 @@ class Windows {
     ipcMain.on("gp:publish", (event, value) => {
       if (!this.authorized(event, "main")) return;
       try {
-        this.broker.snapshot = sanitizeSnapshot(value);
+        const changed=this.broker.acceptSnapshot(sanitizeSnapshot(value));
+        if(changed){this.closeEffect();this.lastReveal=null;}
         if (this.broker.ready) this.present(this.broker.snapshot);
         this.broadcast();
       } catch (error) {
@@ -630,6 +654,7 @@ class Windows {
     ipcMain.on("gp:reply", (event, message) => {
       if (this.authorized(event, "main")) this.broker.reply(message);
     });
+    ipcMain.on("gp:save-flush-reply",(event,message)=>{if(this.authorized(event,"main"))this.saveFlush.reply(message);});
     ipcMain.handle("gp:save-vault", (event, action, args) => {
       requireRole(event, "main");
       if (!this.saveVault) this.saveVault = new SaveVault({
@@ -642,6 +667,10 @@ class Windows {
       requireRole(event, "main");
       await this.saveFile.whenIdle();
       return this.saveFile.info;
+    });
+    ipcMain.handle("gp:save-file-source", (event) => {
+      requireRole(event,"main");
+      return this.saveFile.readSource();
     });
     ipcMain.handle("gp:save-file-read", async (event) => {
       requireRole(event, "main");

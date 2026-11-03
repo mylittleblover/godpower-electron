@@ -64,3 +64,17 @@ test("quitting waits for accepted disk writes before closing windows", async () 
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('quit waits for renderer confirmation even before native pendingWrites increases',async()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'gp-renderer-quit-')),handlers={},sent=[];
+ let quits=0,prevented=0,closed=0;
+ const app={getPath:()=>dir,on:(name,fn)=>handlers[name]=fn,quit:()=>{quits++;handlers['before-quit']({preventDefault:()=>prevented++});}};
+ const electron={app,screen:{on(){}},globalShortcut:{}};const filename=path.resolve('desktop/windows.cjs'),localRequire=createRequire(filename),output={exports:{}};
+ vm.runInNewContext(fs.readFileSync(filename,'utf8'),{require:name=>name==='electron'?electron:localRequire(name),module:output,__dirname:path.dirname(filename),console});
+ const {Windows}=output.exports;Windows.prototype.installIPC=()=>{};Windows.prototype.savePicker=()=>{};Windows.prototype.closeEffect=()=>closed++;
+ const windows=new Windows(dir);windows.main={isDestroyed:()=>false,webContents:{send:(channel,value)=>sent.push({channel,value})}};windows.broker.ready=true;
+ try{
+  assert.equal(windows.saveFile.pendingWrites,0);handlers['before-quit']({preventDefault:()=>prevented++});assert.equal(prevented,1);assert.equal(quits,0);assert.equal(closed,0);assert.equal(sent[0].channel,'gp:save-flush');
+  windows.saveFlush.reply({id:sent[0].value.id,ok:true});await new Promise(setImmediate);assert.equal(quits,1);assert.equal(closed,1);
+ }finally{await windows.saveFile.whenIdle();fs.rmSync(dir,{recursive:true,force:true});}
+});

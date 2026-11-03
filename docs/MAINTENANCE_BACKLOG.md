@@ -75,3 +75,13 @@ NOT TESTED：Windows启动、屏幕键盘、实体触屏、多显示器；保留
 DONE：同步HTML bc08107，旧编号文件全部职责迁移、失效抽取链与冗余CSS清理；25单测、真实Electron启动/存储恢复、Windows ZIP与ASAR校验通过。版本工具支持格式化后的等价引号写法。原生壳未改。
 
 NOT TESTED：Windows真机/系统键盘/实体触屏/多显示器；仍有效的兼容链与进一步状态解耦由HTML维护列表追踪，不新建分叉内核。
+
+## SAVE-NATIVE-002 默认存档权威切换与退出协调
+
+- 优先级：P0；状态：DONE（本轮 Linux Electron 实测）。
+- 原始文件按UTF-8严格解码，异常不替换字符或覆盖源；SaveVault是新版唯一权威。
+- 当前存档上下文改变时 broker 轮换代次并取消旧IPC，普通分数快照不改变代次。
+- 退出先请求主renderer完成命令、图片/hash预处理和偏好ACK，再等磁盘队列；失败保留主窗口并明确错误。
+- 同一头像JSON属性顺序不同不再产生immutable冲突，仍校验真实SHA-256。
+- 验证：75/75单元；artifacts/save-library-active-fixed/results.json 的21/21真实Electron场景PASS。运行Linux Xvfb+xfwm4、1920×1080/1x，不能当作Windows实测。
+- 剩余风险：Windows物理触屏、屏幕键盘、PPT覆盖、多显示器、真实声音听感 NOT TESTED；后续Windows发行物仍需交叉构建。
