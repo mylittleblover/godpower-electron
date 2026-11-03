@@ -2,3 +2,4 @@
 resources/index.html -text
 renderer/tooltips.js -text
 renderer/tooltips.css -text
+resources/save-schema.js -text

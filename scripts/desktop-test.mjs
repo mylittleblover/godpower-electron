@@ -41,8 +41,8 @@ try {
   const report = JSON.parse(await readFile(result, "utf8"));
   console.log(JSON.stringify(report, null, 2));
   assert.equal(report.status, "PASS");
-  assert.equal(report.results.length, 20, "19 existing scenarios plus verified disk IPC queue must execute");
-  assert.equal(new Set(report.results.map(row => row.name)).size, 20, "scenario results must be unique");
+  assert.equal(report.results.length, 21, "19 existing scenarios plus verified disk queue and save-library IPC must execute");
+  assert.equal(new Set(report.results.map(row => row.name)).size, 21, "scenario results must be unique");
 } finally {
   clearTimeout(timer);
   if (child.exitCode === null) child.kill();

@@ -108,6 +108,24 @@ async function run(w, resultPath) {
       assert.equal(fs.existsSync(w.saveFile.file+".tmp"),false);
       return {writes:result.writes.length,groups:result.latest.data.groups.length};
     });
+    await test("save library IPC uses pinned schema, durable revisions and isolated native paths", async () => {
+      const result = await main(`(async()=>{
+        const preview=await SaveMigration.preview({rawText:JSON.stringify(buildClassroomBackup()),name:'隔离存档测试'});
+        const api=godpowerDesktop.saveVault;
+        const imported=await api.importPreview(preview,{activate:true});
+        if(!imported.ok)throw Error(JSON.stringify(imported));
+        const list=await api.list();const id=list.index.activeSaveId;
+        const loaded=await api.load(id);const doc=loaded.document;
+        doc.match.groups[0].score+=2;
+        const saved=await api.commit(id,doc.revision,doc,{expectedGeneration:list.index.generation});
+        const stale=await api.commit(id,doc.revision,doc,{expectedGeneration:list.index.generation});
+        const source=await api.getSource(preview.sourceDigest);
+        return {groups:doc.roster.groups.length,students:doc.roster.students.length,saved:saved.ok,revision:saved.document?.revision,stale:stale.code,sourceExact:source.sourceText===preview.sourceText};
+      })()`);
+      assert.deepEqual(result,{groups:14,students:28,saved:true,revision:2,stale:'REVISION_CONFLICT',sourceExact:true});
+      assert.ok(w.saveVault.root.startsWith(app.getPath("userData") + path.sep));
+      return result;
+    });
     await test("1920×1080 1x, 14 group fit and unchanged main layout", async () => {
       await delay(1100);
       const m = await main(

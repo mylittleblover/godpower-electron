@@ -26,6 +26,8 @@ const {
   menuBounds,
 } = require("./window-state.cjs");
 const { SaveFile, normalizeTarget } = require("./save-file.cjs");
+const { SaveVault } = require("./save-vault.cjs");
+const { loadSaveSchema, dispatch: dispatchSaveVault } = require("./save-vault-bridge.cjs");
 class Windows {
   constructor(root) {
     this.root = root;
@@ -57,11 +59,14 @@ class Windows {
     this.installIPC();
     app.on("before-quit", (event) => {
       this.quitting = true;
-      if (this.saveFile.pendingWrites > 0) {
+      if (this.saveFile.pendingWrites > 0 || this.saveVault?.pendingWrites > 0) {
         event.preventDefault();
         if (!this.saveQuitPending) {
           this.saveQuitPending = true;
-          this.saveFile.whenIdle().then(() => {
+          const pending = this.saveVault?.pendingWrites > 0
+            ? Promise.all([this.saveFile.whenIdle(), this.saveVault.whenIdle()])
+            : this.saveFile.whenIdle();
+          pending.then(() => {
             this.saveQuitPending = false;
             app.quit();
           }).catch((error) => {
@@ -624,6 +629,14 @@ class Windows {
     });
     ipcMain.on("gp:reply", (event, message) => {
       if (this.authorized(event, "main")) this.broker.reply(message);
+    });
+    ipcMain.handle("gp:save-vault", (event, action, args) => {
+      requireRole(event, "main");
+      if (!this.saveVault) this.saveVault = new SaveVault({
+        root: path.join(app.getPath("documents"), "GodPower", "save-library-v2"),
+        schema: loadSaveSchema(this.root),
+      });
+      return dispatchSaveVault(this.saveVault, action, args);
     });
     ipcMain.handle("gp:save-file-info", async (event) => {
       requireRole(event, "main");

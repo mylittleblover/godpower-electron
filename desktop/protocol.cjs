@@ -13,6 +13,10 @@ function verifyHtml(root) {
     info.htmlBytes !== html.length
   )
     throw Error("Bundled classroom HTML integrity check failed");
+  for (const [name, sha] of Object.entries(info.sharedAssets || {})) {
+    if (name !== "save-schema.js" || !/^[0-9a-f]{64}$/.test(sha) || createHash("sha256").update(readFileSync(path.join(root,"resources",name))).digest("hex") !== sha)
+      throw Error("Bundled shared schema integrity check failed");
+  }
   return info;
 }
 function installProtocol(protocol, root) {

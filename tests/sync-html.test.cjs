@@ -87,6 +87,7 @@ function fixture(options, run) {
     if (!options.missingTooltip)
       for (const ext of ["js", "css"])
         write(sourceRoot, ext === "css" && options.canonicalStyles ? "src/styles/components/tooltips.css" : `src/ui/tooltips.${ext}`, `tooltip ${ext}\n`);
+    if (options.sharedSchema) write(sourceRoot,"src/domain/save-document.js","globalThis.SaveSchema = { fixture: true };\n");
     if (options.canonicalStyles) write(sourceRoot,"src/ui/tooltips.css","stale legacy tooltip css\n");
     execFileSync("git", ["init", "-q", sourceRoot]);
     execFileSync("git", [
@@ -301,3 +302,13 @@ test("canonical CSS under styles is selected and tracked even when a stale ui CS
   const info=JSON.parse(fs.readFileSync(path.join(host,"resources/BUILD_INFO.json")));
   assert.equal(info.presentationAssetSources["tooltips.css"],"src/styles/components/tooltips.css");
  }));
+
+test('shared save schema is synchronized from the pinned tree and integrity checked',()=>fixture({sharedSchema:true},({cli,host})=>{
+ const result=cli();assert.equal(result.status,0,result.stderr);
+ const schema=fs.readFileSync(path.join(host,'resources/save-schema.js'),'utf8');
+ assert.equal(schema,'globalThis.SaveSchema = { fixture: true };\n');
+ const info=require('../desktop/protocol.cjs').verifyHtml(host);
+ assert.equal(info.sharedAssetSources['save-schema.js'],'src/domain/save-document.js');
+ fs.appendFileSync(path.join(host,'resources/save-schema.js'),'tampered');
+ assert.throws(()=>require('../desktop/protocol.cjs').verifyHtml(host),/integrity/);
+}));

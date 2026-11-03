@@ -43,6 +43,7 @@
       "renderer/**",
       "resources/index.html",
       "resources/BUILD_INFO.json",
+      "resources/save-schema.js",
       "package.json",
       "build/icon.ico",
       "build/marx-icon.png",

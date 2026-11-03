@@ -66,6 +66,15 @@ export async function prepareSync({ root, source }) {
       ),
     ]),
   );
+  const sharedAssetSources = {};
+  const sharedAssets = {};
+  const schemaSource = "src/domain/save-document.js";
+  // Older HTML releases legitimately have no save library. A current source
+  // that declares the schema must supply the exact pinned bytes.
+  if (execFileSync("git", ["-C",sourceRoot,"ls-tree","--name-only",sourceCommit,schemaSource], {encoding:"utf8"}).trim()) {
+    sharedAssetSources["save-schema.js"] = schemaSource;
+    sharedAssets["save-schema.js"] = execFileSync("git",["-C",sourceRoot,"show",`${sourceCommit}:${schemaSource}`],{maxBuffer:2e6});
+  }
   hostPackage.version = sourcePackage.version;
   hostLock.version = sourcePackage.version;
   if (hostLock.packages?.[""])
@@ -76,6 +85,8 @@ export async function prepareSync({ root, source }) {
     sourceCommit,
     htmlSha256: hash(html),
     htmlBytes: html.length,
+    sharedAssetSources,
+    sharedAssets: Object.fromEntries(Object.entries(sharedAssets).map(([name,bytes])=>[name,hash(bytes)])),
     presentationAssetSources: Object.fromEntries(Object.entries(assetSources).map(([ext, source]) => [`tooltips.${ext}`, source])),
     presentationAssets: Object.fromEntries(
       Object.entries(assets).map(([ext, content]) => [
@@ -91,6 +102,7 @@ export async function prepareSync({ root, source }) {
       ["package-lock.json", json(hostLock)],
       ["resources/index.html", html],
       ["resources/BUILD_INFO.json", json(info)],
+      ...Object.entries(sharedAssets).map(([name,bytes])=>["resources/"+name,bytes]),
       ...Object.entries(assets).map(([ext, content]) => [
         `renderer/tooltips.${ext}`,
         content,
