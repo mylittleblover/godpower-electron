@@ -1,0 +1,29 @@
+{
+  "status": "FAIL",
+  "results": [
+    {
+      "name": "the launcher offers picker or hand and the hand panel runs one classroom command",
+      "status": "FAIL",
+      "error": "Error: UnknownVizError"
+    }
+  ],
+  "errors": [
+    "Error: UnknownVizError"
+  ],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "results": [
+    {
+      "name": "the launcher offers picker or hand and the hand panel runs one classroom command",
+      "status": "PASS",
+      "detail": {
+        "token": "command-8925dae7-102e-4f99-a602-681dcc578e50",
+        "scored": 103,
+        "item": "香蕉皮",
+        "cinematic": "第 1 小组"
+      }
+    }
+  ],
+  "errors": [],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}

@@ -182,7 +182,6 @@ async function run(w, resultPath) {
         ['memberSearchBackdrop','openMemberSearchModal()','closeMemberSearchModal()'],
         ['itemModalBackdrop','openItemWindow(1)','closeItemWindow()'],
         ['handRaiseBackdrop','openHandRaise();selectHandGroup(1)','closeHandRaise()'],
-        ['aboutBackdrop','openAbout()','closeAbout()'],
         ['batchImportModal','openBatchImportModal()','closeBatchImportModal()'],
         ['quickPersonBackdropV218','openQuickPersonScoreV218()','closeQuickPersonScoreV218()'],
         ['settlementNameModal',"showClassroomWindow(document.getElementById('settlementNameModal'))",'closeSettlementNameModal()'],
@@ -195,6 +194,10 @@ async function run(w, resultPath) {
         assert.deepEqual(BrowserWindow.getAllWindows().map(win=>win.id),windowIds,id+" stays internal");
         await main(close);await delay(450);
       }
+      await main(`openAbout()`);
+      assert.equal(await main(`currentView==='settings'&&!document.querySelector('[data-category-panel="about"]').hidden`),true,'About stays in settings');
+      assert.deepEqual(BrowserWindow.getAllWindows().map(win=>win.id),windowIds,'About does not open a native window');
+      await main(`closeAbout()`);
       await main(`state.isLocked=false;switchView('battle')`);
       for(let i=0;i<2;i++){
         await main(`document.querySelector('.bottom-dock [onclick*=openPickerModal]').click()`);
@@ -614,6 +617,16 @@ async function run(w, resultPath) {
       await until(() => picker(`!document.getElementById('handPane').hidden`), "hand pane visible");
       const pickerHidden = await picker(`document.getElementById('pickerPane').hidden`);
       assert.equal(pickerHidden, true, "the hand view replaces the machine panel");
+      const avatarSaved = await main(`(async()=>{
+        const c=document.createElement('canvas');c.width=c.height=80;c.getContext('2d').fillRect(0,0,80,80);
+        const dataBase64=c.toDataURL('image/webp',0.8).split(',')[1],bytes=Uint8Array.from(atob(dataBase64),c=>c.charCodeAt(0));
+        const sha256=[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(n=>n.toString(16).padStart(2,'0')).join('');
+        const asset={resourceId:'asset-'+sha256,sha256,mimeType:'image/webp',dataBase64,byteLength:bytes.length};
+        const uid=state.groups[0].groupUid;
+        const r=await SaveManager.edit('synthetic group avatar',doc=>{doc.assetReferences=[...new Set([...doc.assetReferences,asset.resourceId])];return SaveRoster.setAvatar(doc,'group',uid,asset.resourceId)},{assets:[asset]});
+        await ClassroomAvatarDisplay.prepare(state.groups); return r.ok&&r.persisted;
+      })()`);
+      assert.equal(avatarSaved,true,'synthetic avatar saved through normal vault');
       const groups = await main(`state.groups.slice(0,2).map(g=>({id:g.id,groupUid:g.groupUid,score:g.score}))`);
       const before = await main(`({score:state.groups[0].score,correct:state.groups[0].itemStats.correct,inventory:state.groups[0].inventory.length,history:state.itemGlobal.handRaiseHistory.length})`);
       const select = await picker(`godpowerDesktop.command('handSelect',{groupId:${groups[0].id}})`);
@@ -662,6 +675,7 @@ async function run(w, resultPath) {
       await until(()=>js(w.effect,`!!document.querySelector('[data-hand-command="use"]:not(:disabled)')`),"item usable");
       await js(w.effect,`document.querySelector('[data-hand-command="use"]').click()`);
       await until(()=>w.effect && w.effectPayload?.kind==='item' && !w.effect.webContents.isLoading(),"item cinematic opens");
+      await until(()=>js(w.effect,`!document.getElementById('avatarFrame').hidden && document.getElementById('avatar').src.startsWith('data:image/webp')`),'native caster avatar');
       await until(
         () => js(w.effect, `document.getElementById('mode').textContent.includes('道具')`),
         "item cinematic presented",
@@ -674,6 +688,13 @@ async function run(w, resultPath) {
       assert.ok(cinematic.targets.length > 0, "targets are listed");
       assert.equal(cinematic.icon, true, "the item icon is shown");
       await settledShot(w.effect, "floating-item-cinematic");
+      const originalFx=w.effectPayload;
+      w.presentItemFx({...originalFx.item,targets:Array.from({length:16},(_,i)=>({name:'测试小组 '+(i+1),delta:2,avatarDataUrl:originalFx.item.casterAvatarDataUrl}))},originalFx.effects);
+      await until(()=>w.effect&&!w.effect.webContents.isLoading(),'wide item reveal');
+      await until(()=>js(w.effect,`document.querySelectorAll('.item-target-list li').length===16`),'16 target tiles');
+      const tiles=await js(w.effect,`[...document.querySelectorAll('.item-target-list li')].map(n=>{const r=n.getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom}})`);
+      assert.ok(tiles.every(r=>r.left>=0&&r.top>=0&&r.right<=1920&&r.bottom<=1080),'all avatar target tiles fit 1920x1080');
+      await settledShot(w.effect,'item-avatars-16-targets');
       w.closeEffect();
       await picker(`godpowerDesktop.windowAction('expand','picker')`);
       await until(() => picker(`!document.getElementById('pickerPane').hidden`), "picker pane back");
@@ -924,7 +945,7 @@ async function run(w, resultPath) {
     assert.deepEqual(errors, [], "no renderer/preload errors");
     await main(`openAbout()`);
     await delay(400);
-    assert.equal(await main(`document.getElementById('aboutBackdrop').getClientRects().length>0`),true);
+    assert.equal(await main(`currentView==='settings'&&!document.querySelector('[data-category-panel="about"]').hidden`),true);
 
   } catch (error) {
     errors.push(error.stack || String(error));

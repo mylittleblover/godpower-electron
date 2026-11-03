@@ -78,7 +78,8 @@ h1 {
   border: 2px solid color-mix(in srgb, var(--group) 75%, white);
   border-radius: 26%;
   background: #ffffff12;
-  box-shadow: 0 0 36px color-mix(in srgb, var(--group) 70%, transparent),
+  box-shadow:
+    0 0 36px color-mix(in srgb, var(--group) 70%, transparent),
     0 0 120px color-mix(in srgb, var(--group) 32%, transparent);
   animation: avatar-reveal 760ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -119,12 +120,46 @@ h1 {
   color: #a4bbb5;
   margin-top: 45px;
 }
-/* Item cinematic: attacker on the left, target beats on the right. */
-#stage[data-mode="item"] .reveal {
-  inset: 12% 8%;
+.effect-subject {
+  display: contents;
+}
+/* Explicit item layout keeps caster and all target tiles inside the monitor. */
+#stage[data-mode="item"] .reveal:not([hidden]) {
+  inset: 8% 6%;
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: 20px 4vw;
+}
+#stage[data-mode="item"] .effect-subject {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+#stage[data-mode="item"] .caption {
+  grid-column: 1 / -1;
+  margin-top: 0;
 }
 #stage[data-mode="item"] h1 {
-  font-size: clamp(46px, 6vw, 110px);
+  font-size: clamp(34px, 4vw, 72px);
+  margin: 12px 0;
+}
+#stage[data-mode="item"] .avatar-frame {
+  width: min(16vh, 170px);
+}
+#stage[data-mode="item"] .item-targets {
+  width: 100%;
+  margin-top: 0;
+}
+#stage[data-mode="item"] .item-icon {
+  width: min(15vw, 180px);
+  height: min(18vh, 180px);
+}
+#stage[data-mode="item"] .rule {
+  margin-top: 12px;
+}
+#stage[data-mode="item"] #group {
+  margin-top: 12px;
 }
 .item-icon {
   width: min(20vw, 240px);
@@ -329,7 +364,8 @@ h1 {
 @keyframes confetti-fall {
   0% {
     opacity: 0;
-    transform: rotate(calc(var(--i) * 15deg)) translateX(520px) translateY(-40px);
+    transform: rotate(calc(var(--i) * 15deg)) translateX(520px)
+      translateY(-40px);
   }
   20% {
     opacity: 1;
@@ -528,15 +564,58 @@ h1 {
   }
 }
 
-.theme-marx { color: #fff7df; }
-.theme-marx .shade { background: rgba(54, 10, 12, .92); }
-.theme-marx .eyebrow { color: #e9c875; }
-.theme-marx .rule { background: #d6ad58; }
-.theme-marx .rule::before { content: "★"; display: block; color: #d6ad58; transform: translateY(-12px); font-size: 24px; background: #360a0c; width: 34px; margin: auto; }
-.theme-marx h1 { text-shadow: 0 4px 40px #d6ad584a; }
-.theme-marx #group { color: #ead8b5; }
-.theme-marx #number { color: #f9e5b4; border-color: #d6ad5870; border-radius: 5px; }
-.theme-marx .caption { color: #d9c29b; }
-.theme-marx .halo { border-color: #d6ad584d; }
-.theme-marx .particles i { background: #d6ad58; border-radius: 0; }
-.theme-marx #stage[data-mode="score"] h1 { color: var(--group); text-shadow: 0 4px 40px color-mix(in srgb, var(--group) 30%, transparent); }
+.theme-marx {
+  color: #fff7df;
+}
+.theme-marx .shade {
+  background: rgba(54, 10, 12, 0.92);
+}
+.theme-marx .eyebrow {
+  color: #e9c875;
+}
+.theme-marx .rule {
+  background: #d6ad58;
+}
+.theme-marx .rule::before {
+  content: "★";
+  display: block;
+  color: #d6ad58;
+  transform: translateY(-12px);
+  font-size: 24px;
+  background: #360a0c;
+  width: 34px;
+  margin: auto;
+}
+.theme-marx h1 {
+  text-shadow: 0 4px 40px #d6ad584a;
+}
+.theme-marx #group {
+  color: #ead8b5;
+}
+.theme-marx #number {
+  color: #f9e5b4;
+  border-color: #d6ad5870;
+  border-radius: 5px;
+}
+.theme-marx .caption {
+  color: #d9c29b;
+}
+.theme-marx .halo {
+  border-color: #d6ad584d;
+}
+.theme-marx .particles i {
+  background: #d6ad58;
+  border-radius: 0;
+}
+.theme-marx #stage[data-mode="score"] h1 {
+  color: var(--group);
+  text-shadow: 0 4px 40px color-mix(in srgb, var(--group) 30%, transparent);
+}
+
+.item-target-avatar {
+  width: clamp(48px, 5vh, 72px);
+  height: clamp(48px, 5vh, 72px);
+  object-fit: cover;
+  border-radius: 18px;
+  margin: 0 auto 8px;
+}

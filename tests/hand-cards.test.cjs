@@ -74,3 +74,42 @@ test("fullscreen card requests stay inside their displayed selection and active 
     api.validateHandCardRequest({ ...active, kind: "item" }, request, context),
   );
 });
+test("hand and item avatars accept only bounded local WebP data", () => {
+  const { sanitizeItemFx } = require("../desktop/contracts.cjs");
+  const webp = "data:image/webp;base64,UklGRg==";
+  const snapshot = {
+    protocolVersion: 1,
+    phase: "idle",
+    mode: "individual",
+    groups: [{ id: 1, name: "A", score: 0, members: 4, color: "#109080" }],
+    slots: [1, 2, 3, 4, 5, 6],
+    history: [],
+    hand: { groupId: 1, selectionId: "s", avatarDataUrl: webp },
+  };
+  assert.equal(sanitizeSnapshot(snapshot).hand.avatarDataUrl, webp);
+  const item = {
+    key: "coin",
+    caster: "A",
+    casterAvatarDataUrl: webp,
+    targets: [{ name: "B", avatarDataUrl: webp }],
+  };
+  assert.equal(sanitizeItemFx(item).casterAvatarDataUrl, webp);
+  assert.equal(sanitizeItemFx(item).targets[0].avatarDataUrl, webp);
+  for (const bad of [
+    "https://example.com/avatar.jpg",
+    "data:image/svg+xml;base64,PHN2Zz4=",
+    webp + "A".repeat(180001),
+  ]) {
+    assert.equal(
+      sanitizeItemFx({ ...item, casterAvatarDataUrl: bad }).casterAvatarDataUrl,
+      "",
+    );
+    assert.equal(
+      sanitizeSnapshot({
+        ...snapshot,
+        hand: { ...snapshot.hand, avatarDataUrl: bad },
+      }).hand.avatarDataUrl,
+      "",
+    );
+  }
+});

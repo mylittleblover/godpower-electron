@@ -77,7 +77,8 @@ function validateCommand(action, p = {}) {
     action === "handJudge" ||
     action === "handScore" ||
     action === "handDraw" ||
-    action === "handUse" || action === "handCancel"
+    action === "handUse" ||
+    action === "handCancel"
   ) {
     integer(p.groupId);
     text(p.selectionId, 120);
@@ -95,6 +96,13 @@ function validateCommand(action, p = {}) {
   }
   return Object.fromEntries(fields.map((k) => [k, p[k]]));
 }
+function avatarDataUrl(value) {
+  return typeof value === "string" &&
+    value.length <= 180000 &&
+    /^data:image\/webp;base64,[A-Za-z0-9+/=]+$/.test(value)
+    ? value
+    : "";
+}
 function sanitizeSnapshot(s) {
   if (
     !s ||
@@ -109,10 +117,19 @@ function sanitizeSnapshot(s) {
     s.history.length > 30
   )
     throw Error("INVALID_SNAPSHOT");
-  let saveContext=null;
-  if(s.saveContext!=null){
-    if(typeof s.saveContext.saveId!=="string"||!/^save-[A-Za-z0-9_-]{1,96}$/.test(s.saveContext.saveId)||!Number.isSafeInteger(s.saveContext.generation)||s.saveContext.generation<0)throw Error("INVALID_SAVE_CONTEXT");
-    saveContext={saveId:s.saveContext.saveId,generation:s.saveContext.generation};
+  let saveContext = null;
+  if (s.saveContext != null) {
+    if (
+      typeof s.saveContext.saveId !== "string" ||
+      !/^save-[A-Za-z0-9_-]{1,96}$/.test(s.saveContext.saveId) ||
+      !Number.isSafeInteger(s.saveContext.generation) ||
+      s.saveContext.generation < 0
+    )
+      throw Error("INVALID_SAVE_CONTEXT");
+    saveContext = {
+      saveId: s.saveContext.saveId,
+      generation: s.saveContext.generation,
+    };
   }
   const groups = s.groups.map((g) => ({
     id: integer(g.id),
@@ -148,7 +165,8 @@ function sanitizeSnapshot(s) {
   const effects = s.effects || {};
   const hand = s.hand || {};
   const handGroupId =
-    Number.isSafeInteger(hand.groupId) && groups.some((g) => g.id === hand.groupId)
+    Number.isSafeInteger(hand.groupId) &&
+    groups.some((g) => g.id === hand.groupId)
       ? hand.groupId
       : null;
   return {
@@ -170,21 +188,52 @@ function sanitizeSnapshot(s) {
     groups,
     result,
     hand: {
-      selectionId: handGroupId !== null ? text(hand.selectionId || "", 120) : null,
+      selectionId:
+        handGroupId !== null ? text(hand.selectionId || "", 120) : null,
       groupId: handGroupId,
       correct: typeof hand.correct === "boolean" ? hand.correct : null,
-      phase: ["CLOSED","SELECT_GROUP","JUDGE","REWARD_CHOICE","SCORE","DRAW","USE"].includes(hand.phase)?hand.phase:(handGroupId===null?"CLOSED":hand.correct===true?"REWARD_CHOICE":hand.correct===false?"SELECT_GROUP":"JUDGE"),
-      rewardComplete: hand.rewardComplete===true,
-      motionEnabled: hand.motionEnabled!==false,
-      canScore: handGroupId!==null && hand.correct===true && hand.rewardComplete!==true && hand.canScore!==false,
+      phase: [
+        "CLOSED",
+        "SELECT_GROUP",
+        "JUDGE",
+        "REWARD_CHOICE",
+        "SCORE",
+        "DRAW",
+        "USE",
+      ].includes(hand.phase)
+        ? hand.phase
+        : handGroupId === null
+          ? "CLOSED"
+          : hand.correct === true
+            ? "REWARD_CHOICE"
+            : hand.correct === false
+              ? "SELECT_GROUP"
+              : "JUDGE",
+      rewardComplete: hand.rewardComplete === true,
+      motionEnabled: hand.motionEnabled !== false,
+      avatarDataUrl:
+        handGroupId !== null ? avatarDataUrl(hand.avatarDataUrl) : "",
+      canScore:
+        handGroupId !== null &&
+        hand.correct === true &&
+        hand.rewardComplete !== true &&
+        hand.canScore !== false,
       itemRewarded: handGroupId !== null && hand.itemRewarded === true,
       busy: hand.busy === true,
       inventoryCount:
         handGroupId === null
           ? 0
           : Math.min(3, Math.max(0, integer(hand.inventoryCount || 0))),
-      canDraw: handGroupId !== null && hand.correct===true && hand.rewardComplete!==true && hand.canDraw === true,
-      canUse: handGroupId !== null && hand.correct===true && hand.rewardComplete!==true && hand.canUse === true,
+      canDraw:
+        handGroupId !== null &&
+        hand.correct === true &&
+        hand.rewardComplete !== true &&
+        hand.canDraw === true,
+      canUse:
+        handGroupId !== null &&
+        hand.correct === true &&
+        hand.rewardComplete !== true &&
+        hand.canUse === true,
       mainItemName:
         handGroupId !== null ? text(hand.mainItemName || "", 120) : "",
       itemName: handGroupId !== null ? text(hand.itemName || "", 120) : "",
@@ -215,11 +264,14 @@ function sanitizeItemFx(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const name = (v, max = 80) =>
     typeof v === "string" && v.length <= max ? v : "";
-  const targets = Array.isArray(value.targets) ? value.targets.slice(0, 16) : [];
+  const targets = Array.isArray(value.targets)
+    ? value.targets.slice(0, 16)
+    : [];
   if (!targets.length) return null;
   return {
     key: name(value.key, 40),
     caster: name(value.caster),
+    casterAvatarDataUrl: avatarDataUrl(value.casterAvatarDataUrl),
     itemName: name(value.itemName),
     icon:
       typeof value.icon === "string" &&
@@ -231,6 +283,7 @@ function sanitizeItemFx(value) {
         : "",
     targets: targets.map((target) => ({
       name: name(target?.name),
+      avatarDataUrl: avatarDataUrl(target?.avatarDataUrl),
       delta: Number.isSafeInteger(target?.delta) ? target.delta : 0,
       blocked: target?.blocked === true,
       effectChanged: target?.effectChanged === true,

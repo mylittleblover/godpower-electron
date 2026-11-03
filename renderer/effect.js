@@ -29,7 +29,10 @@ function presentItem(payload) {
   document.title = `${marx ? "马克思的力量" : "上帝的力量"} · 道具特效`;
   document.getElementById("mode").textContent = "ITEM CINEMATIC · 道具结算";
   document.getElementById("group").textContent = "发动方";
-  document.getElementById("avatarFrame").hidden = true;
+  const casterAvatar = document.getElementById("avatar");
+  casterAvatar.removeAttribute("src");
+  if (item.casterAvatarDataUrl) casterAvatar.src = item.casterAvatarDataUrl;
+  document.getElementById("avatarFrame").hidden = !item.casterAvatarDataUrl;
   // The caster arrives as a {id,name} DTO from the classroom.
   const caster = item.caster;
   document.getElementById("name").textContent =
@@ -70,11 +73,9 @@ function presentItem(payload) {
     `<ul class="item-target-list">${targets
       .map(
         (target, i) =>
-          `<li style="--i:${i}"><strong>${escapeHtml(target.name)}</strong>` +
+          `<li style="--i:${i}">${target.avatarDataUrl ? `<img class="item-target-avatar" src="${escapeHtml(target.avatarDataUrl)}" alt="小组头像">` : ""}<strong>${escapeHtml(target.name)}</strong>` +
           `<span>${escapeHtml(label(target))}</span>` +
-          (target.status
-            ? `<small>${escapeHtml(target.status)}</small>`
-            : "") +
+          (target.status ? `<small>${escapeHtml(target.status)}</small>` : "") +
           `</li>`,
       )
       .join("")}</ul>`;
@@ -93,14 +94,16 @@ function escapeHtml(value) {
   );
 }
 api.onReveal((payload) => {
-  if(payload.kind === "hand") {
-    document.body.classList.toggle("theme-marx",payload.theme === "marx");
-    document.body.dataset.theme=payload.theme === "marx" ? "marx" : "classic";
-    if(id && id !== payload.id)return;
-    id=payload.id;
+  if (payload.kind === "hand") {
+    document.body.classList.toggle("theme-marx", payload.theme === "marx");
+    document.body.dataset.theme = payload.theme === "marx" ? "marx" : "classic";
+    if (id && id !== payload.id) return;
+    id = payload.id;
     clearTimeout(exitTimer);
-    for(const selector of ['.reveal','.halo','#particles','#skip'])for(const node of document.querySelectorAll(selector))node.hidden=true;
-    window.HandCards.render(payload,exit);
+    for (const selector of [".reveal", ".halo", "#particles", "#skip"])
+      for (const node of document.querySelectorAll(selector))
+        node.hidden = true;
+    window.HandCards.render(payload, exit);
     return;
   }
   if (id) return;
@@ -144,7 +147,10 @@ api.onReveal((payload) => {
     group: "LUCKY TEAM · 小组揭晓",
     two_tier: "TEAM & STUDENT · 双层揭晓",
   }[r.mode];
-  stage.style.setProperty("--group", marx && r.mode !== "score" ? "#d6ad58" : r.color);
+  stage.style.setProperty(
+    "--group",
+    marx && r.mode !== "score" ? "#d6ad58" : r.color,
+  );
   stage.classList.add("active", payload.effects.style);
   exitTimer = setTimeout(exit, payload.effects.duration + 900);
 });

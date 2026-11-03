@@ -297,6 +297,7 @@ test("snapshots carry a bounded hand DTO and drop unknown group selections", () 
     phase: "CLOSED",
     rewardComplete: false,
     motionEnabled: true,
+    avatarDataUrl: "",
     canScore: false,
     itemRewarded: false,
     busy: false,
@@ -329,6 +330,7 @@ test("snapshots carry a bounded hand DTO and drop unknown group selections", () 
     phase: "REWARD_CHOICE",
     rewardComplete: false,
     motionEnabled: true,
+    avatarDataUrl: "",
     canScore: true,
     itemRewarded: false,
     busy: true,
@@ -414,8 +416,8 @@ test("item cinematics accept only bounded local data and drop injected fields", 
   assert.equal(clean.key, "green");
   assert.equal(clean.extra, undefined, "unknown top-level fields are dropped");
   assert.deepEqual(clean.targets, [
-    { name: "第二组", delta: -3, blocked: false, effectChanged: false, status: "中毒" },
-    { name: "第三组", delta: 0, blocked: true, effectChanged: false, status: "" },
+    { name: "第二组", delta: -3, blocked: false, effectChanged: false, status: "中毒", avatarDataUrl: "" },
+    { name: "第三组", delta: 0, blocked: true, effectChanged: false, status: "", avatarDataUrl: "" },
   ]);
   for (const icon of [
     "https://example.com/a.png",
