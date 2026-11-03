@@ -1,0 +1,51 @@
+{
+  "status": "PASS",
+  "folder": "https://drive.google.com/drive/folders/1cDO_DuovqIpZcT3_7LHCHrKq61dt3IuB",
+  "files": [
+    {
+      "id": "1scCzMDjYPODjc4JjaaRp7KKy7UUyGtc2",
+      "name": "性能修复与验收-3.0.68.md",
+      "bytes": 3527,
+      "url": "https://drive.google.com/file/d/1scCzMDjYPODjc4JjaaRp7KKy7UUyGtc2/view?usp=drivesdk"
+    },
+    {
+      "id": "1k3XkueQLd7IoZcliJVHjShDTEg9esE4F",
+      "name": "使用说明.txt",
+      "bytes": 1256,
+      "url": "https://drive.google.com/file/d/1k3XkueQLd7IoZcliJVHjShDTEg9esE4F/view?usp=drivesdk"
+    },
+    {
+      "id": "10Gaswfm7oRUNA-Fg4ALgMlGASsMOVror",
+      "name": "上帝的力量-3.0.68.html",
+      "bytes": 11433367,
+      "url": "https://drive.google.com/file/d/10Gaswfm7oRUNA-Fg4ALgMlGASsMOVror/view?usp=drivesdk"
+    },
+    {
+      "id": "1llT0tBwMKxI5FszN9dkqIpAl6r-OcdyK",
+      "name": "godpower-3.0.68-win.zip.002",
+      "bytes": 55140567,
+      "url": "https://drive.google.com/file/d/1llT0tBwMKxI5FszN9dkqIpAl6r-OcdyK/view?usp=drivesdk"
+    },
+    {
+      "id": "1EY0O1k5712APsKH6GyWa7AX2ZX6nWHzS",
+      "name": "godpower-3.0.68-win.zip.001",
+      "bytes": 94371840,
+      "url": "https://drive.google.com/file/d/1EY0O1k5712APsKH6GyWa7AX2ZX6nWHzS/view?usp=drivesdk"
+    },
+    {
+      "id": "1LTFFPXyQ0Z8k_z9c01pvPn62VyJJe-rZ",
+      "name": "SHA256SUMS.txt",
+      "bytes": 90,
+      "url": "https://drive.google.com/file/d/1LTFFPXyQ0Z8k_z9c01pvPn62VyJJe-rZ/view?usp=drivesdk"
+    },
+    {
+      "id": "1SRKczGZF0lQ9MZkeoeM2Zn-P_Qs55t9H",
+      "name": "Merge-and-extract-3.0.68.cmd",
+      "bytes": 723,
+      "url": "https://drive.google.com/file/d/1SRKczGZF0lQ9MZkeoeM2Zn-P_Qs55t9H/view?usp=drivesdk"
+    }
+  ],
+  "zip_sha256": "eeaa94887c8045683dfe52835763e7d021791a1e737c7383e1d5e323047c37a0",
+  "local_split_reassembly": "PASS",
+  "remote_verification": "All seven names and byte sizes match local artifacts"
+}
