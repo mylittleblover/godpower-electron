@@ -46,6 +46,7 @@ async function run(w, resultPath) {
     main = (code) => js(w.main, code),
     picker = (code) => js(w.picker, code);
   const selectedScenario=process.argv.find(a=>a.startsWith("--desktop-scenario="))?.slice(19);
+  let mainProfile = false;
   const handScenario="the launcher offers picker or hand and the hand panel runs one classroom command";
   async function test(name, fn) {
     if(selectedScenario==="hand" && name!==handScenario)return;
@@ -197,7 +198,12 @@ async function run(w, resultPath) {
         assert.deepEqual(BrowserWindow.getAllWindows().map(win=>win.id),windowIds,id+" stays internal");
         await main(close);await delay(450);
       }
-      await main(`openAbout()`);
+      if(mainProfile){
+      const data=await w.main.webContents.debugger.sendCommand('Profiler.stop');
+      fs.writeFileSync(path.join(dir,'main-cpu-profile.json'),JSON.stringify(data.profile));
+      w.main.webContents.debugger.detach();mainProfile=false;
+    }
+    await main(`openAbout()`);
       assert.equal(await main(`currentView==='settings'&&!document.querySelector('[data-category-panel="about"]').hidden`),true,'About stays in settings');
       assert.deepEqual(BrowserWindow.getAllWindows().map(win=>win.id),windowIds,'About does not open a native window');
       await main(`closeAbout()`);
@@ -725,17 +731,24 @@ async function run(w, resultPath) {
       await until(() => picker(`!document.getElementById('pickerPane').hidden`), "picker pane back");
       return { token, scored: after.score, item: drawn.itemName, cinematic: cinematic.name };
     });
+    if(process.env.GP_DESKTOP_PROFILE_MAIN==='1'&&selectedScenario==='battle'){
+      w.main.webContents.debugger.attach('1.3');
+      await w.main.webContents.debugger.sendCommand('Profiler.enable');
+      await w.main.webContents.debugger.sendCommand('Profiler.start');
+      mainProfile=true;
+    }
     await test('battle card item performance and cleanup',async()=>{
       const rows=[];
       await main(`(async()=>{state.roundActive=true;state.evaluated=false;state.hasStartedOnce=true;setCommunismMode(true);state.groups.forEach((g,i)=>g.members=Array.from({length:4},(_,j)=>String(i*4+j+1)+' 测试学生'));historyStack=Array.from({length:40},(_,i)=>HistorySnapshots.capture(state,'合成历史'+i,'10:00'));await saveState();await SaveManager.whenIdle()})()`);
-      for(const key of ['coin','green','lightning','star']){
-        const row=await main(`(async()=>{cancelScoreAnimationAndSync();BattleMotion.clear();for(const g of state.groups){g.inventory=[];g.itemEffect=null;ItemRoundUse.reset(g)}addItemToGroup(state.groups[6],'${key}');renderAll();
+      for(const step of ['coin','green','lightning','star','round','coin-warm','green-warm','round-warm']){
+        const key=step.replace('-warm','');
+        const row=await main(`(async()=>{cancelScoreAnimationAndSync();BattleMotion.clear();for(const g of state.groups){g.inventory=[];g.itemEffect=null;ItemRoundUse.reset(g)}state.roundActive=true;state.evaluated=false;if('${key}'==='round'){state.correctAns='A';state.roundActive=true;state.evaluated=false;state.groups.forEach(g=>{g.selectedOpt='A';g.allIn=false;g.competitionEffects={}})}else addItemToGroup(state.groups[6],'${key}');renderAll();
           const frames=[];let active=true,last=performance.now();function tick(t){frames.push(t-last);last=t;if(active)requestAnimationFrame(tick)}requestAnimationFrame(tick);
-          const start=performance.now();const ok=await useItem(state.groups[6].id,0);await classroomCommands.whenIdle();await SaveManager.whenIdle();const ackMs=performance.now()-start;
+          const start=performance.now();const beforeScores=state.groups.map(g=>g.score);state.roundActive=true;state.evaluated=false;const ok='${key}'==='round'?judgeRound():await useItem(state.groups[6].id,0);await classroomCommands.whenIdle();await SaveManager.whenIdle();const ackMs=performance.now()-start;
           const cleanupStart=performance.now();
           while(document.querySelector('.bm-layer,.score-card-number')&&performance.now()-cleanupStart<4500)await new Promise(r=>setTimeout(r,50));
-          const cleanupMs=performance.now()-cleanupStart;active=false;frames.sort((a,b)=>a-b);return {key:'${key}',ok,ackMs,cleanupMs,frames:frames.length,p95:frames[Math.floor(frames.length*.95)],max:frames.at(-1),layers:document.querySelectorAll('.bm-layer,.score-card-number').length}})()`);
-        assert.equal(row.ok,true,key+' must really execute');assert.equal(row.layers,0,'finite card animations cleaned');assert.equal(w.effect,null,'battle item use stays in cards');rows.push(row);
+          const cleanupMs=performance.now()-cleanupStart;active=false;frames.sort((a,b)=>a-b);return {key:'${key}',phase:'${step}',ok,ackMs,cleanupMs,roundDeltas:'${key}'==='round'?state.groups.map((g,i)=>g.score-beforeScores[i]):null,frames:frames.length,p95:frames[Math.floor(frames.length*.95)],max:frames.at(-1),layers:document.querySelectorAll('.bm-layer,.score-card-number').length}})()`);
+        assert.equal(row.ok,true,key+' must really execute');if(key==='round')assert.deepEqual(row.roundDeltas,Array(14).fill(2),'all 14 groups gain exactly two');assert.equal(row.layers,0,'finite card animations cleaned');assert.equal(w.effect,null,'battle item use stays in cards');rows.push(row);
       }
       await shot(w.main,'battle-card-items.png');return {viewport:[1920,1080],groups:14,students:56,synthetic:true,platform:process.platform,rows,performanceAcceptance:'NOT TESTED on Windows; no smoothness threshold claimed'};
     });
@@ -1037,6 +1050,11 @@ x.XSync(d,0)
     errors.push(error.stack || String(error));
     console.error("Integration probe failed:", error.stack);
   } finally {
+    if(mainProfile){
+      try {const data=await w.main.webContents.debugger.sendCommand('Profiler.stop');fs.writeFileSync(path.join(dir,'main-cpu-profile.json'),JSON.stringify(data.profile));}
+      catch(error){errors.push('CPU profile capture failed: '+error.message)}
+      finally {w.main.webContents.debugger.detach()}
+    }
     fs.writeFileSync(
       resultPath,
       JSON.stringify(

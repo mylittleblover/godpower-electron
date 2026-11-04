@@ -1,0 +1,126 @@
+{
+  "status": "PASS",
+  "results": [
+    {
+      "name": "battle card item performance and cleanup",
+      "status": "PASS",
+      "detail": {
+        "viewport": [
+          1920,
+          1080
+        ],
+        "groups": 14,
+        "students": 56,
+        "synthetic": true,
+        "platform": "linux",
+        "rows": [
+          {
+            "key": "coin",
+            "phase": "coin",
+            "ok": true,
+            "ackMs": 193,
+            "cleanupMs": 2801.89999999851,
+            "roundDeltas": null,
+            "frames": 99,
+            "p95": 83.29999999999973,
+            "max": 200.0999999999999,
+            "layers": 0
+          },
+          {
+            "key": "green",
+            "phase": "green",
+            "ok": true,
+            "ackMs": 701.0999999977648,
+            "cleanupMs": 2371.800000000745,
+            "roundDeltas": null,
+            "frames": 90,
+            "p95": 83.29999999999927,
+            "max": 549.8999999999996,
+            "layers": 0
+          },
+          {
+            "key": "lightning",
+            "phase": "lightning",
+            "ok": true,
+            "ackMs": 495.5,
+            "cleanupMs": 2627.5,
+            "roundDeltas": null,
+            "frames": 69,
+            "p95": 133.30000000000018,
+            "max": 299.90000000000055,
+            "layers": 0
+          },
+          {
+            "key": "star",
+            "phase": "star",
+            "ok": true,
+            "ackMs": 409.9000000022352,
+            "cleanupMs": 1736.0999999977648,
+            "roundDeltas": null,
+            "frames": 76,
+            "p95": 66.70000000000073,
+            "max": 216.60000000000036,
+            "layers": 0
+          },
+          {
+            "key": "round",
+            "phase": "round",
+            "ok": true,
+            "ackMs": 416.5,
+            "cleanupMs": 1985.5,
+            "roundDeltas": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "frames": 116,
+            "p95": 50,
+            "max": 233.39999999999964,
+            "layers": 0
+          },
+          {
+            "key": "coin",
+            "phase": "coin-warm",
+            "ok": true,
+            "ackMs": 129,
+            "cleanupMs": 2814.800000000745,
+            "roundDeltas": null,
+            "frames": 174,
+            "p95": 16.799999999999272,
+            "max": 50,
+            "layers": 0
+          }
+        ],
+        "performanceAcceptance": "NOT TESTED on Windows; no smoothness threshold claimed"
+      }
+    }
+  ],
+  "errors": [],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}

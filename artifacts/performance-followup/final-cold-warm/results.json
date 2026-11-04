@@ -1,0 +1,165 @@
+{
+  "status": "PASS",
+  "results": [
+    {
+      "name": "battle card item performance and cleanup",
+      "status": "PASS",
+      "detail": {
+        "viewport": [
+          1920,
+          1080
+        ],
+        "groups": 14,
+        "students": 56,
+        "synthetic": true,
+        "platform": "linux",
+        "rows": [
+          {
+            "key": "coin",
+            "phase": "coin",
+            "ok": true,
+            "ackMs": 188.60000000149012,
+            "cleanupMs": 2783,
+            "roundDeltas": null,
+            "frames": 104,
+            "p95": 66.70000000000005,
+            "max": 166.60199999999986,
+            "layers": 0
+          },
+          {
+            "key": "green",
+            "phase": "green",
+            "ok": true,
+            "ackMs": 1005,
+            "cleanupMs": 2097.60000000149,
+            "roundDeltas": null,
+            "frames": 78,
+            "p95": 116.69999999999982,
+            "max": 633.3339999999998,
+            "layers": 0
+          },
+          {
+            "key": "lightning",
+            "phase": "lightning",
+            "ok": true,
+            "ackMs": 865.9000000022352,
+            "cleanupMs": 2224.099999997765,
+            "roundDeltas": null,
+            "frames": 59,
+            "p95": 316.7000000000007,
+            "max": 416.60000000000036,
+            "layers": 0
+          },
+          {
+            "key": "star",
+            "phase": "star",
+            "ok": true,
+            "ackMs": 684.8000000007451,
+            "cleanupMs": 1748.1000000014901,
+            "roundDeltas": null,
+            "frames": 84,
+            "p95": 50.100000000000364,
+            "max": 316.7000000000007,
+            "layers": 0
+          },
+          {
+            "key": "round",
+            "phase": "round",
+            "ok": true,
+            "ackMs": 590.3999999985099,
+            "cleanupMs": 1950.1000000014901,
+            "roundDeltas": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "frames": 97,
+            "p95": 50,
+            "max": 299.89999999999964,
+            "layers": 0
+          },
+          {
+            "key": "coin",
+            "phase": "coin-warm",
+            "ok": true,
+            "ackMs": 197.40000000223517,
+            "cleanupMs": 2768.5,
+            "roundDeltas": null,
+            "frames": 170,
+            "p95": 16.700000000000728,
+            "max": 133.39999999999964,
+            "layers": 0
+          },
+          {
+            "key": "green",
+            "phase": "green-warm",
+            "ok": true,
+            "ackMs": 134.09999999776483,
+            "cleanupMs": 2815.60000000149,
+            "roundDeltas": null,
+            "frames": 174,
+            "p95": 16.799999999999272,
+            "max": 50,
+            "layers": 0
+          },
+          {
+            "key": "round",
+            "phase": "round-warm",
+            "ok": true,
+            "ackMs": 139.80000000074506,
+            "cleanupMs": 1964.3999999985099,
+            "roundDeltas": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "frames": 124,
+            "p95": 16.799999999999272,
+            "max": 50,
+            "layers": 0
+          }
+        ],
+        "performanceAcceptance": "NOT TESTED on Windows; no smoothness threshold claimed"
+      }
+    }
+  ],
+  "errors": [],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}

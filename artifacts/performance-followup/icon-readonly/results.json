@@ -1,0 +1,165 @@
+{
+  "status": "PASS",
+  "results": [
+    {
+      "name": "battle card item performance and cleanup",
+      "status": "PASS",
+      "detail": {
+        "viewport": [
+          1920,
+          1080
+        ],
+        "groups": 14,
+        "students": 56,
+        "synthetic": true,
+        "platform": "linux",
+        "rows": [
+          {
+            "key": "coin",
+            "phase": "coin",
+            "ok": true,
+            "ackMs": 134.80000000074506,
+            "cleanupMs": 2860.199999999255,
+            "roundDeltas": null,
+            "frames": 129,
+            "p95": 50,
+            "max": 133.29999999999995,
+            "layers": 0
+          },
+          {
+            "key": "green",
+            "phase": "green",
+            "ok": true,
+            "ackMs": 778.3999999985099,
+            "cleanupMs": 2280.60000000149,
+            "roundDeltas": null,
+            "frames": 101,
+            "p95": 66.60000000000036,
+            "max": 483.2999999999993,
+            "layers": 0
+          },
+          {
+            "key": "lightning",
+            "phase": "lightning",
+            "ok": true,
+            "ackMs": 442.79999999701977,
+            "cleanupMs": 2551.7000000029802,
+            "roundDeltas": null,
+            "frames": 105,
+            "p95": 66.60000000000036,
+            "max": 266.60000000000036,
+            "layers": 0
+          },
+          {
+            "key": "star",
+            "phase": "star",
+            "ok": true,
+            "ackMs": 275.6000000014901,
+            "cleanupMs": 1711.8999999985099,
+            "roundDeltas": null,
+            "frames": 105,
+            "p95": 16.80000000000109,
+            "max": 116.70000000000073,
+            "layers": 0
+          },
+          {
+            "key": "round",
+            "phase": "round",
+            "ok": true,
+            "ackMs": 129.60000000149012,
+            "cleanupMs": 1959.5,
+            "roundDeltas": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "frames": 123,
+            "p95": 16.799999999999272,
+            "max": 50,
+            "layers": 0
+          },
+          {
+            "key": "coin",
+            "phase": "coin-warm",
+            "ok": true,
+            "ackMs": 108.30000000074506,
+            "cleanupMs": 2863.5,
+            "roundDeltas": null,
+            "frames": 176,
+            "p95": 16.799999999999272,
+            "max": 50,
+            "layers": 0
+          },
+          {
+            "key": "green",
+            "phase": "green-warm",
+            "ok": true,
+            "ackMs": 109.69999999925494,
+            "cleanupMs": 2865.400000002235,
+            "roundDeltas": null,
+            "frames": 176,
+            "p95": 16.799999999999272,
+            "max": 50,
+            "layers": 0
+          },
+          {
+            "key": "round",
+            "phase": "round-warm",
+            "ok": true,
+            "ackMs": 167.80000000074506,
+            "cleanupMs": 1948.5,
+            "roundDeltas": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "frames": 121,
+            "p95": 16.799999999999272,
+            "max": 50,
+            "layers": 0
+          }
+        ],
+        "performanceAcceptance": "NOT TESTED on Windows; no smoothness threshold claimed"
+      }
+    }
+  ],
+  "errors": [],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}

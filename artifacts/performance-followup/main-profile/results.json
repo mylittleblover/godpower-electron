@@ -1,0 +1,109 @@
+{
+  "status": "PASS",
+  "results": [
+    {
+      "name": "battle card item performance and cleanup",
+      "status": "PASS",
+      "detail": {
+        "viewport": [
+          1920,
+          1080
+        ],
+        "groups": 14,
+        "students": 56,
+        "synthetic": true,
+        "platform": "linux",
+        "rows": [
+          {
+            "key": "coin",
+            "ok": true,
+            "ackMs": 903.8000000007451,
+            "cleanupMs": 2269.39999999851,
+            "roundDeltas": null,
+            "frames": 79,
+            "p95": 83.29999999999927,
+            "max": 699.9560000000001,
+            "layers": 0
+          },
+          {
+            "key": "green",
+            "ok": true,
+            "ackMs": 831.1999999992549,
+            "cleanupMs": 2218.199999999255,
+            "roundDeltas": null,
+            "frames": 84,
+            "p95": 83.30000000000018,
+            "max": 516.7000000000007,
+            "layers": 0
+          },
+          {
+            "key": "lightning",
+            "ok": true,
+            "ackMs": 784.3999999985099,
+            "cleanupMs": 2282.60000000149,
+            "roundDeltas": null,
+            "frames": 67,
+            "p95": 116.60000000000036,
+            "max": 283.2340000000004,
+            "layers": 0
+          },
+          {
+            "key": "star",
+            "ok": true,
+            "ackMs": 471,
+            "cleanupMs": 1709.5999999977648,
+            "roundDeltas": null,
+            "frames": 72,
+            "p95": 83.30000000000109,
+            "max": 250,
+            "layers": 0
+          },
+          {
+            "key": "round",
+            "ok": true,
+            "ackMs": 527.1999999992549,
+            "cleanupMs": 1938.4000000022352,
+            "roundDeltas": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ],
+            "frames": 71,
+            "p95": 66.69999999999891,
+            "max": 299.89999999999964,
+            "layers": 0
+          }
+        ],
+        "performanceAcceptance": "NOT TESTED on Windows; no smoothness threshold claimed"
+      }
+    }
+  ],
+  "errors": [],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}
