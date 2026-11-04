@@ -1,0 +1,12 @@
+{
+  "version": "3.0.70",
+  "htmlSourceCommit": "653c38885938807c8445048befe4cdd09d96a30e",
+  "electronCodeCommit": "7652238",
+  "zipBytes": 149551403,
+  "zipSha256": "ec658555ee87693fc688604a9503aff4a8ec79dea8816dc149fe87f08d6020d5",
+  "windowsBuild": "PASS",
+  "zipIntegrity": "PASS",
+  "windowsNativePerformance": "NOT TESTED",
+  "driveFolder": "https://drive.google.com/drive/folders/1K-acxVt-1Ev05p8HyJSztws5NaRcYG60",
+  "remaining": "Native long frames remain; performance acceptance has not passed"
+}
