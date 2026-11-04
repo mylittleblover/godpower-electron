@@ -22,5 +22,17 @@
   "zipSha256": "427e38efd31bbb7098dbb305f292daef2f3adfe45467bdd4d534bb04ce43fc58",
   "folderUrl": "https://drive.google.com/drive/folders/1M2W1tMfkrg_sFHcJwhH7pKrV6xNgeMFz",
   "windowsHardware": "NOT TESTED",
-  "upload": "pending"
+  "upload": "PASS: five files uploaded and folder readback confirmed",
+  "parts": [
+    {
+      "name": "godpower-3.0.71-win.zip.001",
+      "id": "1JZHPi9q2kT3DjU4PwgglXBT3RbYwquK7",
+      "bytes": 94371840
+    },
+    {
+      "name": "godpower-3.0.71-win.zip.002",
+      "id": "1eqgRL0ihdWX_3De6cs75TIZKpF3kOigU",
+      "bytes": 55594022
+    }
+  ]
 }
