@@ -1,0 +1,29 @@
+{
+  "status": "FAIL",
+  "results": [
+    {
+      "name": "battle card item performance and cleanup",
+      "status": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: finite card animations cleaned\n\n7 !== 0\n\n    at /workspace/godpower-electron-latest/desktop/test-probe.cjs:736:69\n    at async test (/workspace/godpower-electron-latest/desktop/test-probe.cjs:56:22)\n    at async Object.run (/workspace/godpower-electron-latest/desktop/test-probe.cjs:728:5)\n    at async /workspace/godpower-electron-latest/main.cjs:130:13"
+    }
+  ],
+  "errors": [
+    "AssertionError [ERR_ASSERTION]: finite card animations cleaned\n\n7 !== 0\n\n    at /workspace/godpower-electron-latest/desktop/test-probe.cjs:736:69\n    at async test (/workspace/godpower-electron-latest/desktop/test-probe.cjs:56:22)\n    at async Object.run (/workspace/godpower-electron-latest/desktop/test-probe.cjs:728:5)\n    at async /workspace/godpower-electron-latest/main.cjs:130:13"
+  ],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}

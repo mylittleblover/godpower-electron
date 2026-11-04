@@ -29,7 +29,7 @@ body {
   position: absolute;
   inset: 0;
   background: rgba(6, 24, 24, 0.83);
-  backdrop-filter: blur(5px);
+  /* Keep the cross-application shade on a static composited surface. */
   z-index: -2;
 }
 .reveal:not([hidden]) {
@@ -70,6 +70,21 @@ h1 {
   margin: 25px 0 0;
   color: #b2d6cc;
 }
+.effect-group-identity:not([hidden]) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #d8f1e8;
+  font-size: 22px;
+  margin-top: 12px;
+}
+.effect-group-identity img:not([hidden]) {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 10px;
+}
 .avatar-frame {
   width: clamp(120px, 21vh, 240px);
   aspect-ratio: 1;
@@ -97,7 +112,6 @@ h1 {
   from {
     opacity: 0;
     transform: translateY(38px) scale(0.72) rotate(-7deg);
-    filter: blur(8px);
   }
   to {
     opacity: 1;
@@ -343,7 +357,6 @@ h1 {
 @keyframes spotlight-in {
   from {
     transform: scale(1.18);
-    filter: blur(8px);
     opacity: 0;
   }
   to {
@@ -496,7 +509,6 @@ h1 {
   from {
     opacity: 0;
     transform: translateY(70px) scale(0.88);
-    filter: blur(10px);
   }
   to {
     opacity: 1;

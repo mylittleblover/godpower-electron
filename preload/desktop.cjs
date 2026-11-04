@@ -82,8 +82,8 @@ if (role === "effect") {
     handAction: (id,action,payload) => ipcRenderer.invoke("gp:hand-card-command",{id,commandId:handPrefix+"-"+(++handSequence),seq:handSequence,action,payload}),
     ready: () => ipcRenderer.send("gp:effect-ready"),
     finish: (id) => ipcRenderer.send("gp:effect-finish", { id }),
-    interactive: (id, value) =>
-      ipcRenderer.send("gp:effect-interactive", { id, value }),
+    interactive: (id, value, region) =>
+      ipcRenderer.send("gp:effect-interactive", { id, value, region }),
   });
 }
 contextBridge.exposeInMainWorld("godpowerDesktop", Object.freeze(base));

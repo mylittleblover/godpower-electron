@@ -1,0 +1,75 @@
+{
+  "status": "PASS",
+  "results": [
+    {
+      "name": "battle card item performance and cleanup",
+      "status": "PASS",
+      "detail": {
+        "viewport": [
+          1920,
+          1080
+        ],
+        "groups": 14,
+        "students": 56,
+        "synthetic": true,
+        "platform": "linux",
+        "rows": [
+          {
+            "key": "coin",
+            "ok": true,
+            "ackMs": 966.2999999998137,
+            "frames": 102,
+            "p95": 50.100000000000364,
+            "max": 766.6100000000001,
+            "layers": 0
+          },
+          {
+            "key": "green",
+            "ok": true,
+            "ackMs": 693.5,
+            "frames": 108,
+            "p95": 50.100000000000364,
+            "max": 416.59999999999945,
+            "layers": 0
+          },
+          {
+            "key": "lightning",
+            "ok": true,
+            "ackMs": 697.7999999998137,
+            "frames": 91,
+            "p95": 83.39999999999964,
+            "max": 399.9340000000011,
+            "layers": 0
+          },
+          {
+            "key": "star",
+            "ok": true,
+            "ackMs": 401.79999999981374,
+            "frames": 105,
+            "p95": 50,
+            "max": 283.2999999999993,
+            "layers": 0
+          }
+        ],
+        "performanceAcceptance": "NOT TESTED on Windows; no smoothness threshold claimed"
+      }
+    }
+  ],
+  "errors": [],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}

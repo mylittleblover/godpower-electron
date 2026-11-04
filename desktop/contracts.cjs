@@ -148,6 +148,7 @@ function sanitizeSnapshot(s) {
       mode: r.mode,
       groupId: integer(r.groupId),
       groupName: text(r.groupName),
+      groupAvatarDataUrl: avatarDataUrl(r.groupAvatarDataUrl),
       groupNo: integer(r.groupNo),
       color: color(r.color),
       score: integer(r.score),

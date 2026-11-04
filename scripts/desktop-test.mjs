@@ -23,7 +23,7 @@ const args = [
   "--ozone-override-screen-size=1920,1080",
 ];
 const scenario = process.env.DESKTOP_SCENARIO || null;
-if (scenario && scenario !== "hand")
+if (scenario && !["hand","picker","effects","battle"].includes(scenario))
   throw Error("Unsupported desktop scenario: " + scenario);
 if (scenario) args.push("--desktop-scenario=" + scenario);
 if (
@@ -45,21 +45,18 @@ try {
   const report = JSON.parse(await readFile(result, "utf8"));
   console.log(JSON.stringify(report, null, 2));
   assert.equal(report.status, "PASS");
-  assert.equal(
-    report.results.length,
-    scenario ? 1 : 21,
-    scenario
-      ? "the requested hand scenario must execute"
-      : "19 existing scenarios plus verified disk queue and save-library IPC must execute",
-  );
-  if (scenario)
+  const expectedCount=scenario==='picker'?3:['hand','effects','battle'].includes(scenario)?1:23;
+  assert.equal(report.results.length,expectedCount,'all requested scenarios must execute');
+  if(scenario==='effects')assert.equal(report.results[0].name,'effect settings duration and native pointer skip');
+  if (scenario==='picker')assert.deepEqual(report.results.map(r=>r.name),['individual','group','two_tier'].map(mode=>mode+' authoritative draw, continuous reel, overlay and score'));
+  if (scenario==='hand')
     assert.equal(
       report.results[0].name,
       "the launcher offers picker or hand and the hand panel runs one classroom command",
     );
   assert.equal(
     new Set(report.results.map((row) => row.name)).size,
-    scenario ? 1 : 21,
+    expectedCount,
     "scenario results must be unique",
   );
 } finally {

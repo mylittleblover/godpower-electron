@@ -1,0 +1,55 @@
+{
+  "status": "PASS",
+  "results": [
+    {
+      "name": "individual authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1793807612691-1",
+        "groupId": 6,
+        "historyEntries": 1,
+        "scoreDelta": 5,
+        "modeAckMs": 1062.078383
+      }
+    },
+    {
+      "name": "group authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1793807619030-2",
+        "groupId": 2,
+        "historyEntries": 1,
+        "scoreDelta": 5,
+        "modeAckMs": 197.98572700000113
+      }
+    },
+    {
+      "name": "two_tier authoritative draw, continuous reel, overlay and score",
+      "status": "PASS",
+      "detail": {
+        "resultId": "pick-1793807624102-3",
+        "groupId": 1,
+        "historyEntries": 1,
+        "scoreDelta": 5,
+        "modeAckMs": 104.00722200000018
+      }
+    }
+  ],
+  "errors": [],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}

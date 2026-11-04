@@ -49,6 +49,9 @@ async function run(w, resultPath) {
   const handScenario="the launcher offers picker or hand and the hand panel runs one classroom command";
   async function test(name, fn) {
     if(selectedScenario==="hand" && name!==handScenario)return;
+    if(selectedScenario==='battle'&&name!=='battle card item performance and cleanup')return;
+    if(selectedScenario==='effects'&&name!=='effect settings duration and native pointer skip')return;
+    if(selectedScenario==='picker'&&!['individual','group','two_tier'].some(mode=>name===mode+' authoritative draw, continuous reel, overlay and score'))return;
     try {
       const detail = await fn();
       results.push({ name, status: "PASS", detail });
@@ -94,7 +97,7 @@ async function run(w, resultPath) {
    state.picker={mode:'individual',antiRepeat:true,pickedStudentKeys:[],pickedGroupIds:[],preselectedGroupIds:[]};
    state.itemGlobal.pickerHistory=[];state.columnMode='double';state.resizerEnabled=true;state.resizerHeight=120;state.zoomLevel=1;document.body.style.zoom=1;switchView('battle');renderAll();saveState();
    window.testSoundCalls=[];window.originalPlaySound=playSound;playSound=function(key,...args){testSoundCalls.push(key);return originalPlaySound(key,...args)};GodpowerPicker.notify('idle');`);
-    if(selectedScenario==="hand"){
+    if(["hand","picker"].includes(selectedScenario)){
       await main(`addItemToGroup(state.groups[0],'coin');saveState();void 0`);
       await main(`SaveManager.whenIdle()`);
       w.openPicker();await until(()=>w.picker&&!w.picker.webContents.isLoading(),"hand fixture picker");
@@ -201,8 +204,8 @@ async function run(w, resultPath) {
       await main(`state.isLocked=false;switchView('battle')`);
       for(let i=0;i<2;i++){
         await main(`document.querySelector('.bottom-dock [onclick*=openPickerModal]').click()`);
-        await until(()=>!w.pickerCollapsed,"bottom-right picker control opens expanded window");
-        await picker(`godpowerDesktop.windowAction('collapse')`);
+        assert.equal(await main(`document.getElementById('pickerModal').classList.contains('active')&&!document.getElementById('pickerModal').hasAttribute('data-external-picker')`),true,'bottom dock opens the main program picker');
+        await main(`closePickerModal()`);
       }
       assert.equal(loads,0);
       w.main.webContents.removeListener("did-start-loading",onLoad);
@@ -430,7 +433,10 @@ async function run(w, resultPath) {
       await test(
         mode + " authoritative draw, continuous reel, overlay and score",
         async () => {
+          await picker(`godpowerDesktop.windowAction("expand","picker")`);
+          const modeStart=performance.now();
           await picker(`godpowerDesktop.command('mode',{mode:'${mode}'})`);
+          const modeAckMs=performance.now()-modeStart;
           await until(
             () => w.broker.snapshot.mode === mode,
             "mode synchronized",
@@ -495,6 +501,8 @@ async function run(w, resultPath) {
               () => picker(`!pending && !document.getElementById('delta').disabled`),
               "score inputs enabled after reveal",
             );
+            w.picker.show();w.picker.focus();
+            await until(()=>w.picker.isFocused(),'picker focused for keyboard edit');
             await picker(`document.getElementById('delta').focus()`);
             assert.equal(await picker(`document.activeElement.id`),'delta');
             const nativeFocused=w.picker.isFocused;w.picker.isFocused=()=>false;
@@ -576,6 +584,7 @@ async function run(w, resultPath) {
             groupId: result.groupId,
             historyEntries: 1,
             scoreDelta: 5,
+            modeAckMs,
           };
         },
       );
@@ -605,6 +614,11 @@ async function run(w, resultPath) {
       await picker(`godpowerDesktop.windowAction('pin',true)`);
       return { version, alwaysOnTop: w.picker.isAlwaysOnTop(), skipTaskbar: true };
     });    await test("the launcher offers picker or hand and the hand panel runs one classroom command", async () => {
+      const internalWindows=BrowserWindow.getAllWindows().map(win=>win.id);
+      await main(`document.querySelector('.bottom-dock [onclick*=openPickerModal]').click()`);
+      assert.equal(await main(`document.getElementById('pickerModal').classList.contains('active')&&!document.getElementById('pickerModal').hasAttribute('data-external-picker')`),true,'dock opens internal picker');
+      assert.deepEqual(BrowserWindow.getAllWindows().map(win=>win.id),internalWindows,'dock creates no native picker window');
+      await main(`closePickerModal()`);
       await picker(`godpowerDesktop.windowAction('collapse')`);
       await until(() => w.pickerCollapsed, "collapsed before launcher");
       await picker(`godpowerDesktop.windowAction('launcher')`);
@@ -652,6 +666,17 @@ async function run(w, resultPath) {
       assert.equal(after.score,before.score+3);assert.equal(after.correct,before.correct+1);assert.equal(after.history,before.history+1);
       const spent=await picker(`godpowerDesktop.command('handScore',{groupId:${groups[0].id},selectionId:'${token}',delta:3})`);
       assert.equal(spent.ok,false,"completed reward cannot score twice");
+      const secondBefore=await main(`state.groups[1].score`);
+      await picker(`godpowerDesktop.command('handSelect',{groupId:${groups[1].id}})`);
+      await until(()=>w.effectPayload?.kind==='hand'&&w.effectPayload.hand.phase==='JUDGE'&&!w.effect.webContents.isLoading(),'second group judgment');
+      await until(()=>js(w.effect,`!!document.querySelector('[data-hand-command="correct"]')`),'second group ready');
+      await js(w.effect,`document.querySelector('[data-hand-command="correct"]').click()`);
+      await until(()=>picker(`!!document.querySelector('#handSlots button:not(:disabled)')`),'floating quick score enabled');
+      const quickDelta=await picker(`current.snapshot.slots[0]`);
+      await picker(`document.querySelector('#handSlots button').click()`);
+      await until(()=>picker(`!pending`),'floating quick score acknowledgment');
+      await main(`classroomCommands.whenIdle()`);
+      assert.equal(await main(`state.groups[1].score`),secondBefore+quickDelta,'reused score slots must target the current group and selection token');
       await picker(`godpowerDesktop.command('handSelect',{groupId:${groups[0].id}})`);
       await until(()=>w.effectPayload?.kind==='hand'&&w.effectPayload.hand.phase==='JUDGE'&&!w.effect.webContents.isLoading(),"next hand judgment");
       await until(()=>js(w.effect,`!!document.querySelector('[data-hand-command="correct"]')`),"next judgment ready");
@@ -699,6 +724,67 @@ async function run(w, resultPath) {
       await picker(`godpowerDesktop.windowAction('expand','picker')`);
       await until(() => picker(`!document.getElementById('pickerPane').hidden`), "picker pane back");
       return { token, scored: after.score, item: drawn.itemName, cinematic: cinematic.name };
+    });
+    await test('battle card item performance and cleanup',async()=>{
+      const rows=[];
+      await main(`(async()=>{state.roundActive=true;state.evaluated=false;state.hasStartedOnce=true;setCommunismMode(true);state.groups.forEach((g,i)=>g.members=Array.from({length:4},(_,j)=>String(i*4+j+1)+' 测试学生'));historyStack=Array.from({length:40},(_,i)=>HistorySnapshots.capture(state,'合成历史'+i,'10:00'));await saveState();await SaveManager.whenIdle()})()`);
+      for(const key of ['coin','green','lightning','star']){
+        const row=await main(`(async()=>{cancelScoreAnimationAndSync();BattleMotion.clear();for(const g of state.groups){g.inventory=[];g.itemEffect=null;ItemRoundUse.reset(g)}addItemToGroup(state.groups[6],'${key}');renderAll();
+          const frames=[];let active=true,last=performance.now();function tick(t){frames.push(t-last);last=t;if(active)requestAnimationFrame(tick)}requestAnimationFrame(tick);
+          const start=performance.now();const ok=await useItem(state.groups[6].id,0);await classroomCommands.whenIdle();await SaveManager.whenIdle();const ackMs=performance.now()-start;
+          const cleanupStart=performance.now();
+          while(document.querySelector('.bm-layer,.score-card-number')&&performance.now()-cleanupStart<4500)await new Promise(r=>setTimeout(r,50));
+          const cleanupMs=performance.now()-cleanupStart;active=false;frames.sort((a,b)=>a-b);return {key:'${key}',ok,ackMs,cleanupMs,frames:frames.length,p95:frames[Math.floor(frames.length*.95)],max:frames.at(-1),layers:document.querySelectorAll('.bm-layer,.score-card-number').length}})()`);
+        assert.equal(row.ok,true,key+' must really execute');assert.equal(row.layers,0,'finite card animations cleaned');assert.equal(w.effect,null,'battle item use stays in cards');rows.push(row);
+      }
+      await shot(w.main,'battle-card-items.png');return {viewport:[1920,1080],groups:14,students:56,synthetic:true,platform:process.platform,rows,performanceAcceptance:'NOT TESTED on Windows; no smoothness threshold claimed'};
+    });
+    await test('effect settings duration and native pointer skip',async()=>{
+      await main(`ClassroomFeedback.setOptions({duration:3600},{persist:false});HandItemCinematic.present({key:'coin',caster:state.groups[0],targets:[{...state.groups[0],delta:2}]});`);
+      await until(()=>w.effect&&w.effectPayload?.kind==='item'&&!w.effect.webContents.isLoading(),'item duration effect');
+      assert.equal(w.effectPayload.effects.duration,3600,'item duration comes from the shared setting');
+      await until(()=>w.effectPointerTimer,'native skip region registered');
+      const region=await js(w.effect,`(()=>{const r=document.getElementById('skip').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`),bounds=w.effect.getBounds();
+      if(process.platform==='linux'){
+        const x=Math.round(bounds.x+region.x),y=Math.round(bounds.y+region.y);
+        const warp=`import ctypes
+x=ctypes.CDLL('libX11.so.6')
+x.XOpenDisplay.restype=ctypes.c_void_p
+d=x.XOpenDisplay(None)
+assert d
+x.XWarpPointer.argtypes=[ctypes.c_void_p,ctypes.c_ulong,ctypes.c_ulong,ctypes.c_int,ctypes.c_int,ctypes.c_uint,ctypes.c_uint,ctypes.c_int,ctypes.c_int]
+x.XDefaultRootWindow.argtypes=[ctypes.c_void_p]
+x.XDefaultRootWindow.restype=ctypes.c_ulong
+x.XWarpPointer(d,0,x.XDefaultRootWindow(d),0,0,0,0,${x},${y})
+x.XFlush.argtypes=[ctypes.c_void_p]
+x.XFlush(d)
+x.XSync.argtypes=[ctypes.c_void_p,ctypes.c_int]
+x.XSync(d,0)
+`;
+        require('node:child_process').execFileSync('python3',['-c',warp]);
+        console.log('SKIP_POINTER',JSON.stringify({region,bounds,cursor:screen.getCursorScreenPoint(),interactive:w.effectInteractive}));
+        await until(()=>w.effectInteractive,'skip area accepts real pointer');
+        const click=`import ctypes
+x=ctypes.CDLL('libX11.so.6');t=ctypes.CDLL('libXtst.so.6')
+x.XOpenDisplay.restype=ctypes.c_void_p
+d=x.XOpenDisplay(None)
+t.XTestFakeButtonEvent.argtypes=[ctypes.c_void_p,ctypes.c_uint,ctypes.c_int,ctypes.c_ulong]
+t.XTestFakeButtonEvent(d,1,1,0);t.XTestFakeButtonEvent(d,1,0,0)
+x.XFlush.argtypes=[ctypes.c_void_p];x.XFlush(d)
+x.XSync.argtypes=[ctypes.c_void_p,ctypes.c_int]
+x.XSync(d,0)
+`;
+        require('node:child_process').execFileSync('python3',['-c',click]);
+      }else await js(w.effect,`document.getElementById('skip').click()`);
+      await until(()=>!w.effect,'skip closes effect',2500);
+      const started=Date.now();
+      await main(`ClassroomFeedback.setOptions({duration:1200},{persist:false});HandItemCinematic.present({key:'coin',caster:state.groups[0],targets:[{...state.groups[0],delta:2}]});`);
+      await until(()=>!!w.effect,'short effect opened');
+      assert.equal(w.effectPayload.effects.duration,1200);
+      await until(()=>!w.effect,'configured automatic close',3500);
+      assert.ok(Date.now()-started<3500,'duration must not include a fixed nine-second tail');
+      assert.equal(w.effectPointerTimer,null,'pointer watcher cleaned');
+      return {configured:[3600,1200],pointer:process.platform==='linux'?'X11 real pointer':'DOM click',autoCloseMs:Date.now()-started};
     });
     await test("close/reopen while spinning keeps one engine and retained window bounds", async () => {
       const b = { x: 100, y: 80, width: 480, height: 760 };

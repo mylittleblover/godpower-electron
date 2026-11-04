@@ -1,0 +1,29 @@
+{
+  "status": "FAIL",
+  "results": [
+    {
+      "name": "effect settings duration and native pointer skip",
+      "status": "FAIL",
+      "error": "Error: Timeout: skip area accepts real pointer\n    at until (/workspace/godpower-electron-latest/desktop/test-probe.cjs:13:9)\n    at async /workspace/godpower-electron-latest/desktop/test-probe.cjs:743:9\n    at async test (/workspace/godpower-electron-latest/desktop/test-probe.cjs:55:22)\n    at async Object.run (/workspace/godpower-electron-latest/desktop/test-probe.cjs:724:5)\n    at async /workspace/godpower-electron-latest/main.cjs:130:13"
+    }
+  ],
+  "errors": [
+    "Error: Timeout: skip area accepts real pointer\n    at until (/workspace/godpower-electron-latest/desktop/test-probe.cjs:13:9)\n    at async /workspace/godpower-electron-latest/desktop/test-probe.cjs:743:9\n    at async test (/workspace/godpower-electron-latest/desktop/test-probe.cjs:55:22)\n    at async Object.run (/workspace/godpower-electron-latest/desktop/test-probe.cjs:724:5)\n    at async /workspace/godpower-electron-latest/main.cjs:130:13"
+  ],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}

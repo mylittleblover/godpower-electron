@@ -30,6 +30,7 @@ const { SaveFile, normalizeTarget } = require("./save-file.cjs");
 const { SaveVault } = require("./save-vault.cjs");
 const { SaveFlush } = require("./save-flush.cjs");
 const { loadSaveSchema, dispatch: dispatchSaveVault } = require("./save-vault-bridge.cjs");
+const {skipRegion,containsCursor}=require('./effect-pointer.cjs');
 class Windows {
   constructor(root) {
     this.root = root;
@@ -559,6 +560,9 @@ class Windows {
   closeEffect() {
     if(this.effectPayload?.kind==="hand")this.nativeHandActive=false;
     clearTimeout(this.effectTimeout);
+    clearInterval(this.effectPointerTimer);
+    this.effectPointerTimer=null;
+    this.effectInteractive=false;
     const win = this.effect;
     this.effect = null;
     this.effectPayload = null;
@@ -894,7 +898,24 @@ class Windows {
         msg?.id === this.effectPayload?.id &&
         typeof msg.value === "boolean"
       )
-        this.effect.setIgnoreMouseEvents(this.effectPayload?.kind === "hand" ? false : !msg.value, { forward: true });
+      {
+        const win=this.effect,id=msg.id;
+        const region=skipRegion(msg.region,win.getBounds());
+        if(region&&this.effectPayload.kind!=='hand'){
+          clearInterval(this.effectPointerTimer);
+          const pointerTimer=setInterval(()=>{
+            if(this.effect!==win||win.isDestroyed()||this.effectPayload?.id!==id){clearInterval(pointerTimer);if(this.effectPointerTimer===pointerTimer)this.effectPointerTimer=null;return;}
+            const active=containsCursor(region,win.getBounds(),screen.getCursorScreenPoint());
+            if(active===this.effectInteractive)return;
+            this.effectInteractive=active;
+            win.setIgnoreMouseEvents(!active,{forward:true});
+          },50);
+          this.effectPointerTimer=pointerTimer;
+          pointerTimer.unref?.();
+        }
+        this.effectInteractive=this.effectPayload.kind==='hand'||msg.value;
+        win.setIgnoreMouseEvents(!this.effectInteractive,{forward:true});
+      }
     });
   }
 }

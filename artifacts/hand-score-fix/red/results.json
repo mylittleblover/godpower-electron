@@ -1,0 +1,29 @@
+{
+  "status": "FAIL",
+  "results": [
+    {
+      "name": "the launcher offers picker or hand and the hand panel runs one classroom command",
+      "status": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: reused score slots must target the current group and selection token\n\n120 !== 121\n\n    at /workspace/godpower-electron-latest/desktop/test-probe.cjs:665:14\n    at async test (/workspace/godpower-electron-latest/desktop/test-probe.cjs:53:22)\n    at async Object.run (/workspace/godpower-electron-latest/desktop/test-probe.cjs:607:12)\n    at async /workspace/godpower-electron-latest/main.cjs:130:13"
+    }
+  ],
+  "errors": [
+    "AssertionError [ERR_ASSERTION]: reused score slots must target the current group and selection token\n\n120 !== 121\n\n    at /workspace/godpower-electron-latest/desktop/test-probe.cjs:665:14\n    at async test (/workspace/godpower-electron-latest/desktop/test-probe.cjs:53:22)\n    at async Object.run (/workspace/godpower-electron-latest/desktop/test-probe.cjs:607:12)\n    at async /workspace/godpower-electron-latest/main.cjs:130:13"
+  ],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}

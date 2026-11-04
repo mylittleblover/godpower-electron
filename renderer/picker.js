@@ -299,8 +299,8 @@ function renderHand(s, busy, state) {
         b.className = delta > 0 ? "positive" : "negative";
         b.addEventListener("click", () =>
           run("handScore", {
-            groupId: active,
-            selectionId: hand.selectionId,
+            groupId: current?.snapshot?.hand?.groupId,
+            selectionId: current?.snapshot?.hand?.selectionId,
             delta,
           }),
         );

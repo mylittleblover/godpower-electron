@@ -1,0 +1,34 @@
+{
+  "status": "PASS",
+  "results": [
+    {
+      "name": "effect settings duration and native pointer skip",
+      "status": "PASS",
+      "detail": {
+        "configured": [
+          3600,
+          1200
+        ],
+        "pointer": "X11 real pointer",
+        "autoCloseMs": 2322
+      }
+    }
+  ],
+  "errors": [],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}

@@ -145,7 +145,10 @@ class SaveVault {
     );
     if (hash(bytes) !== entry.contentHash || bytes.length !== entry.bytes)
       fail("DOCUMENT_INTEGRITY_FAILED");
-    const doc = this.schema.validateV2(JSON.parse(bytes.toString("utf8")));
+    // Parsed file bytes are already an owned value; retain all schema checks
+    // without serializing and parsing the same complete document again.
+    const validate = this.schema.assertV2 || this.schema.validateV2;
+    const doc = validate(JSON.parse(bytes.toString("utf8")));
     if (doc.saveId !== saveId || doc.revision !== entry.revision)
       fail("REVISION_INTEGRITY_FAILED");
     return doc;
@@ -298,7 +301,8 @@ class SaveVault {
         snapshot.document.revision !== expectedRevision
       )
         fail("INVALID_REVISION");
-      const doc = this.schema.validateV2({
+      const validate = this.schema.assertV2 || this.schema.validateV2;
+      const doc = validate({
         ...snapshot.document,
         revision: expectedRevision + 1,
         updatedAt: new Date().toISOString(),

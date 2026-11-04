@@ -113,3 +113,38 @@ test("hand and item avatars accept only bounded local WebP data", () => {
     );
   }
 });
+test("personal reveal preserves separate student and group avatar DTOs", () => {
+  const webp = "data:image/webp;base64,UklGRg==";
+  const base = {
+    protocolVersion: 1,
+    phase: "revealed",
+    mode: "individual",
+    groups: [{ id: 1, name: "A", score: 0, members: 4, color: "#109080" }],
+    slots: [1, 2, 3, 4, 5, 6],
+    history: [],
+    result: {
+      id: "pick-1",
+      mode: "individual",
+      groupId: 1,
+      groupName: "A",
+      groupNo: 1,
+      color: "#109080",
+      score: 0,
+      name: "Student",
+      number: "01",
+      memberName: "01 Student",
+      avatarDataUrl: webp,
+      groupAvatarDataUrl: webp,
+    },
+  };
+  const r = sanitizeSnapshot(base).result;
+  assert.equal(r.avatarDataUrl, webp);
+  assert.equal(r.groupAvatarDataUrl, webp);
+  assert.equal(
+    sanitizeSnapshot({
+      ...base,
+      result: { ...base.result, groupAvatarDataUrl: "https://invalid/avatar" },
+    }).result.groupAvatarDataUrl,
+    "",
+  );
+});

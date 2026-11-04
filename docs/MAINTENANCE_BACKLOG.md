@@ -88,3 +88,5 @@ NOT TESTED：Windows真机/系统键盘/实体触屏/多显示器；仍有效的
 
 
 SAVE-NATIVE-003（P1，DONE）：回收站仅处理非当前存档，文件/资源/原文不删；边界API加入setTrashed并限制参数个数，CAS及代次检查。76项单元、最终21项桌面联调和包内源码/共享schema校验PASS。后续永久删除/损坏资源诊断OPEN，不能静默恢复缺失数据。
+
+- PERF-3.0.70（P1，进行中）：Windows 3.0.69课堂全局卡顿。当前修复及Linux实测见docs/performance/3.0.70-checkpoint.md；功能专项通过不等于流畅达标，仍有0.7–1.2秒ACK波动。继续定位保存/IPC/布局长任务，保留事务与校验。Windows实测NOT TESTED。

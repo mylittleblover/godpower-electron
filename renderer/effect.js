@@ -12,7 +12,7 @@ function exit() {
   stage.classList.add("leaving");
   finishTimer = setTimeout(() => api.finish(id), 680);
 }
-for (let n = 0; n < 24; n++) {
+for (let n = 0; n < 12; n++) {
   const dot = document.createElement("i");
   dot.style.setProperty("--i", n);
   document.getElementById("particles").append(dot);
@@ -20,6 +20,17 @@ for (let n = 0; n < 24; n++) {
 /* Item cinematics reuse the picker reveal surface: attacker on the left,
    defender on the right, one target per beat. The data is already sanitized. */
 let itemTimer = null;
+function reportSkipRegion() {
+  const button = document.getElementById("skip");
+  if (!id || button.hidden) return;
+  const r = button.getBoundingClientRect();
+  api.interactive(id, false, {
+    left: r.left,
+    top: r.top,
+    width: r.width,
+    height: r.height,
+  });
+}
 function presentItem(payload) {
   const item = payload.item,
     marx = payload.theme === "marx";
@@ -82,7 +93,7 @@ function presentItem(payload) {
   stage.style.setProperty("--group", marx ? "#d6ad58" : "#71dbc1");
   stage.style.setProperty("--target-count", total);
   stage.classList.add("active", payload.effects.style);
-  exitTimer = setTimeout(exit, payload.effects.duration + 9000);
+  exitTimer = setTimeout(exit, payload.effects.duration);
 }
 function escapeHtml(value) {
   return String(value).replace(
@@ -110,6 +121,7 @@ api.onReveal((payload) => {
   id = payload.id;
   if (payload.kind === "item") {
     presentItem(payload);
+    reportSkipRegion();
     return;
   }
   const r = payload.result;
@@ -120,6 +132,19 @@ api.onReveal((payload) => {
   document.title = `${marx ? "马克思的力量" : "上帝的力量"} · 全屏揭晓`;
   document.getElementById("name").textContent = r.name;
   document.getElementById("group").textContent = r.groupName;
+  const personal = r.mode === "individual" || r.mode === "two_tier";
+  document.getElementById("group").hidden = personal;
+  const identity = document.getElementById("groupIdentity"),
+    groupAvatar = document.getElementById("groupAvatar");
+  identity.hidden = !personal || !r.groupName;
+  document.getElementById("groupName").textContent = r.groupName || "";
+  groupAvatar.hidden = !r.groupAvatarDataUrl;
+  groupAvatar.removeAttribute("src");
+  if (r.groupAvatarDataUrl) groupAvatar.src = r.groupAvatarDataUrl;
+  groupAvatar.onerror = () => {
+    groupAvatar.hidden = true;
+    groupAvatar.removeAttribute("src");
+  };
   const avatarFrame = document.getElementById("avatarFrame");
   const avatar = document.getElementById("avatar");
   if (
@@ -152,7 +177,8 @@ api.onReveal((payload) => {
     marx && r.mode !== "score" ? "#d6ad58" : r.color,
   );
   stage.classList.add("active", payload.effects.style);
-  exitTimer = setTimeout(exit, payload.effects.duration + 900);
+  exitTimer = setTimeout(exit, payload.effects.duration);
+  reportSkipRegion();
 });
 const skip = document.getElementById("skip");
 skip.addEventListener("mouseenter", () => {
@@ -169,4 +195,5 @@ window.addEventListener("beforeunload", () => {
   clearTimeout(exitTimer);
   clearTimeout(finishTimer);
 });
+window.addEventListener("resize", reportSkipRegion);
 api.ready();

@@ -367,16 +367,15 @@ test("the picker is hidden from the taskbar, the launcher menu and hand view are
     /handJudge|handDraw/,
   );
 });
-test("the dock picker button opens the floating picker instead of the in-page dialog", () => {
+test("the dock picker button opens the in-page picker while explicit external calls remain supported", () => {
   const path = require("node:path");
   const source = require("node:fs").readFileSync(
     path.join(process.env.GODPOWER_HTML_REPO || path.join(__dirname, "../../godpower-html"), "src/runtime/picker/selection-engine.js"),
     "utf8",
   );
-  assert.match(
-    source,
-    /if \(!internal && window\.godpowerDesktop\?\.role === "main"\) \{[\s\S]*openPicker\(\);/,
-  );
+  assert.doesNotMatch(source,/godpowerDesktop\.openPicker\(/);
+  assert.match(source,/const external = internal && window\.godpowerDesktop\?\.role === "main"/);
+  assert.match(source,/data-external-picker/);
 });
 test("the launcher menu stays inside the monitor work area", () => {
   const { visibleBounds, menuBounds } = require("../desktop/window-state.cjs");
