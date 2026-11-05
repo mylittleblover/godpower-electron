@@ -6,7 +6,8 @@ window.HandCards = (() => {
     busy = false,
     timer = null,
     signature = "",
-    exit = null;
+    exit = null,
+    painted = "";
   const E = (value) =>
     String(value ?? "").replace(
       /[&<>"']/g,
@@ -31,6 +32,7 @@ window.HandCards = (() => {
   function close() {
     clearTimeout(timer);
     timer = null;
+    root.inert = true;
     exit?.();
   }
   async function command(action, extra = {}) {
@@ -54,6 +56,19 @@ window.HandCards = (() => {
       if (current) paint();
     }
   }
+  function syncControls() {
+    const locked = busy || current?.hand.busy === true;
+    for (const b of root.querySelectorAll("button,input")) {
+      b.disabled = locked;
+      if (b.hasAttribute("data-hand-close")) b.disabled = false;
+      else if (b.dataset.handCommand === "draw") b.disabled ||= !current.hand.canDraw;
+      else if (b.dataset.handCommand === "use") b.disabled ||= !current.hand.canUse;
+      else if (b.hasAttribute("data-hand-delta") || b.dataset.handChoice === "score" || (b.type === "submit" && b.form))
+        b.disabled ||= !current.hand.canScore;
+    }
+    const draw = root.querySelector('[data-hand-command="draw"] span');
+    if (draw) draw.textContent = current.hand.canDraw ? "本次正式抽取" : "当前状态不可抽取";
+  }
   function paint() {
     if (!current) return;
     const hand = current.hand,
@@ -62,6 +77,11 @@ window.HandCards = (() => {
     root.dataset.phase = phase;
     root.dataset.motion = hand.motionEnabled === false ? "off" : "on";
     document.body.dataset.effectKind = "hand";
+    const key = JSON.stringify([current.id, phase, current.group.name, hand.avatarDataUrl,
+      hand.itemIcon, hand.itemName, hand.mainItemName, hand.inventoryCount, hand.motionEnabled, current.slots]);
+    if (painted === key) { syncControls(); return; }
+    painted = key;
+    root.dataset.longName = String(current.group.name.length > 40);
     const previous = document.getElementById("handCardScore")?.value || "";
     let cards = "";
     if (phase === "JUDGE")
@@ -77,9 +97,8 @@ window.HandCards = (() => {
         .join("");
     if (phase === "DRAW")
       cards = `<div class="native-hand-draw"><div class="native-hand-reel">${icon("draw")}</div><strong id="nativeHandDrawName">道具正在揭晓</strong><span>结果已经保存</span></div>`;
-    root.innerHTML = `<header>${hand.avatarDataUrl ? `<img class="hand-group-avatar" src="${E(hand.avatarDataUrl)}" alt="小组头像">` : ""}<div><small>课堂举手 · ${phase === "JUDGE" ? "判定回答" : phase === "DRAW" ? "道具揭晓" : "奖励选择"}</small><h1>${E(current.group.name)}</h1></div><button data-hand-close aria-label="关闭举手卡牌">❌</button></header><div class="native-hand-cards ${phase === "SCORE" ? "six" : phase === "REWARD_CHOICE" ? "three" : ""}">${cards}</div>${phase === "SCORE" ? `<form id="nativeHandScoreForm"><label>自定义分数<input type="number" id="handCardScore" step="1" value="${E(previous)}" required></label><button type="submit" class="positive">确认赋分</button><button type="button" data-hand-choice="back">返回奖励</button></form>` : ""}<p id="handCardStatus" role="status">${phase === "REWARD_CHOICE" ? "本次回答选择一项奖励" : phase === "JUDGE" ? "判定仅记录一次，不自动增加积分" : ""}</p>`;
-    if (busy)
-      root.querySelectorAll("button,input").forEach((b) => (b.disabled = true));
+    root.innerHTML = `<header>${hand.avatarDataUrl ? `<img class="hand-group-avatar" src="${E(hand.avatarDataUrl)}" alt="小组头像">` : ""}<div><small>课堂举手 · ${phase === "JUDGE" ? "判定回答" : phase === "DRAW" ? "道具揭晓" : "奖励选择"}</small><h1>${E(current.group.name)}</h1></div><button data-hand-close aria-label="退出举手模式">退出举手 ❌</button></header><div class="native-hand-cards ${phase === "SCORE" ? "six" : phase === "REWARD_CHOICE" ? "three" : ""}">${cards}</div>${phase === "SCORE" ? `<form id="nativeHandScoreForm"><label>自定义分数<input type="number" id="handCardScore" step="1" value="${E(previous)}" required></label><button type="submit" class="positive">确认赋分</button><button type="button" data-hand-choice="back">返回奖励</button></form>` : ""}<p id="handCardStatus" role="status">${phase === "REWARD_CHOICE" ? "本次回答选择一项奖励" : phase === "JUDGE" ? "判定仅记录一次，不自动增加积分" : ""}</p>`;
+    syncControls();
   }
   function render(payload, onExit) {
     const nextSignature = JSON.stringify([
@@ -92,6 +111,7 @@ window.HandCards = (() => {
       clearTimeout(timer);
       localPhase = null;
       busy = false;
+      root.inert = false;
     }
     if (current?.hand.phase !== payload.hand.phase) localPhase = null;
     current = payload;
@@ -114,6 +134,9 @@ window.HandCards = (() => {
           document
             .querySelector(".native-hand-reel")
             ?.classList.add("revealed");
+          const reel = document.querySelector(".native-hand-reel");
+          if (reel && payload.hand.itemIcon)
+            reel.innerHTML = `<img src="${E(payload.hand.itemIcon)}" alt="${E(payload.hand.itemName || "抽中道具")}">`;
           const label = document.getElementById("nativeHandDrawName");
           if (label) label.textContent = payload.hand.itemName || "道具已入库";
           timer = setTimeout(close, 1500);
@@ -124,12 +147,13 @@ window.HandCards = (() => {
   }
   root.addEventListener("click", (event) => {
     const b = event.target.closest("button");
-    if (!b || busy) return;
+    if (!b) return;
     if (b.hasAttribute("data-hand-close")) {
       void command("handCancel");
       close();
       return;
     }
+    if (busy || current?.hand.busy) return;
     if (b.dataset.handChoice) {
       localPhase = b.dataset.handChoice === "score" ? "SCORE" : null;
       paint();

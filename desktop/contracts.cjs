@@ -103,6 +103,10 @@ function avatarDataUrl(value) {
     ? value
     : "";
 }
+function iconDataUrl(value) {
+  return typeof value === "string" && value.length <= 400000 &&
+    /^data:image\/(?:png|webp|jpeg|gif|svg\+xml);base64,[A-Za-z0-9+/=]+$/.test(value) ? value : "";
+}
 function sanitizeSnapshot(s) {
   if (
     !s ||
@@ -131,8 +135,9 @@ function sanitizeSnapshot(s) {
       generation: s.saveContext.generation,
     };
   }
-  const groups = s.groups.map((g) => ({
+  const groups = s.groups.map((g, index) => ({
     id: integer(g.id),
+    groupNo: Number.isSafeInteger(g.groupNo) && g.groupNo > 0 ? g.groupNo : index + 1,
     name: text(g.name),
     color: color(g.color),
     members: integer(g.members),
@@ -238,6 +243,7 @@ function sanitizeSnapshot(s) {
       mainItemName:
         handGroupId !== null ? text(hand.mainItemName || "", 120) : "",
       itemName: handGroupId !== null ? text(hand.itemName || "", 120) : "",
+      itemIcon: handGroupId !== null ? iconDataUrl(hand.itemIcon) : "",
     },
     slots: s.slots.map((n) => {
       integer(n);
@@ -274,14 +280,7 @@ function sanitizeItemFx(value) {
     caster: name(value.caster),
     casterAvatarDataUrl: avatarDataUrl(value.casterAvatarDataUrl),
     itemName: name(value.itemName),
-    icon:
-      typeof value.icon === "string" &&
-      value.icon.length <= 400_000 &&
-      /^data:image\/(?:png|webp|jpeg|gif|svg\+xml);base64,[A-Za-z0-9+/=]+$/.test(
-        value.icon,
-      )
-        ? value.icon
-        : "",
+    icon: iconDataUrl(value.icon),
     targets: targets.map((target) => ({
       name: name(target?.name),
       avatarDataUrl: avatarDataUrl(target?.avatarDataUrl),

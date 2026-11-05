@@ -306,6 +306,7 @@ test("snapshots carry a bounded hand DTO and drop unknown group selections", () 
     canUse: false,
     mainItemName: "",
     itemName: "",
+    itemIcon: "",
   });
   const hand = sanitizeSnapshot({
     ...base,
@@ -339,6 +340,7 @@ test("snapshots carry a bounded hand DTO and drop unknown group selections", () 
     canUse: true,
     mainItemName: "蘑菇",
     itemName: "金币",
+    itemIcon: "",
   });
   assert.equal(
     sanitizeSnapshot({

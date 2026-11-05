@@ -537,25 +537,6 @@ body[data-collapsed="true"][data-view="launcher"] #pickerIcon {
   border-color: #0f766e;
   color: #fff;
 }
-.hand-judge {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin: 10px 0;
-}
-.hand-judge .positive {
-  background: #e8f6ef;
-  color: #14795a;
-  border-color: #b9e2d1;
-  font-weight: 700;
-}
-.hand-judge .negative {
-  background: #fdeeeb;
-  color: #ad4536;
-  border-color: #f3cec5;
-  font-weight: 700;
-}
-.hand-judge[hidden],
 #handRewards[hidden] {
   display: none;
 }

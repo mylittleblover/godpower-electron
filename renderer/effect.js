@@ -108,7 +108,13 @@ api.onReveal((payload) => {
   if (payload.kind === "hand") {
     document.body.classList.toggle("theme-marx", payload.theme === "marx");
     document.body.dataset.theme = payload.theme === "marx" ? "marx" : "classic";
-    if (id && id !== payload.id) return;
+    if (id && id !== payload.id && document.body.dataset.effectKind !== "hand") return;
+    if (leaving && id === payload.id) return;
+    if (id !== payload.id) {
+      clearTimeout(finishTimer);
+      leaving = false;
+      stage.classList.remove("leaving");
+    }
     id = payload.id;
     clearTimeout(exitTimer);
     for (const selector of [".reveal", ".halo", "#particles", "#skip"])

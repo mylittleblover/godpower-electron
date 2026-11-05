@@ -90,3 +90,7 @@ NOT TESTED：Windows真机/系统键盘/实体触屏/多显示器；仍有效的
 SAVE-NATIVE-003（P1，DONE）：回收站仅处理非当前存档，文件/资源/原文不删；边界API加入setTrashed并限制参数个数，CAS及代次检查。76项单元、最终21项桌面联调和包内源码/共享schema校验PASS。后续永久删除/损坏资源诊断OPEN，不能静默恢复缺失数据。
 
 - PERF-3.0.70（P1，进行中）：Windows 3.0.69课堂全局卡顿。当前修复及Linux实测见docs/performance/3.0.70-checkpoint.md；功能专项通过不等于流畅达标，仍有0.7–1.2秒ACK波动。继续定位保存/IPC/布局长任务，保留事务与校验。Windows实测NOT TESTED。
+
+## 3.0.73 课堂与素材同步
+
+同步HTML ee18ba2（236预设，83宝可梦/38索尼克；13个索尼克中文名和9个大乱斗官方拉丁名仍待官方中文证据，未宣称全覆盖）。原生举手busy刷新、退出、头像/真实道具图、小组序号、重复判定入口及普通特效不打断修复已落地；实际联调补获submit默认类型导致判定按钮禁用并修复。84单元、组件Chromium及Linux Electron举手场景PASS；Windows硬件/多屏/PPT/触摸/听感仍NOT TESTED。见reports/CLASSROOM_AVATAR_3_0_73.md。

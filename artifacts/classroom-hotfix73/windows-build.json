@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "version": "3.0.73",
+  "windowsCrossBuild": true,
+  "zipCrc": "PASS",
+  "zipBytes": 150433443,
+  "zipSha256": "971a07f9a2facaea417484cb3524ffef5b98c6053f7a6abae3318ac1d0411796",
+  "asarHtmlExact": "PASS",
+  "htmlSource": "ee18ba2915f3c02ccfccb521a979b011ead6c137",
+  "windowsHardware": "NOT TESTED"
+}

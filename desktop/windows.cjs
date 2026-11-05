@@ -39,6 +39,7 @@ class Windows {
     this.effect = null;
     this.revision = 0;
     this.lastReveal = null;
+    this.pendingFeedback = null;
     this.quitting = false;
     this.escape = new EscapeLease(globalShortcut);
     this.crashed = false;
@@ -257,6 +258,7 @@ class Windows {
           !this.quitting &&
           !this.pickerCollapsed &&
           !this.choosing &&
+          !(this.effect && !this.effect.isDestroyed() && (this.nativeHandActive || this.effect.isFocused())) &&
           !win.isFocused()
         ) {
           // Windows touch keyboards can take native focus while the text field
@@ -264,7 +266,8 @@ class Windows {
           const editing = await win.webContents.executeJavaScript(
             `!!document.activeElement?.matches('input:not([type=button]):not([type=checkbox]):not([type=range]),textarea,[contenteditable=true]')`,
           ).catch(() => false);
-          if (!editing && this.picker === win && !win.isDestroyed() && !win.isFocused())
+          if (!editing && this.picker === win && !win.isDestroyed() && !win.isFocused() &&
+            !(this.effect && !this.effect.isDestroyed() && (this.nativeHandActive || this.effect.isFocused())))
             this.setPickerExpanded(false);
         }
       }, 90);
@@ -472,8 +475,13 @@ class Windows {
     if(!hand?.selectionId||!group)return;
     const id="hand-"+hand.selectionId;
     const payload={kind:"hand",id,saveContext:snapshot.saveContext,theme:snapshot.theme,hand:{...hand,phase},group,slots:snapshot.slots,effects:{enabled:true,duration:2600,style:"aurora"}};
-    if(this.effectPayload?.kind==="hand"&&this.effectPayload.id===id&&this.effect&&!this.effect.isDestroyed()) {
+    if(this.effectPayload?.kind==="hand"&&this.effect&&!this.effect.isDestroyed()) {
+      const selectionChanged = this.effectPayload.id !== id;
       this.effectPayload=payload;
+      if (selectionChanged) {
+        clearTimeout(this.effectTimeout);
+        this.effectTimeout = setTimeout(() => this.closeEffect(), 180000);
+      }
       if(!this.effect.webContents.isLoading())this.effect.webContents.send("gp:reveal",payload);
       return;
     }
@@ -493,6 +501,22 @@ class Windows {
     if(hand.phase==="JUDGE"||hand.phase==="REWARD_CHOICE"){this.presentHandCard(snapshot);return;}
     this.nativeHandActive=false;if(this.effectPayload?.kind==="hand")this.closeEffect();
   }
+  feedbackBlocked() {
+    return !!this.effect || ["preparing", "rolling", "settling"].includes(this.broker.snapshot?.phase);
+  }
+  deferFeedback(kind, payload, effects) {
+    // One recent visual, never a second business command or an unbounded queue.
+    this.pendingFeedback = { kind, payload, effects, createdAt: Date.now(),
+      context: JSON.stringify(this.broker.snapshot?.saveContext || null) };
+  }
+  flushFeedback() {
+    if (!this.pendingFeedback || this.quitting || this.feedbackBlocked()) return;
+    const pending = this.pendingFeedback;
+    this.pendingFeedback = null;
+    if (Date.now() - pending.createdAt > 8000 || pending.context !== JSON.stringify(this.broker.snapshot?.saveContext || null)) return;
+    if (pending.kind === "item") this.presentItemFx(pending.payload, pending.effects);
+    else this.present(pending.payload);
+  }
   present(snapshot) {
     if (this.quitting) return;
     const handCard=snapshot.kind === "hand";
@@ -502,10 +526,15 @@ class Windows {
       snapshot.result.id === this.lastReveal
     ))
       return;
+    if (!handCard && (this.effectPayload?.kind === "hand" ||
+      (snapshot.result.mode === "score" && this.feedbackBlocked()))) {
+      this.deferFeedback("reveal", snapshot);
+      return;
+    }
     if (!handCard && snapshot.result.mode !== "score") this.lastReveal = snapshot.result.id;
     if (!handCard && (!this.preferences.value.effectsEnabled || !snapshot.effects.enabled))
       return;
-    this.closeEffect();
+    this.closeEffect(false);
     const display = this.targetDisplay(),
       id = handCard ? snapshot.id : snapshot.result.id;
     const win = new BrowserWindow({
@@ -557,7 +586,7 @@ class Windows {
     });
     this.broadcast();
   }
-  closeEffect() {
+  closeEffect(resumeFeedback = true) {
     if(this.effectPayload?.kind==="hand")this.nativeHandActive=false;
     clearTimeout(this.effectTimeout);
     clearInterval(this.effectPointerTimer);
@@ -569,13 +598,18 @@ class Windows {
     this.escape.release();
     if (win && !win.isDestroyed()) win.destroy();
     this.broadcast();
+    if (resumeFeedback) this.flushFeedback();
   }
   /* The item cinematic is a second payload shape of the same full-screen
      window, so it inherits the verified topmost/escape/mouse behaviour. */
   presentItemFx(payload, effects) {
     if (this.quitting) return;
     if (!this.preferences.value.effectsEnabled) return;
-    this.closeEffect();
+    if (this.feedbackBlocked()) {
+      this.deferFeedback("item", payload, effects);
+      return;
+    }
+    this.closeEffect(false);
     const display = this.targetDisplay();
     const win = new BrowserWindow({
       ...display.bounds,
@@ -677,9 +711,10 @@ class Windows {
       if (!this.authorized(event, "main")) return;
       try {
         const changed=this.broker.acceptSnapshot(sanitizeSnapshot(value));
-        if(changed){this.closeEffect();this.lastReveal=null;}
+        if(changed){this.pendingFeedback=null;this.closeEffect(false);this.lastReveal=null;}
         if (this.broker.ready) this.present(this.broker.snapshot);
         this.reconcileHandCard();
+        this.flushFeedback();
         this.broadcast();
       } catch (error) {
         console.error("Rejected classroom snapshot:", error.message);

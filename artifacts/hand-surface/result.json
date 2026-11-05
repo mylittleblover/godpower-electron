@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "stable": {
+    "initiallyDisabled": false,
+    "same": true,
+    "disabled": true
+  },
+  "errors": []
+}

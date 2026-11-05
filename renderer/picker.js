@@ -267,7 +267,7 @@ function renderHand(s, busy, state) {
     $("handGroups").replaceChildren(
       ...(s?.groups || []).map((g) => {
         const b = document.createElement("button");
-        b.textContent = g.name;
+        b.textContent = `${String(g.groupNo).padStart(2, "0")} · ${g.name}`;
         b.className = "hand-group";
         b.setAttribute("aria-pressed", String(g.id === active));
         b.disabled = busy || locked;
@@ -279,10 +279,6 @@ function renderHand(s, busy, state) {
       }),
     );
   }
-  const judged = hand.correct === true || hand.correct === false;
-  $("handJudge").hidden = !s || active == null || judged;
-  $("handCorrect").disabled = busy || locked || !s || active == null || judged;
-  $("handWrong").disabled = busy || locked || !s || active == null || judged;
   const canReward = !!s && hand.correct === true && !hand.rewardComplete && !locked;
   $("handRewards").hidden = !canReward;
   if (!canReward) return;
@@ -365,20 +361,6 @@ $("handCustomScore").addEventListener("submit", (e) => {
     delta,
   });
 });
-$("handCorrect").addEventListener("click", () =>
-  run("handJudge", {
-    groupId: current?.snapshot?.hand?.groupId,
-    selectionId: current?.snapshot?.hand?.selectionId,
-    correct: true,
-  }),
-);
-$("handWrong").addEventListener("click", () =>
-  run("handJudge", {
-    groupId: current?.snapshot?.hand?.groupId,
-    selectionId: current?.snapshot?.hand?.selectionId,
-    correct: false,
-  }),
-);
 $("handDraw").addEventListener("click", () =>
   run("handDraw", {
     groupId: current?.snapshot?.hand?.groupId,

@@ -21,8 +21,18 @@
   font-size: 40px;
   margin: 8px 0;
   overflow-wrap: anywhere;
-  max-height: 2.5em;
-  overflow: auto;
+  line-height: 1.25;
+  min-width: 0;
+}
+.hand-cards header > div {
+  flex: 1;
+  min-width: 0;
+}
+.hand-cards header {
+  gap: 24px;
+}
+.hand-cards[data-long-name="true"] h1 {
+  font-size: 26px;
 }
 .hand-cards small {
   font-size: 16px;
@@ -40,7 +50,8 @@
 }
 .hand-cards header button {
   padding: 12px;
-  border-radius: 50%;
+  border-radius: 14px;
+  flex-shrink: 0;
 }
 .native-hand-cards {
   display: grid;
@@ -133,6 +144,11 @@
 .native-hand-reel {
   color: #7ee0b3;
   animation: native-hand-reel-spin 650ms linear infinite;
+}
+.native-hand-reel img {
+  width: 112px;
+  height: 112px;
+  object-fit: contain;
 }
 .native-hand-reel.revealed {
   animation: none;

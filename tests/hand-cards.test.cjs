@@ -148,3 +148,12 @@ test("personal reveal preserves separate student and group avatar DTOs", () => {
     "",
   );
 });
+
+test('floating groups retain their display number and hand draw icons stay bounded and local',()=>{
+ const image='data:image/webp;base64,UklGRg==';
+ const base={protocolVersion:1,phase:'idle',mode:'individual',groups:[{id:170000000,groupNo:7,name:'自定义组',score:0,members:4,color:'#123456'}],slots:[1,2,3,-1,-2,-3],history:[],hand:{groupId:170000000,selectionId:'s',itemName:'金币',itemIcon:image}};
+ assert.equal(sanitizeSnapshot(base).groups[0].groupNo,7);
+ assert.equal(sanitizeSnapshot(base).hand.itemIcon,image);
+ for(const value of ['https://external/image.png','javascript:alert(1)','data:image/webp;base64,'+'A'.repeat(400001)])
+  assert.equal(sanitizeSnapshot({...base,hand:{...base.hand,itemIcon:value}}).hand.itemIcon,'');
+});
