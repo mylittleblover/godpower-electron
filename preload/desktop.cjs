@@ -10,6 +10,13 @@ const listen = (channel, fn) => {
 const base = { role };
 if (role === "main")
   Object.assign(base, {
+    ai: Object.freeze({
+      status: () => ipcRenderer.invoke("gp:ai", "status"),
+      configure: value => ipcRenderer.invoke("gp:ai", "configure", value),
+      request: value => ipcRenderer.invoke("gp:ai", "request", value),
+      cancel: id => ipcRenderer.invoke("gp:ai", "cancel", id),
+      clear: () => ipcRenderer.invoke("gp:ai", "clear"),
+    }),
     onSaveFlush: (fn) => listen("gp:save-flush",fn),
     onSaveFlushCancel: (fn) => listen("gp:save-flush-cancel",fn),
     saveFlushReply: (message) => ipcRenderer.send("gp:save-flush-reply",message),

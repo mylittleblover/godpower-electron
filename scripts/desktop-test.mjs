@@ -23,7 +23,7 @@ const args = [
   "--ozone-override-screen-size=1920,1080",
 ];
 const scenario = process.env.DESKTOP_SCENARIO || null;
-if (scenario && !["hand","picker","effects","battle"].includes(scenario))
+if (scenario && !["hand","picker","effects","battle","ai"].includes(scenario))
   throw Error("Unsupported desktop scenario: " + scenario);
 if (scenario) args.push("--desktop-scenario=" + scenario);
 if (
@@ -45,10 +45,11 @@ try {
   const report = JSON.parse(await readFile(result, "utf8"));
   console.log(JSON.stringify(report, null, 2));
   assert.equal(report.status, "PASS");
-  const expectedCount=scenario==='picker'?3:['hand','effects','battle'].includes(scenario)?1:23;
+  const expectedCount=scenario==='picker'?3:['hand','effects','battle','ai'].includes(scenario)?1:24;
   assert.equal(report.results.length,expectedCount,'all requested scenarios must execute');
   if(scenario==='effects')assert.equal(report.results[0].name,'effect settings duration and native pointer skip');
   if (scenario==='picker')assert.deepEqual(report.results.map(r=>r.name),['individual','group','two_tier'].map(mode=>mode+' authoritative draw, continuous reel, overlay and score'));
+  if(scenario==='ai')assert.equal(report.results[0].name,'OpenCode AI approval uses one classroom command and a private main-process broker');
   if (scenario==='hand')
     assert.equal(
       report.results[0].name,

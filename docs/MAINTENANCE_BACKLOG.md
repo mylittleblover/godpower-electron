@@ -94,3 +94,7 @@ SAVE-NATIVE-003（P1，DONE）：回收站仅处理非当前存档，文件/资�
 ## 3.0.73 课堂与素材同步
 
 同步HTML ee18ba2（236预设，83宝可梦/38索尼克；13个索尼克中文名和9个大乱斗官方拉丁名仍待官方中文证据，未宣称全覆盖）。原生举手busy刷新、退出、头像/真实道具图、小组序号、重复判定入口及普通特效不打断修复已落地；实际联调补获submit默认类型导致判定按钮禁用并修复。84单元、组件Chromium及Linux Electron举手场景PASS；Windows硬件/多屏/PPT/触摸/听感仍NOT TESTED。见reports/CLASSROOM_AVATAR_3_0_73.md。
+
+## 3.0.74 AI首期
+
+AI-M7-01已实现OpenCode优先受控联网接口与主窗口AI页，教师逐次授权、匿名积分、明确确认改分；同步HTML1d88d56。94单元及实际LinuxElectron模拟服务集成PASS。真实OpenCode账户/额度、Windows真机安全存储、PPT/多屏仍NOT TESTED；不得将模拟成功等同云端联通。跨代理网络设置、持久工作区/会话、受控知识检索和动态教学组件留待后续，详见reports/AI_ASSISTANT_3_0_74.md及HTML维护列表。

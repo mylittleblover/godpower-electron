@@ -42,3 +42,13 @@ Node 14 PASS，真实 Electron 15 场景 PASS；12 类窗口尺寸与截图、�
 ## 3.0.1 主题回归
 
 新增第16个真实Electron案例：主课堂theme→严格IPC→原生名称/图标→独立点名（重载与收起）→工具窗口实时换肤→全屏正绿负红。不修改原15个场景。源码与发行版本均3.0.1。提示实现来自HTML同一提交，3秒生命周期使用上游Chromium测试与SHA校验；原生窗口Windows真机仍NOT TESTED。详见reports/MARX_THEME_3_0_1.md。
+
+## 3.0.74 AI
+
+|项|结果|环境/证据|
+|---|---|---|
+|AI主进程/角色/密钥/取消/预算/竞态|PASS|94项完整单元，含新增10项|
+|AI UI与原课堂写入|PASS|LinuxElectron1920×1080 DPR1，本地HTTP模拟，140→143，errors=[]|
+|真实OpenCode账户|NOT TESTED|无用户密钥、未消费模型额度|
+|Windows真机密钥/联网/课堂|NOT TESTED|Linux或交叉构建不能替代|
+|浏览器file://|BLOCKED|当前Chromium管理策略阻止文件导航|

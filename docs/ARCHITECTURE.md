@@ -71,3 +71,7 @@ picker渲染器只消费theme并更新红/暖白/金外观；effect消费已确�
 sync:html从已提交HTML源码同时读取tooltips.js/css，写入renderer并记录SHA-256。picker/window通过classroom协议白名单加载同一实现；禁止手改该派生文件。没有新增Node或通用IPC权限。
 
 版本统一3.0.1：HTML包/顶栏/运行时/备份appVersion由单一package token构建；Electron package与HTML一致后才允许verify:bundle/build。发行校验逐个比较asar源码和HTML SHA，包含两个运行时图标及共享提示资源。
+
+## 3.0.74 OpenCode模型网关
+
+AIGateway是独立主进程服务，仅gp:ai主窗口白名单可访问；preload按角色公开冻结的窄接口。固定云端/本机地址、Bearer、受限响应、取消/预算、加密可选密钥与串行生命周期均在主进程；课堂业务仍由主renderer的AIToolGateway→ManualScoreCommands→现有事务保存。渲染器网络策略不放宽，普通窗口和插件权限不扩大。配置/对话与课堂数据分离，无AI时课堂离线运行。

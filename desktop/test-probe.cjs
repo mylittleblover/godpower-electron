@@ -50,6 +50,7 @@ async function run(w, resultPath) {
   const handScenario="the launcher offers picker or hand and the hand panel runs one classroom command";
   async function test(name, fn) {
     if(selectedScenario==="hand" && name!==handScenario)return;
+    if(selectedScenario==="ai" && name!=="OpenCode AI approval uses one classroom command and a private main-process broker")return;
     if(selectedScenario==='battle'&&name!=='battle card item performance and cleanup')return;
     if(selectedScenario==='effects'&&name!=='effect settings duration and native pointer skip')return;
     if(selectedScenario==='picker'&&!['individual','group','two_tier'].some(mode=>name===mode+' authoritative draw, continuous reel, overlay and score'))return;
@@ -1040,6 +1041,31 @@ x.XSync(d,0)
       );
       assert.equal(await main(`state.groups.length`), 14);
       assert.equal(w.effect, null);
+    });
+    await test("OpenCode AI approval uses one classroom command and a private main-process broker", async () => {
+      const {createServer}=require("node:http"),{AIGateway}=require("./ai-gateway.cjs");
+      const received=[];let endpoint;
+      const server=createServer(async(req,res)=>{let body="";for await(const c of req)body+=c;received.push(JSON.parse(body));assert.equal(req.headers.authorization,"Bearer TEST_ONLY_OPENCODE_KEY");res.setHeader("Content-Type","application/json");res.end(JSON.stringify({choices:[{message:{content:JSON.stringify({reply:"模拟OpenCode回复：请核对积分预览。",actions:[{intent:"adjustScore",params:{group:"G3",delta:3}}]})}}]}));});
+      await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));
+      w.ai=new AIGateway({directory:path.join(app.getPath("userData"),"ai-fixture"),safeStorage:{isEncryptionAvailable:()=>false},fetch:(url,options)=>{endpoint=url;return fetch("http://127.0.0.1:"+server.address().port,options);}});
+      try {
+        await main(`SaveManager.whenIdle()`);await main(`switchView('ai')`);await until(()=>main(`!!document.getElementById('aiPrompt')`),'AI mounted');
+        await main(`document.getElementById('aiOpenSettings').click();document.getElementById('aiProvider').value='opencode';document.getElementById('aiModel').value='example-model';document.getElementById('aiKey').value='TEST_ONLY_OPENCODE_KEY';document.getElementById('aiSettingsForm').requestSubmit()`);
+        await until(()=>main(`document.getElementById('aiSettingsResult').textContent.includes('已保存')`),'AI configuration');
+        assert.equal(await main(`document.getElementById('aiKey').value`),'');await settledShot(w.main,'opencode-settings');
+        const before=await main(`state.groups[2].score`);
+        await main(`switchView('ai');document.getElementById('aiMode').value='model';document.getElementById('aiMode').dispatchEvent(new Event('change'));document.getElementById('aiShareScores').checked=true;document.getElementById('aiConsent').checked=true;document.getElementById('aiPrompt').value='给G3加3分';document.getElementById('aiComposer').requestSubmit()`);
+        await until(()=>main(`!!document.querySelector('[data-proposal]')`),'AI proposal');assert.equal(await main(`state.groups[2].score`),before);
+        assert.equal(endpoint,'https://opencode.ai/inference/openai/v1/chat/completions');assert.equal(received.length,1);
+        const context=JSON.parse(received[0].messages[1].content);assert.equal(context.groups.length,14);assert.ok(context.groups.every(g=>Object.keys(g).sort().join(',')==='group,score'));
+        await settledShot(w.main,'opencode-approval');
+        await main(`document.querySelector('[data-proposal] .btn-primary').click()`);await main(`classroomCommands.whenIdle()`);await until(()=>main(`state.groups[2].score===${before+3}`),'AI command committed');
+        await settledShot(w.main,'opencode-receipt');
+        await main(`document.getElementById('aiOpenSettings').click();document.getElementById('aiForget').click()`);
+        await until(()=>main(`document.getElementById('aiSettingsResult').textContent.includes('密钥已清除')`),'AI credential clear');
+        assert.equal(w.ai.status().keyPresent,false);
+        return {network:'local mock only',provider:'opencode',before,after:before+3,cloudLive:'NOT TESTED'};
+      } finally {w.ai.cancelAll();await new Promise(resolve=>server.close(resolve));}
     });
     assert.deepEqual(errors, [], "no renderer/preload errors");
     await main(`openAbout()`);

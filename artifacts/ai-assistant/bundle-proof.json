@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "version": "3.0.74",
+  "sourceCommit": "1d88d56325b5f656c0726effc042bc7bd6ef6def",
+  "htmlSha256": "62d6d88d359dc358f22a08d8dc34dfe61d8324b6f7c77dcca4e1b0956e98071b",
+  "htmlBytes": 12888387,
+  "aiModulePresent": true,
+  "preloadPresent": true,
+  "windowsHardware": "NOT TESTED"
+}

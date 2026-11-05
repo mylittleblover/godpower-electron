@@ -68,6 +68,7 @@ class Windows {
     this.installIPC();
     app.on("before-quit", (event) => {
       this.quitting = true;
+      this.ai?.cancelAll();
       if(!this.rendererQuitFlushed&&this.main&&!this.main.isDestroyed()&&this.broker.ready){
         event.preventDefault();
         if(!this.rendererQuitPending){
@@ -164,11 +165,13 @@ class Windows {
     });
     this.secure(this.main, "main");
     this.main.webContents.on("did-start-loading", () => {
+      this.ai?.cancelAll();
       this.lastReveal = null;
       this.closeEffect();
       this.broker.reset();
     });
     this.main.webContents.on("render-process-gone", () => {
+      this.ai?.cancelAll();
       this.crashed = true;
       this.closeEffect();
       this.broker.reset();
@@ -671,6 +674,23 @@ class Windows {
     const requireRole = (event, role) => {
       if (!this.authorized(event, role)) throw Error("FORBIDDEN");
     };
+    ipcMain.handle("gp:ai", async (event, action, value) => {
+      requireRole(event, "main");
+      if (!["status", "configure", "request", "cancel", "clear"].includes(action))
+        return { ok: false, error: "不支持的AI请求" };
+      const { AIGateway } = require("./ai-gateway.cjs");
+      this.ai ||= new AIGateway({directory: app.getPath("userData"), safeStorage: require("electron").safeStorage});
+      try {
+        if (action === "request") return await this.ai.request(value);
+        if (action === "cancel") return typeof value === "string" ? this.ai.cancel(value) : {ok:false,error:"请求编号无效"};
+        const config = action === "configure" ? await this.ai.configure(value)
+          : action === "clear" ? await this.ai.clear()
+          : (await this.ai.load(), this.ai.status());
+        return { ok: true, config };
+      } catch (error) {
+        return { ok: false, error: error.message === "INVALID_CONFIGURATION" ? "模型配置无效" : String(error.message).startsWith("系统安全") ? error.message : "模型配置未保存，请检查本机权限" };
+      }
+    });
     ipcMain.on("gp:score-effect", (event, value) => {
       if (
         !this.authorized(event, "main") ||
