@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "results": [
+    {
+      "name": "canonical startup preserves native vault and bypasses legacy file",
+      "status": "PASS",
+      "detail": {
+        "reloads": 2,
+        "legacyFileReads": 0,
+        "legacyFileWrites": 0,
+        "unchanged": true
+      }
+    }
+  ],
+  "errors": [],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}

@@ -49,6 +49,7 @@ async function run(w, resultPath) {
   let mainProfile = false;
   const handScenario="the launcher offers picker or hand and the hand panel runs one classroom command";
   async function test(name, fn) {
+    if(selectedScenario==="startup" && name!=="canonical startup preserves native vault and bypasses legacy file")return;
     if(selectedScenario==="hand" && name!==handScenario)return;
     if(selectedScenario==="ai" && name!=="OpenCode AI approval uses one classroom command and a private main-process broker")return;
     if(selectedScenario==='battle'&&name!=='battle card item performance and cleanup')return;
@@ -105,6 +106,35 @@ async function run(w, resultPath) {
       w.openPicker();await until(()=>w.picker&&!w.picker.webContents.isLoading(),"hand fixture picker");
       await until(()=>picker(`!!current?.ready`),"hand fixture connected");
     }
+    await test("canonical startup preserves native vault and bypasses legacy file", async () => {
+      await main(`SaveManager.whenIdle()`);
+      const snapshot=async()=>{const index=await w.saveVault.readIndex();return {index,document:await w.saveVault.readDocument(index,index.activeSaveId)}};
+      const before=await snapshot();
+      let reads=0,writes=0;
+      const originals={};
+      for(const key of ['read','readSource','write']){
+        if(typeof w.saveFile[key]!=='function')continue;
+        originals[key]=w.saveFile[key];
+        w.saveFile[key]=function(...args){if(key==='write')writes++;else reads++;return originals[key].apply(this,args)};
+      }
+      try {
+        await main(`localStorage.setItem('godpower_state_v2','{"invalidOldMirror":true}');localStorage.setItem('godpower_classroom_roster_v1','{"invalidOldRoster":true}');void 0`);
+        for(let i=0;i<2;i++){
+          await new Promise(resolve=>{w.main.webContents.once("did-finish-load",resolve);w.main.reload()});
+          await until(()=>main(`typeof SaveManager!=='undefined' && window.classroomReady`),"canonical startup");
+          const ready=await main(`SaveManager.ready()`);
+          assert.equal(ready.ok,true);
+          await delay(650);
+          await main(`SaveManager.whenIdle()`);
+          assert.deepEqual(await snapshot(),before);
+        }
+        assert.equal(reads,0,"canonical reopen must not hydrate old fixed file");
+        assert.equal(writes,0,"canonical reopen must not rewrite old fixed file");
+        await main(`document.getElementById('gpIntroSkip')?.click();closeWelcomeModal();switchView('settings');DesktopUI.selectSettings('students');void 0`);
+        await settledShot(w.main,'canonical-reopened');
+        return {reloads:2,legacyFileReads:reads,legacyFileWrites:writes,unchanged:true};
+      } finally {for(const [key,fn] of Object.entries(originals))w.saveFile[key]=fn;}
+    });
     await test("disk IPC writes remain ordered and reads await verified bytes in isolated storage", async () => {
       assert.ok(w.saveFile.info.path.startsWith(app.getPath("userData") + path.sep));
       const result = await main(`(async()=>{
