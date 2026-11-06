@@ -1,0 +1,67 @@
+{
+  "model": "deepseek-v4.1-flash",
+  "checks": [
+    "actual-AMR-endpoint",
+    "Flash-only",
+    "actual-search",
+    "local-and-web-context",
+    "host-read-only"
+  ],
+  "calls": [
+    {
+      "status": 200,
+      "seconds": 2.97,
+      "responseModel": "deepseek-v4.1-flash",
+      "usage": {
+        "prompt_tokens": 934,
+        "completion_tokens": 209,
+        "total_tokens": 1143
+      }
+    }
+  ],
+  "status": "PASS",
+  "answer": "光合作用释放的氧来自水。光反应中，水被分解，产生氧气并释放出来；碳反应则利用光反应产生的ATP与还原力固定二氧化碳。[R1] 另有资料用简化表述说明光合作用可看作把水加到CO2上生成糖和氧气。[W2] 注意：[R1]为项目原创通用学习参考，并非教材原文，具体术语和符号请以所用教材为准。",
+  "sources": [
+    {
+      "id": "R1",
+      "title": "细胞代谢：光合作用与细胞呼吸",
+      "url": "",
+      "kind": "local-excerpt"
+    },
+    {
+      "id": "W1",
+      "title": "Photosynthesis - Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Photosynthesis",
+      "kind": "web-snippet",
+      "retrievedAt": "2026-11-06T16:05:48.587Z"
+    },
+    {
+      "id": "W2",
+      "title": "Evolution of photosynthesis - Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Evolution_of_photosynthesis",
+      "kind": "web-snippet",
+      "retrievedAt": "2026-11-06T16:05:48.588Z"
+    },
+    {
+      "id": "W3",
+      "title": "Photosystem - Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Photosystem",
+      "kind": "web-snippet",
+      "retrievedAt": "2026-11-06T16:05:48.588Z"
+    },
+    {
+      "id": "W4",
+      "title": "Photosystem I - Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Photosystem_I",
+      "kind": "web-snippet",
+      "retrievedAt": "2026-11-06T16:05:48.588Z"
+    },
+    {
+      "id": "W5",
+      "title": "Artificial photosynthesis - Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Artificial_photosynthesis",
+      "kind": "web-snippet",
+      "retrievedAt": "2026-11-06T16:05:48.588Z"
+    }
+  ]
+}

@@ -61,3 +61,13 @@ Node 14 PASS，真实 Electron 15 场景 PASS；12 类窗口尺寸与截图、�
 |多对话本机恢复、两轮有限上下文、改分一次|PASS|artifacts/ai-conversations/results.json，Linux Electron1920×1080 1x|
 |历史system角色/超限/未知字段拒绝|PASS|95项完整Electron单元/集成|
 |真实OpenCode/Windows真机|NOT TESTED|没有真实账户请求，未在Windows硬件运行|
+
+## 3.0.77
+
+|项|状态|
+|---|---|
+|104项Electron完整单元/集成|PASS|
+|研究来源、主进程字段、只读、来源打开及私网拒绝|PASS（LinuxElectron1920×1080 1x，模拟网络）|
+|真实DeepSeekFlash和公开搜索、参考引用|PASS（1次/1143tokens，脱敏证据）|
+|中文搜索稳定性|FAIL（公开Bing有无关结果，备用百科可能429；已过滤并显示失败，不承诺成功）|
+|Windows真机/完整课本全文/PDF|NOT TESTED|

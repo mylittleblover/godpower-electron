@@ -676,11 +676,17 @@ class Windows {
     };
     ipcMain.handle("gp:ai", async (event, action, value) => {
       requireRole(event, "main");
-      if (!["status", "configure", "request", "cancel", "clear"].includes(action))
+      if (!["status", "configure", "request", "cancel", "clear", "openSource"].includes(action))
         return { ok: false, error: "不支持的AI请求" };
       const { AIGateway } = require("./ai-gateway.cjs");
       this.ai ||= new AIGateway({directory: app.getPath("userData"), safeStorage: require("electron").safeStorage});
       try {
+        if(action==='openSource'){
+          const {safeLink}=require('./ai-web-search.cjs');
+          const url=typeof value==='string'&&value.length<=2000?safeLink(value):null;
+          if(!url)return {ok:false,error:'来源链接无效'};
+          await require('electron').shell.openExternal(url,{activate:true});return {ok:true};
+        }
         if (action === "request") return await this.ai.request(value);
         if (action === "cancel") return typeof value === "string" ? this.ai.cancel(value) : {ok:false,error:"请求编号无效"};
         const config = action === "configure" ? await this.ai.configure(value)

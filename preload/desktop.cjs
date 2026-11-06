@@ -12,6 +12,7 @@ if (role === "main")
   Object.assign(base, {
     ai: Object.freeze({
       status: () => ipcRenderer.invoke("gp:ai", "status"),
+      openSource: url => ipcRenderer.invoke("gp:ai", "openSource", url),
       configure: value => ipcRenderer.invoke("gp:ai", "configure", value),
       request: value => ipcRenderer.invoke("gp:ai", "request", value),
       cancel: id => ipcRenderer.invoke("gp:ai", "cancel", id),

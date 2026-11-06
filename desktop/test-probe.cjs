@@ -49,6 +49,7 @@ async function run(w, resultPath) {
   let mainProfile = false;
   const handScenario="the launcher offers picker or hand and the hand panel runs one classroom command";
   async function test(name, fn) {
+    if(selectedScenario==="research" && name!=="research sources are read-only and open through a validated broker")return;
     if(selectedScenario==="startup" && name!=="canonical startup preserves native vault and bypasses legacy file")return;
     if(selectedScenario==="hand" && name!==handScenario)return;
     if(selectedScenario==="ai" && name!=="OpenCode AI approval uses one classroom command and a private main-process broker")return;
@@ -1071,6 +1072,27 @@ x.XSync(d,0)
       );
       assert.equal(await main(`state.groups.length`), 14);
       assert.equal(w.effect, null);
+    });
+    await test("research sources are read-only and open through a validated broker",async()=>{
+      const {AIGateway}=require('./ai-gateway.cjs'),{createServer}=require('node:http'),shell=require('electron').shell;
+      let searches=0,endpoint,received;const opened=[],originalOpen=shell.openExternal;
+      shell.openExternal=async url=>{opened.push(url)};
+      const server=createServer(async(req,res)=>{let raw='';for await(const c of req)raw+=c;received=JSON.parse(raw);res.setHeader('Content-Type','application/json');res.end(JSON.stringify({choices:[{message:{content:JSON.stringify({reply:'光合作用的能量转化见[R1][W1]。',actions:[{intent:'adjustScore',params:{group:'G3',delta:9}}]})}}]}));});
+      await new Promise(r=>server.listen(0,'127.0.0.1',r));
+      w.ai=new AIGateway({directory:path.join(app.getPath('userData'),'research-fixture'),search:async query=>{searches++;assert.equal(query,'photosynthesis');return [{id:'W1',title:'Photosynthesis reference',text:'Photosynthesis converts light energy.',url:'https://www.edu.cn/example',kind:'web-snippet',retrievedAt:new Date().toISOString()}]},fetch:(url,options)=>{endpoint=url;return fetch('http://127.0.0.1:'+server.address().port,options)}});
+      try{
+        await main(`SaveManager.whenIdle();switchView('ai')`);await until(()=>main(`!!document.getElementById('aiSend')&&!document.getElementById('aiSend').disabled`),'research UI ready');
+        await main(`document.getElementById('aiOpenKnowledge').click()`);await until(()=>main(`document.querySelectorAll('#aiKnowledgeList button').length===36`),'all subjects');
+        await main(`document.getElementById('aiLibrarySubject').value='生物';document.getElementById('aiLibrarySubject').dispatchEvent(new Event('change'));document.querySelector('#aiKnowledgeList button').click()`);await settledShot(w.main,'biology-library');
+        await main(`document.getElementById('aiKnowledgeClose').click()`);await until(()=>main(`!document.getElementById('aiKnowledgeDialog')`),'close library');
+        await main(`document.getElementById('aiOpenSettings').click();document.getElementById('aiProvider').value='amr';document.getElementById('aiProvider').dispatchEvent(new Event('change'));document.getElementById('aiKey').value='FIXTURE_ONLY_KEY';document.getElementById('aiSettingsForm').requestSubmit()`);await until(()=>main(`document.getElementById('aiSettingsResult').textContent.includes('已保存')`),'AMR config');await settledShot(w.main,'amr-settings');
+        const before=await main(`state.groups[2].score`);
+        await main(`switchView('ai');document.getElementById('aiMode').value='model';document.getElementById('aiMode').dispatchEvent(new Event('change'));document.getElementById('aiUseKnowledge').checked=true;document.getElementById('aiKnowledgeSubject').value='生物';document.getElementById('aiUseWeb').checked=true;document.getElementById('aiWebQuery').value='photosynthesis';document.getElementById('aiConsent').checked=true;document.getElementById('aiPrompt').value='解释光合作用';document.getElementById('aiComposer').requestSubmit()`);
+        await until(()=>main(`!!document.querySelector('#aiMessages details')&&!document.getElementById('aiSend').disabled`),'research result');
+        assert.equal(endpoint,'https://amr-link.open-design.ai/v1/chat/completions');assert.equal(received.model,'deepseek-v4.1-flash');assert.equal(searches,1);const data=JSON.parse(received.messages.at(-1).content);assert.ok(data.sources.some(s=>s.id==='R1')&&data.sources.some(s=>s.id==='W1'));assert.equal(await main(`state.groups[2].score`),before);assert.equal(await main(`document.querySelectorAll('#aiMessages [data-proposal]').length`),0);
+        await main(`document.querySelector('#aiMessages details').open=true;document.querySelector('#aiMessages details a').click()`);await until(()=>opened.length===1,'source open');assert.equal(opened[0],'https://www.edu.cn/example');assert.equal((await main(`godpowerDesktop.ai.openSource('http://127.0.0.1/private')`)).ok,false);assert.equal(opened.length,1);await settledShot(w.main,'cited-answer');
+        return {provider:'amr',model:received.model,network:'local mock only',searches,sourceOpen:opened[0],scoreUnchanged:true};
+      }finally{shell.openExternal=originalOpen;w.ai.cancelAll();await new Promise(r=>server.close(r));}
     });
     await test("OpenCode AI approval uses one classroom command and a private main-process broker", async () => {
       const {createServer}=require("node:http"),{AIGateway}=require("./ai-gateway.cjs");
