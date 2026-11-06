@@ -52,3 +52,12 @@ Node 14 PASS，真实 Electron 15 场景 PASS；12 类窗口尺寸与截图、�
 |真实OpenCode账户|NOT TESTED|无用户密钥、未消费模型额度|
 |Windows真机密钥/联网/课堂|NOT TESTED|Linux或交叉构建不能替代|
 |浏览器file://|BLOCKED|当前Chromium管理策略阻止文件导航|
+
+## 3.0.75–3.0.76 存档与多对话
+
+|项|结果|证据|
+|---|---|---|
+|新版存档原生两次重载，无旧文件读写/无修订变化|PASS|artifacts/save-startup/results.json|
+|多对话本机恢复、两轮有限上下文、改分一次|PASS|artifacts/ai-conversations/results.json，Linux Electron1920×1080 1x|
+|历史system角色/超限/未知字段拒绝|PASS|95项完整Electron单元/集成|
+|真实OpenCode/Windows真机|NOT TESTED|没有真实账户请求，未在Windows硬件运行|

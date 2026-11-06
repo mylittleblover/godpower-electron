@@ -1075,11 +1075,11 @@ x.XSync(d,0)
     await test("OpenCode AI approval uses one classroom command and a private main-process broker", async () => {
       const {createServer}=require("node:http"),{AIGateway}=require("./ai-gateway.cjs");
       const received=[];let endpoint;
-      const server=createServer(async(req,res)=>{let body="";for await(const c of req)body+=c;received.push(JSON.parse(body));assert.equal(req.headers.authorization,"Bearer TEST_ONLY_OPENCODE_KEY");res.setHeader("Content-Type","application/json");res.end(JSON.stringify({choices:[{message:{content:JSON.stringify({reply:"模拟OpenCode回复：请核对积分预览。",actions:[{intent:"adjustScore",params:{group:"G3",delta:3}}]})}}]}));});
+      const server=createServer(async(req,res)=>{let body="";for await(const c of req)body+=c;received.push(JSON.parse(body));assert.equal(req.headers.authorization,"Bearer TEST_ONLY_OPENCODE_KEY");res.setHeader("Content-Type","application/json");res.end(JSON.stringify({choices:[{message:{content:JSON.stringify({reply:"模拟OpenCode回复：请核对积分预览。",actions:received.length===1?[{intent:"adjustScore",params:{group:"G3",delta:3}}]:[]})}}]}));});
       await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));
       w.ai=new AIGateway({directory:path.join(app.getPath("userData"),"ai-fixture"),safeStorage:{isEncryptionAvailable:()=>false},fetch:(url,options)=>{endpoint=url;return fetch("http://127.0.0.1:"+server.address().port,options);}});
       try {
-        await main(`SaveManager.whenIdle()`);await main(`switchView('ai')`);await until(()=>main(`!!document.getElementById('aiPrompt')`),'AI mounted');
+        await main(`SaveManager.whenIdle()`);await main(`switchView('ai')`);await until(()=>main(`!!document.getElementById('aiPrompt') && !document.getElementById('aiSend').disabled`),'AI mounted');
         await main(`document.getElementById('aiOpenSettings').click();document.getElementById('aiProvider').value='opencode';document.getElementById('aiModel').value='example-model';document.getElementById('aiKey').value='TEST_ONLY_OPENCODE_KEY';document.getElementById('aiSettingsForm').requestSubmit()`);
         await until(()=>main(`document.getElementById('aiSettingsResult').textContent.includes('已保存')`),'AI configuration');
         assert.equal(await main(`document.getElementById('aiKey').value`),'');await settledShot(w.main,'opencode-settings');
@@ -1091,10 +1091,32 @@ x.XSync(d,0)
         await settledShot(w.main,'opencode-approval');
         await main(`document.querySelector('[data-proposal] .btn-primary').click()`);await main(`classroomCommands.whenIdle()`);await until(()=>main(`state.groups[2].score===${before+3}`),'AI command committed');
         await settledShot(w.main,'opencode-receipt');
+        await until(()=>main(`!document.getElementById('aiSend').disabled`),'first model completed');
+        await main(`document.getElementById('aiShareHistory').checked=true;document.getElementById('aiConsent').checked=true;document.getElementById('aiPrompt').value='继续说明';document.getElementById('aiComposer').requestSubmit()`);
+        await until(()=>received.length===2,'second model request');
+        await until(()=>main(`!document.getElementById('aiSend').disabled`),'second model completed');
+        assert.deepEqual(received[1].messages.slice(1,3).map(m=>m.role),['user','assistant']);
+        assert.equal(received[1].messages[1].content,'给G3加3分');
+        assert.ok(!JSON.stringify(received[1].messages.slice(1,3)).includes('积分已更新并保存'));
+        assert.equal(await main(`state.groups[2].score`),before+3);
+        await settledShot(w.main,'opencode-conversation');
+        await until(()=>main(`document.getElementById('aiSavedState').textContent.includes('已保存')`),'conversation persisted');
+        const transcript=await main(`AIConversationRepository.load()`);
+        await new Promise(resolve=>{w.main.webContents.once('did-finish-load',resolve);w.main.reload()});
+        await until(()=>main(`typeof SaveManager!=='undefined'&&window.classroomReady`),'AI restart ready');await main(`SaveManager.ready()`);
+        await until(()=>main(`!!document.getElementById('aiSend')&&!document.getElementById('aiSend').disabled`),'AI conversations restored');
+        await main(`switchView('ai')`);
+        assert.deepEqual(await main(`AIConversationRepository.load()`),transcript);
+        assert.equal(await main(`document.querySelectorAll('#aiMessages [data-proposal]').length`),0);
+        assert.equal(await main(`state.groups[2].score`),before+3);
+        assert.equal(received.length,2,'reload never repeats a model request');
+        await settledShot(w.main,'opencode-restored');
+
+
         await main(`document.getElementById('aiOpenSettings').click();document.getElementById('aiForget').click()`);
         await until(()=>main(`document.getElementById('aiSettingsResult').textContent.includes('密钥已清除')`),'AI credential clear');
         assert.equal(w.ai.status().keyPresent,false);
-        return {network:'local mock only',provider:'opencode',before,after:before+3,cloudLive:'NOT TESTED'};
+        return {network:'local mock only',provider:'opencode',before,after:before+3,cloudLive:'NOT TESTED',turns:2,historyValidated:true,conversationReload:true};
       } finally {w.ai.cancelAll();await new Promise(resolve=>server.close(resolve));}
     });
     assert.deepEqual(errors, [], "no renderer/preload errors");

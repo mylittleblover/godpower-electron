@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "results": [
+    {
+      "name": "OpenCode AI approval uses one classroom command and a private main-process broker",
+      "status": "PASS",
+      "detail": {
+        "network": "local mock only",
+        "provider": "opencode",
+        "before": 140,
+        "after": 143,
+        "cloudLive": "NOT TESTED",
+        "turns": 2,
+        "historyValidated": true,
+        "conversationReload": true
+      }
+    }
+  ],
+  "errors": [],
+  "environment": {
+    "electron": "44.9.0",
+    "chrome": "152.0.7977.167",
+    "platform": "linux",
+    "displays": [
+      {
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  }
+}

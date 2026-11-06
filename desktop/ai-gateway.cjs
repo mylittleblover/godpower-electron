@@ -156,7 +156,13 @@ class AIGateway {
   }
   request(value) {
     try {
-      exact(value, ["id", "text", "consent", "groups"]);
+      exact(value, ["id", "text", "consent", "groups", "history"]);
+      if(value.history!==undefined){
+        if(!Array.isArray(value.history)||value.history.length>12)throw Error("INVALID_HISTORY");
+        let size=0;
+        for(const m of value.history){exact(m,["role","content"]);if(!["user","assistant"].includes(m.role)||typeof m.content!=="string"||!m.content.trim()||m.content.length>4000)throw Error("INVALID_HISTORY");size+=m.content.length;}
+        if(size>16000)throw Error("INVALID_HISTORY");
+      }
       if (
         typeof value.id !== "string" ||
         !/^[\w-]{1,100}$/.test(value.id) ||
@@ -221,6 +227,7 @@ class AIGateway {
           max_tokens: 2500,
           messages: [
             { role: "system", content: SYSTEM },
+            ...(value.history || []),
             {
               role: "user",
               content: JSON.stringify({

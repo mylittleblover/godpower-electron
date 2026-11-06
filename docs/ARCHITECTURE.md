@@ -75,3 +75,7 @@ sync:html从已提交HTML源码同时读取tooltips.js/css，写入renderer并�
 ## 3.0.74 OpenCode模型网关
 
 AIGateway是独立主进程服务，仅gp:ai主窗口白名单可访问；preload按角色公开冻结的窄接口。固定云端/本机地址、Bearer、受限响应、取消/预算、加密可选密钥与串行生命周期均在主进程；课堂业务仍由主renderer的AIToolGateway→ManualScoreCommands→现有事务保存。渲染器网络策略不放宽，普通窗口和插件权限不扩大。配置/对话与课堂数据分离，无AI时课堂离线运行。
+
+## AI会话（3.0.76）
+
+HTML共享源码拥有纯文本会话模型和独立IndexedDB CAS存储，Electron沿用固定安全课堂来源。主进程AI代理只接收最多12条user/assistant历史、每条4000/总16000字符；不接受system或额外字段，系统提示由主进程固定。密钥仍在主进程内存/系统加密存储，聊天不包含密钥。前端逐次确认输入/上下文；重载不会恢复授权、提案或自动请求。当前连接配置全局共用，不宣称每会话独立凭据或网页搜索。
