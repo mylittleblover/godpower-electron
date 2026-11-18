@@ -194,31 +194,27 @@ function selectPane(next) {
   $("customScore").querySelector("button").disabled = scoreDisabled;
   $("delta").disabled = scoreDisabled;
   $("preselection").hidden = s.mode !== "two_tier";
-  const groupSignature = JSON.stringify([
-    s.groups,
-    s.preselectedGroupIds,
-    spinning,
-    pending,
-  ]);
-  if (groupSignature !== lastGroups) {
-    lastGroups = groupSignature;
+  const activeGroups = s.groups.filter((g) => g.members > 0);
+  const groupStructure = activeGroups.map((g) => `${g.id}:${g.name}`).join("\n");
+  if (groupStructure !== lastGroups) {
+    lastGroups = groupStructure;
     $("groupChips").replaceChildren(
-      ...s.groups
-        .filter((g) => g.members > 0)
-        .map((g) => {
-          const b = document.createElement("button");
-          b.textContent = g.name;
-          b.setAttribute(
-            "aria-pressed",
-            String(s.preselectedGroupIds.includes(g.id)),
-          );
-          b.disabled = busy || spinning;
-          b.addEventListener("click", () =>
-            run("preselect", { groupId: g.id }),
-          );
-          return b;
-        }),
+      ...activeGroups.map((g) => {
+        const b = document.createElement("button");
+        b.dataset.groupId = String(g.id);
+        b.textContent = g.name;
+        b.addEventListener("click", () => run("preselect", { groupId: g.id }));
+        return b;
+      }),
     );
+  }
+  const preselectedSet = new Set(s.preselectedGroupIds || []);
+  const chipDisabled = busy || spinning;
+  for (const b of $("groupChips").children) {
+    const pressed = String(preselectedSet.has(Number(b.dataset.groupId)));
+    if (b.getAttribute("aria-pressed") !== pressed)
+      b.setAttribute("aria-pressed", pressed);
+    if (b.disabled !== chipDisabled) b.disabled = chipDisabled;
   }
   const signature = JSON.stringify(s.history);
   if (signature !== lastSignature) {
@@ -261,16 +257,17 @@ function renderHand(s, busy, state) {
             ? "回答错误 · 本次不发放奖励"
             : "请判定回答";
   $("unlockHand").hidden = !(locked && s);
-  const groupSignature = JSON.stringify([s?.groups, active, busy, locked]);
-  if (groupSignature !== lastHandGroups) {
-    lastHandGroups = groupSignature;
+  const groupStructure = (s?.groups || [])
+    .map((g) => `${g.id}:${g.groupNo}:${g.name}`)
+    .join("\n");
+  if (groupStructure !== lastHandGroups) {
+    lastHandGroups = groupStructure;
     $("handGroups").replaceChildren(
       ...(s?.groups || []).map((g) => {
         const b = document.createElement("button");
+        b.dataset.groupId = String(g.id);
         b.textContent = `${String(g.groupNo).padStart(2, "0")} · ${g.name}`;
         b.className = "hand-group";
-        b.setAttribute("aria-pressed", String(g.id === active));
-        b.disabled = busy || locked;
         b.addEventListener("click", async () => {
           handGroupId = g.id;
           await run("handSelect", { groupId: g.id });
@@ -278,6 +275,13 @@ function renderHand(s, busy, state) {
         return b;
       }),
     );
+  }
+  const handGroupDisabled = busy || locked;
+  for (const b of $("handGroups").children) {
+    const pressed = String(Number(b.dataset.groupId) === active);
+    if (b.getAttribute("aria-pressed") !== pressed)
+      b.setAttribute("aria-pressed", pressed);
+    if (b.disabled !== handGroupDisabled) b.disabled = handGroupDisabled;
   }
   const canReward = !!s && hand.correct === true && !hand.rewardComplete && !locked;
   $("handRewards").hidden = !canReward;

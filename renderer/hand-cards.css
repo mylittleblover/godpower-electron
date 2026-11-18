@@ -62,8 +62,12 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 .native-hand-cards.six {
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.native-hand-cards.six button {
+  min-height: 140px;
+  gap: 10px;
 }
 .native-hand-cards button {
   min-height: 260px;
@@ -91,9 +95,13 @@
 }
 .hand-cards .positive {
   color: #15803d;
+  background: #f2fbf6;
+  border-color: #b7e4c7;
 }
 .hand-cards .negative {
   color: #dc2626;
+  background: #fff5f5;
+  border-color: #f4c7c3;
 }
 .hand-cards button:disabled {
   opacity: 0.48;
