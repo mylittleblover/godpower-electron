@@ -31,6 +31,41 @@ class SaveVault {
     this.schema = schema;
     this.pending = Promise.resolve();
     this.pendingWrites = 0;
+    this.saveAssetRefs = new Map();
+    this.assetOwners = new Map();
+  }
+  recordSaveAssets(saveId, contentHash, assetReferences) {
+    this.evictSaveAssets(saveId);
+    const refs = new Set(Array.isArray(assetReferences) ? assetReferences : []);
+    this.saveAssetRefs.set(saveId, { contentHash, refs });
+    for (const id of refs) {
+      let owners = this.assetOwners.get(id);
+      if (!owners) {
+        owners = new Set();
+        this.assetOwners.set(id, owners);
+      }
+      owners.add(saveId);
+    }
+  }
+  evictSaveAssets(saveId) {
+    const prev = this.saveAssetRefs.get(saveId);
+    if (!prev) return;
+    for (const id of prev.refs) {
+      const owners = this.assetOwners.get(id);
+      if (owners) {
+        owners.delete(saveId);
+        if (!owners.size) this.assetOwners.delete(id);
+      }
+    }
+    this.saveAssetRefs.delete(saveId);
+  }
+  reconcileAssetCache(entries) {
+    const activeBySave = new Map(entries.map((e) => [e.saveId, e.contentHash]));
+    for (const [saveId, cached] of this.saveAssetRefs) {
+      if (activeBySave.get(saveId) !== cached.contentHash) {
+        this.evictSaveAssets(saveId);
+      }
+    }
   }
   whenIdle() {
     return this.pending;
@@ -151,6 +186,7 @@ class SaveVault {
     const doc = validate(JSON.parse(bytes.toString("utf8")));
     if (doc.saveId !== saveId || doc.revision !== entry.revision)
       fail("REVISION_INTEGRITY_FAILED");
+    this.recordSaveAssets(saveId, entry.contentHash, doc.assetReferences);
     return doc;
   }
   async stageAssets(assets) {
@@ -245,9 +281,12 @@ class SaveVault {
         if ([...index.entries, ...(index.trashedEntries || [])].some((e) => e.saveId === doc.saveId))
           fail("SAVE_ALREADY_EXISTS");
       await this.stageAssets(input.assets || []);
+      const staged = [];
       for (const doc of docs) {
         await this.requireAssets(doc);
-        index.entries.push(await this.stageDocument(doc));
+        const entry = await this.stageDocument(doc);
+        index.entries.push(entry);
+        staged.push([doc, entry]);
       }
       await this.immutable(
         path.join(this.root, "sources", input.sourceDigest + ".json"),
@@ -263,6 +302,8 @@ class SaveVault {
       }
       index.revision++;
       await this.publish(index);
+      for (const [doc, entry] of staged)
+        this.recordSaveAssets(doc.saveId, entry.contentHash, doc.assetReferences);
       return {
         ok: true,
         idempotent: false,
@@ -315,6 +356,7 @@ class SaveVault {
       );
       index.revision++;
       await this.publish(index);
+      this.recordSaveAssets(saveId, entry.contentHash, doc.assetReferences);
       return { ok: true, document: doc, index };
     });
   }
@@ -350,7 +392,10 @@ class SaveVault {
       index.trashedEntries ||= [];
       if (trashed) { index.entries = index.entries.filter(e => e.saveId !== saveId); index.trashedEntries.push({...target,trashedAt:new Date().toISOString()}); }
       else { index.trashedEntries = index.trashedEntries.filter(e => e.saveId !== saveId); const restored={...target};delete restored.trashedAt;index.entries.push(restored); }
-      index.revision++;await this.publish(index);return {ok:true,index};
+      index.revision++;await this.publish(index);
+      if (trashed) this.evictSaveAssets(saveId);
+      else this.recordSaveAssets(saveId, target.contentHash, document.assetReferences);
+      return {ok:true,index};
     });
   }
   getSource(digest) {
@@ -371,15 +416,16 @@ class SaveVault {
         fail("INVALID_ASSET_ID");
       // Only published documents authorize asset reads; orphan staging is private.
       const index = await this.readIndex();
-      let allowed = false;
-      for (const e of index.entries) {
-        if (
-          (await this.readDocument(index, e.saveId)).assetReferences.includes(
-            id,
-          )
-        ) {
-          allowed = true;
-          break;
+      this.reconcileAssetCache(index.entries);
+      let allowed = (this.assetOwners.get(id)?.size || 0) > 0;
+      if (!allowed) {
+        for (const e of index.entries) {
+          if (this.saveAssetRefs.has(e.saveId)) continue;
+          const doc = await this.readDocument(index, e.saveId);
+          if (doc.assetReferences.includes(id)) {
+            allowed = true;
+            break;
+          }
         }
       }
       if (!allowed) return null;

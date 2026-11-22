@@ -316,3 +316,48 @@ test("trash is reversible, preserves bytes and sources, and cannot remove the ac
   assert.equal((await reopened.setTrashed(b.documents[0].saveId,true,{expectedGeneration:gen-1,expectedRevision:1})).code,"GENERATION_CONFLICT");
  }finally{await cleanup(w);}
 });
+test("getAsset resolves via owner index cache, skips repeated save reads, and evicts on trash", async () => {
+  const w = setup();
+  try {
+    const bytes = Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+        "base64",
+      ),
+      sha = hash(bytes),
+      assetId = "asset-" + sha;
+    const activeSave = preview(11);
+    const trashedSave = preview(12);
+    trashedSave.assets = [{ resourceId: assetId, sha256: sha, mimeType: "image/png", byteLength: bytes.length, dataBase64: bytes.toString("base64") }];
+    trashedSave.documents[0].assetReferences = [assetId];
+    await w.vault.importPreview(activeSave, { activate: true });
+    await w.vault.importPreview(trashedSave, { activate: false });
+
+    const reopened = new SaveVault({ root: w.root, schema: w.schema });
+    let readDocCalls = 0;
+    const origReadDoc = reopened.readDocument.bind(reopened);
+    reopened.readDocument = async (...args) => {
+      readDocCalls++;
+      return origReadDoc(...args);
+    };
+    const first = await reopened.getAsset(assetId);
+    assert.equal(first.resourceId, assetId);
+    assert.equal(readDocCalls, 2);
+    const second = await reopened.getAsset(assetId);
+    assert.equal(second.resourceId, assetId);
+    assert.equal(readDocCalls, 2, "warm getAsset must not re-read save documents");
+
+    const list = await reopened.list();
+    await reopened.setTrashed(trashedSave.documents[0].saveId, true, {
+      expectedGeneration: list.index.generation,
+      expectedRevision: 1,
+    });
+    assert.equal(await reopened.getAsset(assetId), null);
+    await reopened.setTrashed(trashedSave.documents[0].saveId, false, {
+      expectedGeneration: list.index.generation,
+      expectedRevision: 1,
+    });
+    assert.equal((await reopened.getAsset(assetId)).resourceId, assetId);
+  } finally {
+    await cleanup(w);
+  }
+});

@@ -32,8 +32,9 @@ const { SaveFlush } = require("./save-flush.cjs");
 const { loadSaveSchema, dispatch: dispatchSaveVault } = require("./save-vault-bridge.cjs");
 const {skipRegion,containsCursor}=require('./effect-pointer.cjs');
 class Windows {
-  constructor(root) {
+  constructor(root, { verifiedBuild = null } = {}) {
     this.root = root;
+    this.verifiedBuild = verifiedBuild;
     this.main = null;
     this.picker = null;
     this.effect = null;
@@ -65,6 +66,9 @@ class Windows {
     });
     this.rendererQuitFlushed=false;this.rendererQuitPending=false;
     this.pickerView = "icon";
+    this.cachedDisplays = null;
+    this.cachedDisplayDtos = null;
+    this.displayEventsBound = false;
     this.installIPC();
     app.on("before-quit", (event) => {
       this.quitting = true;
@@ -107,23 +111,52 @@ class Windows {
       this.savePicker();
       this.closeEffect();
     });
-    for (const name of [
-      "display-added",
-      "display-removed",
-      "display-metrics-changed",
-    ])
-      screen.on(name, () => {
-        if (this.picker && !this.picker.isDestroyed())
-          this.picker.setBounds(
-            (this.pickerCollapsed ? iconBounds : visibleBounds)(
-              this.picker.getBounds(),
-              screen.getAllDisplays(),
-              null,
-            ),
-          );
-        this.closeEffect();
-        this.broadcast();
-      });
+    if (typeof screen?.on === "function") {
+      this.displayEventsBound = true;
+      for (const name of [
+        "display-added",
+        "display-removed",
+        "display-metrics-changed",
+      ])
+        screen.on(name, () => {
+          this.cachedDisplays = null;
+          this.cachedDisplayDtos = null;
+          if (this.picker && !this.picker.isDestroyed())
+            this.picker.setBounds(
+              (this.pickerCollapsed ? iconBounds : visibleBounds)(
+                this.picker.getBounds(),
+                this.getDisplays(),
+                null,
+              ),
+            );
+          this.closeEffect();
+          this.broadcast();
+        });
+    }
+  }
+  getDisplays() {
+    if (this.displayEventsBound && this.cachedDisplays)
+      return this.cachedDisplays;
+    const displays = screen.getAllDisplays();
+    if (this.displayEventsBound) {
+      this.cachedDisplays = displays;
+      this.cachedDisplayDtos = null;
+    }
+    return displays;
+  }
+  getDisplayDtos() {
+    const displays = this.getDisplays();
+    if (this.displayEventsBound && this.cachedDisplayDtos)
+      return this.cachedDisplayDtos;
+    const dtos = displays.map((d) => ({
+      id: d.id,
+      label: d.label || `显示器 ${d.id}`,
+      bounds: d.bounds,
+      workArea: d.workArea,
+      scaleFactor: d.scaleFactor,
+    }));
+    if (this.displayEventsBound) this.cachedDisplayDtos = dtos;
+    return dtos;
   }
   preferencesFor(role) {
     return {
@@ -224,7 +257,7 @@ class Windows {
     this.pickerView = expanded ? "picker" : "icon";
     const bounds = iconBounds(
       this.preferences.value.iconPosition,
-      screen.getAllDisplays(),
+      this.getDisplays(),
       null,
     );
     const win = new BrowserWindow({
@@ -370,12 +403,12 @@ class Windows {
       expanded
         ? visibleBounds(
             {...(this.preferences.value.pickerBounds || {width:480,height:760}),x:anchor.x,y:anchor.y},
-            screen.getAllDisplays(),
+            this.getDisplays(),
             null,
           )
         : iconBounds(
             this.preferences.value.iconPosition,
-            screen.getAllDisplays(),
+            this.getDisplays(),
           ),
     );
     this.ensurePickerLevel(true);
@@ -395,7 +428,7 @@ class Windows {
     this.picker.setBounds(
       menuBounds(
         { x: anchor.x, y: anchor.y },
-        screen.getAllDisplays(),
+        this.getDisplays(),
       ),
     );
     this.ensurePickerLevel(true);
@@ -404,7 +437,7 @@ class Windows {
   iconBoundsNow() {
     return iconBounds(
       this.preferences.value.iconPosition,
-      screen.getAllDisplays(),
+      this.getDisplays(),
     );
   }
   hideLauncher() {
@@ -418,13 +451,7 @@ class Windows {
     this.broadcast();
   }
   state() {
-    const displays = screen.getAllDisplays().map((d) => ({
-      id: d.id,
-      label: d.label || `显示器 ${d.id}`,
-      bounds: d.bounds,
-      workArea: d.workArea,
-      scaleFactor: d.scaleFactor,
-    }));
+    const displays = this.getDisplayDtos();
     return {
       revision: this.revision,
       epoch: this.broker.epoch,
@@ -467,8 +494,7 @@ class Windows {
   }
   targetDisplay() {
     return (
-      screen
-        .getAllDisplays()
+      this.getDisplays()
         .find((d) => d.id === this.preferences.value.displayId) ||
       screen.getPrimaryDisplay()
     );
@@ -754,7 +780,7 @@ class Windows {
       requireRole(event, "main");
       if (!this.saveVault) this.saveVault = new SaveVault({
         root: path.join(app.getPath("documents"), "GodPower", "save-library-v2"),
-        schema: loadSaveSchema(this.root),
+        schema: loadSaveSchema(this.root, { verifiedBuild: this.verifiedBuild }),
       });
       return dispatchSaveVault(this.saveVault, action, args);
     });
@@ -867,7 +893,7 @@ class Windows {
         if(!drag)return {ok:false,error:"NO_DRAG"};
         if(value){
           const next=PickerDrag.move(drag,value);drag.moved=next.moved;
-          if(next.moved)this.picker.setBounds(iconBounds(next,screen.getAllDisplays()));
+          if(next.moved)this.picker.setBounds(iconBounds(next,this.getDisplays()));
         }
         if(action === "dragMove")return {ok:true};
         this.iconDrag=null;this.savePicker();
@@ -912,7 +938,7 @@ class Windows {
       if (
         action === "display" &&
         Number.isSafeInteger(value) &&
-        screen.getAllDisplays().some((d) => d.id === value)
+        this.getDisplays().some((d) => d.id === value)
       ) {
         const ok = this.preferences.update({ displayId: value });
         this.broadcast();

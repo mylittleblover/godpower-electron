@@ -2,21 +2,41 @@
 const { readFileSync } = require("node:fs");
 const path = require("node:path");
 const { createHash } = require("node:crypto");
-function verifyHtml(root) {
-  const html = readFileSync(path.join(root, "resources/index.html"));
+function readBuildInfo(root) {
   const info = JSON.parse(
     readFileSync(path.join(root, "resources/BUILD_INFO.json"), "utf8"),
   );
+  if (!/^[0-9a-f]{40}$/.test(info.sourceCommit))
+    throw Error("Bundled classroom HTML integrity check failed");
+  return info;
+}
+function verifySharedAsset(root, name, expectedInfo = null) {
+  const info = readBuildInfo(root);
   if (
-    !/^[0-9a-f]{40}$/.test(info.sourceCommit) ||
+    expectedInfo &&
+    (expectedInfo.htmlSha256 !== info.htmlSha256 ||
+      expectedInfo.htmlBytes !== info.htmlBytes ||
+      expectedInfo.sourceCommit !== info.sourceCommit)
+  )
+    throw Error("Bundled classroom HTML integrity check failed");
+  const sha = info.sharedAssets?.[name];
+  if (name !== "save-schema.js" || typeof sha !== "string" || !/^[0-9a-f]{64}$/.test(sha))
+    throw Error("Bundled shared schema integrity check failed");
+  const bytes = readFileSync(path.join(root, "resources", name));
+  if (createHash("sha256").update(bytes).digest("hex") !== sha)
+    throw Error("Bundled shared schema integrity check failed");
+  return { info, source: bytes.toString("utf8") };
+}
+function verifyHtml(root) {
+  const html = readFileSync(path.join(root, "resources/index.html"));
+  const info = readBuildInfo(root);
+  if (
     info.htmlSha256 !== createHash("sha256").update(html).digest("hex") ||
     info.htmlBytes !== html.length
   )
     throw Error("Bundled classroom HTML integrity check failed");
-  for (const [name, sha] of Object.entries(info.sharedAssets || {})) {
-    if (name !== "save-schema.js" || !/^[0-9a-f]{64}$/.test(sha) || createHash("sha256").update(readFileSync(path.join(root,"resources",name))).digest("hex") !== sha)
-      throw Error("Bundled shared schema integrity check failed");
-  }
+  for (const name of Object.keys(info.sharedAssets || {}))
+    verifySharedAsset(root, name, info);
   return info;
 }
 function installProtocol(protocol, root) {
@@ -82,4 +102,4 @@ function installProtocol(protocol, root) {
     });
   });
 }
-module.exports = { verifyHtml, installProtocol };
+module.exports = { verifyHtml, verifySharedAsset, installProtocol };

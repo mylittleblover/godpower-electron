@@ -31,11 +31,14 @@ function reportSkipRegion() {
     height: r.height,
   });
 }
-function presentItem(payload) {
-  const item = payload.item,
-    marx = payload.theme === "marx";
+function applyTheme(marx) {
   document.body.classList.toggle("theme-marx", marx);
   document.body.dataset.theme = marx ? "marx" : "classic";
+  return marx;
+}
+function presentItem(payload) {
+  const item = payload.item,
+    marx = applyTheme(payload.theme === "marx");
   stage.dataset.mode = "item";
   document.title = `${marx ? "马克思的力量" : "上帝的力量"} · 道具特效`;
   document.getElementById("mode").textContent = "ITEM CINEMATIC · 道具结算";
@@ -95,19 +98,19 @@ function presentItem(payload) {
   stage.classList.add("active", payload.effects.style);
   exitTimer = setTimeout(exit, payload.effects.duration);
 }
-function escapeHtml(value) {
-  return String(value).replace(
-    /[&<>"']/g,
-    (c) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
-        c
-      ],
-  );
-}
+const escapeHtml =
+  window.HandCards?.escapeHtml ||
+  ((value) =>
+    String(value ?? "").replace(
+      /[&<>"']/g,
+      (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+          c
+        ],
+    ));
 api.onReveal((payload) => {
   if (payload.kind === "hand") {
-    document.body.classList.toggle("theme-marx", payload.theme === "marx");
-    document.body.dataset.theme = payload.theme === "marx" ? "marx" : "classic";
+    applyTheme(payload.theme === "marx");
     if (id && id !== payload.id && document.body.dataset.effectKind !== "hand") return;
     if (leaving && id === payload.id) return;
     if (id !== payload.id) {
@@ -131,9 +134,7 @@ api.onReveal((payload) => {
     return;
   }
   const r = payload.result;
-  const marx = payload.theme === "marx";
-  document.body.classList.toggle("theme-marx", marx);
-  document.body.dataset.theme = marx ? "marx" : "classic";
+  const marx = applyTheme(payload.theme === "marx");
   stage.dataset.mode = r.mode;
   document.title = `${marx ? "马克思的力量" : "上帝的力量"} · 全屏揭晓`;
   document.getElementById("name").textContent = r.name;

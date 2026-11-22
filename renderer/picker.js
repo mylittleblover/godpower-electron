@@ -61,7 +61,33 @@ function setView(next) {
 function selectPane(next) {
   pane = next === "hand" ? "hand" : "picker";
   render(current);
-}function render(state) {
+}function syncScoreSlots(id, slots, onPick, disabled) {
+  const el = $(id);
+  const key = Array.isArray(slots) ? slots.join(",") : "";
+  if (el.dataset.values !== key) {
+    el.replaceChildren(
+      ...(slots || []).map((delta) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = (delta > 0 ? "+" : "−") + Math.abs(delta);
+        b.className = delta > 0 ? "positive" : "negative";
+        b.addEventListener("click", () => onPick(delta));
+        return b;
+      }),
+    );
+    el.dataset.values = key;
+  }
+  el.querySelectorAll("button").forEach((b) => (b.disabled = disabled));
+}
+function syncButtonGroup(container, isPressed, disabled) {
+  for (const b of container.children) {
+    const pressed = String(isPressed(Number(b.dataset.groupId)));
+    if (b.getAttribute("aria-pressed") !== pressed)
+      b.setAttribute("aria-pressed", pressed);
+    if (b.disabled !== disabled) b.disabled = disabled;
+  }
+}
+function render(state) {
   if (!state || state.revision < revision) return;
   document.body.dataset.collapsed = String(state.shell.collapsed);
   current = state;
@@ -82,10 +108,13 @@ function selectPane(next) {
   $("pin").checked = state.shell.alwaysOnTop;
   $("effects").checked = state.shell.effectsEnabled;
   $("skip").disabled = !state.shell.effectActive;
-  const displaySignature = JSON.stringify(state.shell.displays);
+  const displays = Array.isArray(state.shell.displays) ? state.shell.displays : [];
+  const displaySignature = displays
+    .map((d) => `${d.id}:${d.label}:${d.bounds?.width}x${d.bounds?.height}`)
+    .join("|");
   if ($("display").dataset.signature !== displaySignature) {
     $("display").replaceChildren(
-      ...state.shell.displays.map((d, i) => {
+      ...displays.map((d, i) => {
         const o = document.createElement("option");
         o.value = d.id;
         o.textContent = `${d.label || "显示器 " + (i + 1)} · ${d.bounds.width}×${d.bounds.height}`;
@@ -173,24 +202,12 @@ function selectPane(next) {
   $("unlockClassroom").hidden =
     !(s.locked && s.phase === "revealed" && !!s.result);
   const scoreDisabled = busy || s.phase !== "revealed" || !s.result || s.locked;
-  if ($("slots").dataset.values !== JSON.stringify(s.slots)) {
-    $("slots").replaceChildren(
-      ...s.slots.map((delta) => {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.textContent = (delta > 0 ? "+" : "−") + Math.abs(delta);
-        b.className = delta > 0 ? "positive" : "negative";
-        b.addEventListener("click", () =>
-          run("score", { delta, resultId: current.snapshot.result.id }),
-        );
-        return b;
-      }),
-    );
-    $("slots").dataset.values = JSON.stringify(s.slots);
-  }
-  $("slots")
-    .querySelectorAll("button")
-    .forEach((b) => (b.disabled = scoreDisabled));
+  syncScoreSlots(
+    "slots",
+    s.slots,
+    (delta) => run("score", { delta, resultId: current.snapshot.result.id }),
+    scoreDisabled,
+  );
   $("customScore").querySelector("button").disabled = scoreDisabled;
   $("delta").disabled = scoreDisabled;
   $("preselection").hidden = s.mode !== "two_tier";
@@ -209,14 +226,12 @@ function selectPane(next) {
     );
   }
   const preselectedSet = new Set(s.preselectedGroupIds || []);
-  const chipDisabled = busy || spinning;
-  for (const b of $("groupChips").children) {
-    const pressed = String(preselectedSet.has(Number(b.dataset.groupId)));
-    if (b.getAttribute("aria-pressed") !== pressed)
-      b.setAttribute("aria-pressed", pressed);
-    if (b.disabled !== chipDisabled) b.disabled = chipDisabled;
-  }
-  const signature = JSON.stringify(s.history);
+  syncButtonGroup(
+    $("groupChips"),
+    (groupId) => preselectedSet.has(groupId),
+    busy || spinning,
+  );
+  const signature = s.history.map((h) => `${h.time}|${h.text}`).join("\n");
   if (signature !== lastSignature) {
     lastSignature = signature;
     $("historyCount").textContent = `· ${s.history.length} 条`;
@@ -276,13 +291,11 @@ function renderHand(s, busy, state) {
       }),
     );
   }
-  const handGroupDisabled = busy || locked;
-  for (const b of $("handGroups").children) {
-    const pressed = String(Number(b.dataset.groupId) === active);
-    if (b.getAttribute("aria-pressed") !== pressed)
-      b.setAttribute("aria-pressed", pressed);
-    if (b.disabled !== handGroupDisabled) b.disabled = handGroupDisabled;
-  }
+  syncButtonGroup(
+    $("handGroups"),
+    (groupId) => groupId === active,
+    busy || locked,
+  );
   const canReward = !!s && hand.correct === true && !hand.rewardComplete && !locked;
   $("handRewards").hidden = !canReward;
   if (!canReward) return;
@@ -290,28 +303,17 @@ function renderHand(s, busy, state) {
   $("handRewardTarget").textContent = group
     ? `${group.name}${hand.itemName ? " · 已获得 " + hand.itemName : ""}`
     : "";
-  if ($("handSlots").dataset.values !== JSON.stringify(s.slots)) {
-    $("handSlots").replaceChildren(
-      ...s.slots.map((delta) => {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.textContent = (delta > 0 ? "+" : "−") + Math.abs(delta);
-        b.className = delta > 0 ? "positive" : "negative";
-        b.addEventListener("click", () =>
-          run("handScore", {
-            groupId: current?.snapshot?.hand?.groupId,
-            selectionId: current?.snapshot?.hand?.selectionId,
-            delta,
-          }),
-        );
-        return b;
+  syncScoreSlots(
+    "handSlots",
+    s.slots,
+    (delta) =>
+      run("handScore", {
+        groupId: current?.snapshot?.hand?.groupId,
+        selectionId: current?.snapshot?.hand?.selectionId,
+        delta,
       }),
-    );
-    $("handSlots").dataset.values = JSON.stringify(s.slots);
-  }
-  $("handSlots")
-    .querySelectorAll("button")
-    .forEach((b) => (b.disabled = busy || locked || !hand.canScore));
+    busy || locked || !hand.canScore,
+  );
   $("handCustomScore").querySelector("button").disabled = busy || locked || !hand.canScore;
   $("handDelta").disabled = busy || locked;
   $("handDraw").disabled = busy || locked || !hand.canDraw;
@@ -413,14 +415,12 @@ $("launchHand").addEventListener("click", async () => {
 $("collapse").addEventListener("click", async () => {
   await api.windowAction("collapse");
 });
-$("unlockClassroom").addEventListener("click", async () => {
+const openUnlockWindow = async () => {
   const r = await api.windowAction("unlock");
   if (!r.ok) message("无法打开课堂解锁窗口，请检查主课堂状态。");
-});
-$("unlockHand").addEventListener("click", async () => {
-  const r = await api.windowAction("unlock");
-  if (!r.ok) message("无法打开课堂解锁窗口，请检查主课堂状态。");
-});
+};
+$("unlockClassroom").addEventListener("click", openUnlockWindow);
+$("unlockHand").addEventListener("click", openUnlockWindow);
 let iconPointer = null,
   iconMoveFrame = null,
   iconMovePoint = null;

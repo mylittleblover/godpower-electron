@@ -7,9 +7,14 @@
   gap: 28px;
   pointer-events: auto;
   color: #17302d;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --hand-primary: #0f766e;
   --hand-border: #c9dcd8;
   --hand-muted: #496e5c;
+  --hand-surface: #fff;
 }
 .hand-cards header {
   display: flex;
@@ -41,17 +46,37 @@
 .hand-cards button {
   font: inherit;
   border: 1px solid var(--hand-border);
-  border-radius: 20px;
-  background: #fff;
+  border-radius: var(--radius-lg);
+  background: var(--hand-surface);
   color: var(--hand-primary);
   padding: 18px;
   cursor: pointer;
-  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition:
+    transform 160ms var(--ease-out),
+    background-color 160ms var(--ease-out),
+    border-color 160ms var(--ease-out);
 }
 .hand-cards header button {
-  padding: 12px;
-  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
   flex-shrink: 0;
+}
+.hand-cards header .hand-close-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@media (hover: hover) and (pointer: fine) {
+  .hand-cards button:hover:not(:disabled) {
+    border-color: var(--hand-primary);
+  }
 }
 .native-hand-cards {
   display: grid;
@@ -107,7 +132,7 @@
   opacity: 0.48;
   cursor: not-allowed;
 }
-.hand-cards button:active {
+.hand-cards button:active:not(:disabled) {
   transform: scale(0.97);
 }
 .hand-cards button:focus-visible {
@@ -129,8 +154,8 @@
   font: inherit;
   padding: 16px;
   border: 1px solid var(--hand-border);
-  border-radius: 14px;
-  background: white;
+  border-radius: var(--radius-md);
+  background: var(--hand-surface);
   color: #17302d;
 }
 .hand-cards > p {
@@ -185,6 +210,7 @@
   --hand-primary: #a91e2c;
   --hand-border: #dec4bc;
   --hand-muted: #704a43;
+  --hand-surface: #fffbed;
 }
 .native-hand-cards > button {
   animation: native-hand-card-enter 240ms cubic-bezier(0.23, 1, 0.32, 1) both;
@@ -218,6 +244,6 @@
   width: 120px;
   height: 120px;
   object-fit: cover;
-  border-radius: 24px;
+  border-radius: var(--radius-lg);
   box-shadow: 0 0 30px #71dbc144;
 }

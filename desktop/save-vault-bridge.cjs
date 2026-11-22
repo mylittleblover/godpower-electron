@@ -1,17 +1,16 @@
 "use strict";
-const fs = require("node:fs");
-const path = require("node:path");
 const vm = require("node:vm");
-const { verifyHtml } = require("./protocol.cjs");
-function loadSaveSchema(root) {
-  const info = verifyHtml(root);
+const { verifyHtml, verifySharedAsset } = require("./protocol.cjs");
+function loadSaveSchema(root, { verifiedBuild = null } = {}) {
+  const info = verifiedBuild || verifyHtml(root);
   if (!info.sharedAssets?.["save-schema.js"])
     throw Error("SHARED_SAVE_SCHEMA_MISSING");
+  const { source } = verifySharedAsset(root, "save-schema.js", info);
   const context = vm.createContext(Object.create(null), {
     codeGeneration: { strings: false, wasm: false },
   });
   vm.runInContext(
-    fs.readFileSync(path.join(root, "resources/save-schema.js"), "utf8"),
+    source,
     context,
     { timeout: 1000, filename: "save-schema.js" },
   );

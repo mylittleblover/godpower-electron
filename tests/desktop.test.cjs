@@ -461,3 +461,81 @@ test("the item cinematic reuses the full-screen reveal window", () => {
     /id="itemTargets"/,
   );
 });
+test("loadSaveSchema reuses preverified BUILD_INFO without re-hashing HTML while enforcing save-schema SHA-256", () => {
+  const fs = require("node:fs"),
+    os = require("node:os"),
+    path = require("node:path"),
+    crypto = require("node:crypto");
+  const { verifyHtml } = require("../desktop/protocol.cjs");
+  const { loadSaveSchema } = require("../desktop/save-vault-bridge.cjs");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "gp-schema-preverify-"));
+  fs.mkdirSync(path.join(dir, "resources"));
+  const schemaSrc = "globalThis.SaveSchema = { validateV2: (d) => d };";
+  const html = "<html>offline</html>";
+  const info = {
+    sourceCommit: "b".repeat(40),
+    htmlSha256: crypto.createHash("sha256").update(html).digest("hex"),
+    htmlBytes: Buffer.byteLength(html),
+    sharedAssets: {
+      "save-schema.js": crypto.createHash("sha256").update(schemaSrc).digest("hex"),
+    },
+  };
+  try {
+    fs.writeFileSync(path.join(dir, "resources/index.html"), html);
+    fs.writeFileSync(path.join(dir, "resources/save-schema.js"), schemaSrc);
+    fs.writeFileSync(path.join(dir, "resources/BUILD_INFO.json"), JSON.stringify(info));
+    const verifiedBuild = verifyHtml(dir);
+    assert.equal(typeof loadSaveSchema(dir, { verifiedBuild }).validateV2, "function");
+    fs.appendFileSync(path.join(dir, "resources/save-schema.js"), "\n// tamper");
+    assert.throws(() => loadSaveSchema(dir, { verifiedBuild }), /integrity/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+test("Windows caches display enumeration and invalidates on display-metrics-changed", () => {
+  const fs = require("node:fs"),
+    os = require("node:os"),
+    path = require("node:path"),
+    vm = require("node:vm");
+  const { createRequire } = require("node:module");
+  const winFile = path.resolve("desktop/windows.cjs");
+  const localRequire = createRequire(winFile);
+  let displayCalls = 0;
+  const listeners = new Map();
+  let currentDisplays = [{ id: 1, label: "Main", bounds: { x: 0, y: 0, width: 1920, height: 1080 }, workArea: { x: 0, y: 0, width: 1920, height: 1040 }, scaleFactor: 1 }];
+  const mockElectron = {
+    app: { getPath: () => os.tmpdir(), on() {} },
+    BrowserWindow: class {},
+    ipcMain: { handle() {}, on() {} },
+    globalShortcut: { register: () => true, unregister() {} },
+    screen: {
+      on(ev, fn) { listeners.set(ev, fn); },
+      getAllDisplays() { displayCalls++; return currentDisplays; },
+      getPrimaryDisplay() { return currentDisplays[0]; },
+    },
+  };
+  const out = { exports: {} };
+  vm.runInNewContext(fs.readFileSync(winFile, "utf8"), {
+    require: (n) => (n === "electron" ? mockElectron : localRequire(n)),
+    module: out,
+    exports: out.exports,
+    __dirname: path.dirname(winFile),
+    console,
+    process,
+    setTimeout,
+    clearTimeout,
+    setInterval,
+    clearInterval,
+  });
+  const w = new out.exports.Windows(os.tmpdir());
+  assert.equal(w.state().shell.displays.length, 1);
+  assert.equal(w.targetDisplay().id, 1);
+  assert.equal(displayCalls, 1);
+  currentDisplays = [
+    ...currentDisplays,
+    { id: 2, label: "Ext", bounds: { x: 1920, y: 0, width: 1280, height: 720 }, workArea: { x: 1920, y: 0, width: 1280, height: 720 }, scaleFactor: 1 },
+  ];
+  listeners.get("display-metrics-changed")();
+  assert.equal(w.state().shell.displays.length, 2);
+  assert.equal(displayCalls, 2);
+});

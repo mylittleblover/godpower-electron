@@ -28,7 +28,7 @@ else {
   app
     .whenReady()
     .then(async () => {
-      verifyHtml(__dirname);
+      const verifiedBuild = verifyHtml(__dirname);
       installProtocol(protocol, __dirname);
       session.defaultSession.setPermissionRequestHandler(
         (_wc, _permission, callback) => callback(false),
@@ -46,7 +46,7 @@ else {
         require("node:fs").mkdirSync(testDocuments, { recursive: true });
         app.setPath("documents", testDocuments);
       }
-      windows = new Windows(__dirname);
+      windows = new Windows(__dirname, { verifiedBuild });
       Menu.setApplicationMenu(
         Menu.buildFromTemplate([
           {

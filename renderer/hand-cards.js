@@ -69,6 +69,21 @@ window.HandCards = (() => {
     const draw = root.querySelector('[data-hand-command="draw"] span');
     if (draw) draw.textContent = current.hand.canDraw ? "本次正式抽取" : "当前状态不可抽取";
   }
+  const paintKeyFor = (payload, phase) => {
+    const hand = payload.hand;
+    return [
+      payload.id,
+      phase,
+      payload.group.name,
+      hand.avatarDataUrl,
+      hand.itemIcon,
+      hand.itemName,
+      hand.mainItemName,
+      hand.inventoryCount,
+      hand.motionEnabled,
+      ...(payload.slots || []),
+    ].join("\0");
+  };
   function paint() {
     if (!current) return;
     const hand = current.hand,
@@ -77,8 +92,7 @@ window.HandCards = (() => {
     root.dataset.phase = phase;
     root.dataset.motion = hand.motionEnabled === false ? "off" : "on";
     document.body.dataset.effectKind = "hand";
-    const key = JSON.stringify([current.id, phase, current.group.name, hand.avatarDataUrl,
-      hand.itemIcon, hand.itemName, hand.mainItemName, hand.inventoryCount, hand.motionEnabled, current.slots]);
+    const key = paintKeyFor(current, phase);
     if (painted === key) { syncControls(); return; }
     painted = key;
     root.dataset.longName = String(current.group.name.length > 40);
@@ -97,16 +111,12 @@ window.HandCards = (() => {
         .join("");
     if (phase === "DRAW")
       cards = `<div class="native-hand-draw"><div class="native-hand-reel">${icon("draw")}</div><strong id="nativeHandDrawName">道具正在揭晓</strong><span>结果已经保存</span></div>`;
-    root.innerHTML = `<header>${hand.avatarDataUrl ? `<img class="hand-group-avatar" src="${E(hand.avatarDataUrl)}" alt="小组头像">` : ""}<div><small>课堂举手 · ${phase === "JUDGE" ? "判定回答" : phase === "DRAW" ? "道具揭晓" : "奖励选择"}</small><h1>${E(current.group.name)}</h1></div><button data-hand-close aria-label="退出举手模式">退出举手 ❌</button></header><div class="native-hand-cards ${phase === "SCORE" ? "six" : phase === "REWARD_CHOICE" ? "three" : ""}">${cards}</div>${phase === "SCORE" ? `<form id="nativeHandScoreForm"><label>自定义分数<input type="number" id="handCardScore" step="1" value="${E(previous)}" required></label><button type="submit" class="positive">确认赋分</button><button type="button" data-hand-choice="back">返回奖励</button></form>` : ""}<p id="handCardStatus" role="status">${phase === "REWARD_CHOICE" ? "本次回答选择一项奖励" : phase === "JUDGE" ? "判定仅记录一次，不自动增加积分" : ""}</p>`;
+    root.innerHTML = `<header>${hand.avatarDataUrl ? `<img class="hand-group-avatar" src="${E(hand.avatarDataUrl)}" alt="小组头像">` : ""}<div><small>课堂举手 · ${phase === "JUDGE" ? "判定回答" : phase === "DRAW" ? "道具揭晓" : "奖励选择"}</small><h1>${E(current.group.name)}</h1></div><button data-hand-close class="hand-close-btn" aria-label="退出举手模式"><span>退出举手</span>${icon("no")}</button></header><div class="native-hand-cards ${phase === "SCORE" ? "six" : phase === "REWARD_CHOICE" ? "three" : ""}">${cards}</div>${phase === "SCORE" ? `<form id="nativeHandScoreForm"><label>自定义分数<input type="number" id="handCardScore" step="1" value="${E(previous)}" required></label><button type="submit" class="positive">确认赋分</button><button type="button" data-hand-choice="back">返回奖励</button></form>` : ""}<p id="handCardStatus" role="status">${phase === "REWARD_CHOICE" ? "本次回答选择一项奖励" : phase === "JUDGE" ? "判定仅记录一次，不自动增加积分" : ""}</p>`;
     syncControls();
   }
   function render(payload, onExit) {
-    const nextSignature = JSON.stringify([
-      payload.id,
-      payload.hand,
-      payload.group,
-      payload.slots,
-    ]);
+    const hand = payload.hand;
+    const nextSignature = `${paintKeyFor(payload, hand.phase)}\0${Boolean(hand.busy)}\0${Boolean(hand.canScore)}\0${Boolean(hand.canDraw)}\0${Boolean(hand.canUse)}`;
     if (current?.id !== payload.id) {
       clearTimeout(timer);
       localPhase = null;
@@ -188,5 +198,5 @@ window.HandCards = (() => {
     void command("handScore", { delta });
   });
   window.addEventListener("beforeunload", () => clearTimeout(timer));
-  return { render };
+  return { render, escapeHtml: E };
 })();
